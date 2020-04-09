@@ -8,8 +8,8 @@ class DataHolder():
         self.data_files = []
 
     def delete_data(self, i):
-        if i > 0 and i < len(self.data_files):
-            self.data_files.pop(0)
+        if i >= 0 and i < len(self.data_files):
+            self.data_files.pop(i)
         if len(self.data_files) == 0:
             self.empty = True
 

@@ -2,9 +2,10 @@
 from gui.filehandler import open_files
 from plotter.mainplot import PlotCanvas
 from reader.dataholder import DataHolder
+from gui.configuration import Configuration
 
 # pyqt imports
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit
 from PyQt5.QtGui import QPalette, QColor
 
 class Color(QWidget):
@@ -30,6 +31,7 @@ class App(QMainWindow):
         # Container for data
         self.data = DataHolder()
         self.data_list = QListWidget(self)
+        self.config = Configuration()
         self.initUI()
 
     def initUI(self):
@@ -53,6 +55,7 @@ class App(QMainWindow):
         data_button.clicked.connect(lambda: open_files(self.data))
         data_button.clicked.connect(self.update_data_list)
         data_button.setToolTip('Import data for plotting')
+        data_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(data_button, 0, 4)
 
         # Configure list behaviour
@@ -71,18 +74,86 @@ class App(QMainWindow):
 
         # Plot button
         plot_button = QPushButton('Plot!', self)
-        plot_button.clicked.connect(lambda: plot.plot(self.data))
+        plot_button.clicked.connect(self.update_config)
+        plot_button.clicked.connect(lambda: plot.plot(self.data, self.config))
         plot_button.setToolTip('Plot the data')
-        plot_layout.addWidget(plot_button, 5, 4)
+        plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        plot_button.setStyleSheet('font-size: 28pt; font-family: Courier;')
+        plot_layout.addWidget(plot_button, 5, 4, 2, 1)
 
         # Saving options
-        plot_layout.addWidget(Color('green'), 6, 0, 1, 5)
+        save_button = QPushButton('Save', self)
+        save_button.clicked.connect(plot.save)
+        save_button.setToolTip('Save the figure')
+        save_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(save_button, 6, 0)
+
+        # Export options
+        export_button = QPushButton('Export', self)
+        export_button.setToolTip('Export the data to xlxs')
+        export_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(export_button, 6, 1)
+
+        # Measure gradient
+        measure_button = QPushButton('Measure', self)
+        measure_button.setToolTip('Measure the growth rate')
+        measure_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(measure_button, 6, 2)
+
+        # Toggle legend
+        legend_button = QPushButton('Legend', self)
+        legend_button.setToolTip('Toggle legend on/off')
+        legend_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(legend_button, 6, 3)
 
         # Plotting options window
         options_layout = QGridLayout()
         options_layout.setContentsMargins(0,0,0,0)
         options_layout.setSpacing(20)
-        options_layout.addWidget(Color('green'), 0, 0)
+
+        # Figure title
+        options_layout.addWidget(QLabel('Figure title:'), 0, 0)
+        self.figure_title = QLineEdit(self) 
+        options_layout.addWidget(self.figure_title, 0, 1)
+
+        # Axis configuration
+        options_layout.addWidget(QLabel('Axis configuration:'), 1, 0)
+        options_layout.addWidget(QLabel('Variable'), 2, 1)
+        options_layout.addWidget(QLabel('Label name'), 2, 2)
+        options_layout.addWidget(QLabel('Unit name'), 2, 3)
+        options_layout.addWidget(QLabel('X:'), 3, 0)
+        options_layout.addWidget(QLabel('Time'), 3, 1)
+        options_layout.addWidget(QLabel('Y:'), 4, 0)
+
+        # X axis drop down menu
+        self.xaxis_dropdown = QComboBox(self)
+        self.xaxis_dropdown.addItem("seconds")
+        self.xaxis_dropdown.addItem("minutes")
+        self.xaxis_dropdown.addItem("hours")
+        self.xaxis_dropdown.addItem("days")
+        options_layout.addWidget(self.xaxis_dropdown, 3, 1)
+
+        # X axis titles
+        self.xaxis_name = QLineEdit(self) 
+        options_layout.addWidget(self.xaxis_name, 3, 2)
+        self.xaxis_unit = QLineEdit(self) 
+        options_layout.addWidget(self.xaxis_unit, 3, 3)
+
+        # Y axis drop down menu
+        self.yaxis_dropdown = QComboBox(self)
+        options_layout.addWidget(self.yaxis_dropdown, 4, 1)
+
+        # Y axis titles
+        self.yaxis_name = QLineEdit(self) 
+        options_layout.addWidget(self.yaxis_name, 4, 2)
+        self.yaxis_unit = QLineEdit(self) 
+        options_layout.addWidget(self.yaxis_unit, 4, 3)
+
+        # Legend configuration options
+        options_layout.addWidget(QLabel('Legend configuration:'), 5, 0)
+
+        # Legend configuration options
+        options_layout.addWidget(QLabel('Ramping plots:'), 6, 0)
 
         # Add layouts to tabs via widgets
         plot_widget = QWidget()
@@ -96,8 +167,27 @@ class App(QMainWindow):
         self.show()
 
     def update_data_list(self):
-        for data in self.data.data_files:
+        self.data_list.clear()
+        self.yaxis_dropdown.clear()
+        for i, data in enumerate(self.data.data_files):
             self.data_list.addItem(data.name)
+            if i > 0:
+                continue
+            for sig in data.signals:
+                self.yaxis_dropdown.addItem(sig.name)
 
     def remove_item(self, index):
-        print(index.row())
+        for i, data in enumerate(self.data.data_files):
+            if i != index.row():
+                continue
+            self.data.delete_data(i)
+        self.update_data_list()
+
+    def update_config(self):
+        self.config.title = self.figure_title.text()
+        self.config.xvar = self.xaxis_dropdown.currentText()
+        self.config.xname = self.xaxis_name.text()
+        self.config.xunit = self.xaxis_unit.text()
+        self.config.yvar = self.yaxis_dropdown.currentText()
+        self.config.yname = self.yaxis_name.text()
+        self.config.yunit = self.yaxis_unit.text()

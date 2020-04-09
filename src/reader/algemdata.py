@@ -92,6 +92,9 @@ class AlgemData():
         def append(self, dat):
             self.data = np.append(self.data, dat)
 
+        def title(self):
+            return self.name + " [" + self.unit + "]"
+
     class Signal():
 
         def __init__(self):
@@ -112,3 +115,6 @@ class AlgemData():
 
         def append(self, dat):
             self.data = np.append(self.data, dat)
+
+        def title(self):
+            return self.name + " [" + self.unit + "]"

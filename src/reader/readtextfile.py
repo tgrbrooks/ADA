@@ -5,7 +5,7 @@ from reader.algemdata import AlgemData
 import os
 
 def read_text_file(file_name):
-    with open(file_name, 'r', errors='replace') as f:
+    with open(file_name, 'r', errors='ignore') as f:
         lines = f.readlines()
         algem_data = AlgemData(file_name, lines)
         return algem_data
