@@ -1,0 +1,42 @@
+[Header]
+Version="5.3"
+Program="Algem"
+Mode="Logged"
+Date="2019/07/22"
+Time="17:34:49"
+Setup="C:\ProgramData\Algenuity\Algem 1.4\Profiles\Lydia\blue light\blue_1100.algp"
+Title="blue light"
+Sensors=3
+Sensors0="Channel=0-3,Sensor=Light,BWlower=0,BWupper=1,Name=Light"
+Sensors1="Channel=4-6,Sensor=Temp,BWlower=0,BWupper=1,Name=Temp"
+Sensors2="Channel=7,Sensor=pH,BWlower=0,BWupper=1,Name=pH"
+Controls=0
+Stats="Serial=14486B,ReactorName=14486B,Curve=C:\ProgramData\Algenuity\Algem 1.4\StandardCurves\Spirulina C1 no.2.csv"
+Axes=4
+Axes0="Name=Time (s),Min=0,Max=86400,Major=10800,Minor=3600,Format=Time,Precision=0,Map=Lin"
+Axes1="Name=Light (umol/s/m2),Min=0,Max=2000,Major=500,Minor=100,Format=Dec,Precision=0,Map=Lin"
+Axes2="Name=Temp (°C),Min=0,Max=50,Major=10,Minor=2,Format=Dec,Precision=0,Map=Lin"
+Axes3="Name=pH (pH),Min=0,Max=14,Major=1,Minor=0.4,Format=Dec,Precision=2,Map=Lin"
+Markers=0
+Cursors=0
+Horiz="Name=Time,Unit=s,Map=Lin,Start=0,Step=0,Points=0"
+Signals=8
+Signals0="Name=Red,Unit=umol/s/m2,Range=5000,Display=1,Position=0,Axis=1"
+Signals1="Name=Blue,Unit=umol/s/m2,Range=5000,Display=1,Position=0,Axis=1"
+Signals2="Name=White,Unit=umol/s/m2,Range=5000,Display=1,Position=0,Axis=1"
+Signals3="Name=Total,Unit=umol/s/m2,Range=5000,Display=1,Position=0,Axis=1"
+Signals4="Name=Tprof,Unit=°C,Range=50,Display=1,Position=0,Axis=2"
+Signals5="Name=Tmeas,Unit=°C,Range=50,Display=1,Position=0,Axis=2"
+Signals6="Name=Tcool,Unit=°C,Range=50,Display=1,Position=0,Axis=2"
+Signals7="Name=pH,Unit=pH,Range=10,Display=1,Position=0,Axis=3"
+[Data]
+10	0	1100	0	1100	30	24.62	22.122	0.353
+20	0	1100	0	1100	30	24.68	22.107	0.016
+30	0	1100	0	1100	30	24.778	22.124	0
+40	0	1100	0	1100	30	24.788	22.118	0
+50	0	1100	0	1100	30	24.908	22.126	0
+60	0	1100	0	1100	30	25.009	22.123	0
+70	0	1100	0	1100	30	25.116	22.115	0
+80	0	1100	0	1100	30	25.238	22.117	0
+90	0	1100	0	1100	30	25.38	22.118	0
+[End]
