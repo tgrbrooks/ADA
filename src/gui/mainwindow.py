@@ -5,7 +5,7 @@ from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 
 # pyqt imports
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
 from PyQt5.QtGui import QPalette, QColor
 
 class Color(QWidget):
@@ -101,10 +101,10 @@ class App(QMainWindow):
         plot_layout.addWidget(measure_button, 6, 2)
 
         # Toggle legend
-        legend_button = QPushButton('Legend', self)
-        legend_button.setToolTip('Toggle legend on/off')
-        legend_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
-        plot_layout.addWidget(legend_button, 6, 3)
+        empty_button = QPushButton('Empty', self)
+        empty_button.setToolTip('Free button')
+        empty_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(empty_button, 6, 3)
 
         # Plotting options window
         options_layout = QGridLayout()
@@ -149,11 +149,19 @@ class App(QMainWindow):
         self.yaxis_unit = QLineEdit(self) 
         options_layout.addWidget(self.yaxis_unit, 4, 3)
 
-        # Legend configuration options
-        options_layout.addWidget(QLabel('Legend configuration:'), 5, 0)
+        # Data configuration options
+        options_layout.addWidget(QLabel('Data configuration:'), 5, 0)
+
+        options_layout.addWidget(QLabel('Smooth data:'), 6, 0)
+        self.smooth_data = QCheckBox(self)
+        options_layout.addWidget(self.smooth_data, 6, 1)
 
         # Legend configuration options
-        options_layout.addWidget(QLabel('Ramping plots:'), 6, 0)
+        options_layout.addWidget(QLabel('Legend configuration:'), 7, 0)
+
+        options_layout.addWidget(QLabel('Legend on:'), 8, 0)
+        self.legend_toggle = QCheckBox(self)
+        options_layout.addWidget(self.legend_toggle, 8, 1)
 
         # Add layouts to tabs via widgets
         plot_widget = QWidget()
@@ -191,3 +199,5 @@ class App(QMainWindow):
         self.config.yvar = self.yaxis_dropdown.currentText()
         self.config.yname = self.yaxis_name.text()
         self.config.yunit = self.yaxis_unit.text()
+        self.config.smooth = self.smooth_data.isChecked()
+        self.config.legend = self.legend_toggle.isChecked()

@@ -8,3 +8,5 @@ class Configuration():
         self.yvar = ''
         self.yname = ''
         self.yunit = ''
+        self.smooth = False
+        self.legend = False

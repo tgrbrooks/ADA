@@ -6,6 +6,7 @@ class AlgemData():
     def __init__(self, file_name, lines):
         self.lines = lines
         self.name = file_name
+        self.label = (file_name.split('/')[-1]).split('.')[0]
         self.date = date(1994, 3, 16)
         self.time = time(0, 0, 0)
         self.title = ''
