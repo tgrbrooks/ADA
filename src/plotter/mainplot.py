@@ -44,6 +44,10 @@ class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        self.condition_axes = self.axes.twinx()
+        self.condition_axes.set_axis_off()
+        self.axes.set_zorder(self.condition_axes.get_zorder()+1) 
+        self.axes.patch.set_visible(False)
 
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
@@ -53,11 +57,16 @@ class PlotCanvas(FigureCanvas):
                 QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         empty_data = DataHolder()
+        empty_condition = DataHolder()
         empty_config = Configuration()
-        self.plot(empty_data, empty_config)
+        self.plot(empty_data, empty_condition, empty_config)
 
-    def plot(self, data, config):
+    def plot(self, data, condition_data, config):
         self.axes.cla()
+        self.condition_axes.cla()
+        self.condition_axes.set_axis_off()
+        self.axes.patch.set_visible(False)
+        self.axes.spines['right'].set_visible(True)
         if(data.empty):
             self.axes.set_title('Empty plot')
             self.draw()
@@ -69,23 +78,7 @@ class PlotCanvas(FigureCanvas):
         ydata_list = []
         for i, data in enumerate(data.data_files):
             # Convert the units of time if needed
-            xdata = data.xaxis.data
-            x_title = data.xaxis.title()
-            if(config.xname != ''):
-                x_title = x_title.replace(data.xaxis.name, config.xname)
-            x_unit = data.xaxis.unit
-            if(config.xvar == 'minutes'):
-                xdata = xdata / 60.
-                x_unit = 'min'
-            if(config.xvar == 'hours'):
-                xdata = xdata / (60.*60.)
-                x_unit = 'hr'
-            if(config.xvar == 'days'):
-                xdata = xdata / (60.*60.*24.)
-                x_unit = 'day'
-            if(config.xunit != ''):
-                x_unit = config.xunit
-            x_title = x_title.replace("["+data.xaxis.unit+"]", "["+x_unit+"]")
+            xdata, x_title = self.convert_xdata(data.xaxis, config)
 
             # Get the y axis data for plotting
             ydata = data.signals[0].data
@@ -110,6 +103,9 @@ class PlotCanvas(FigureCanvas):
         if(config.legend):
             self.axes.legend()
 
+        # Switch grid on/off
+        self.axes.grid(config.grid)
+
         # Configure axis labels
         self.axes.set_title('')
         if( config.title != ''):
@@ -125,9 +121,49 @@ class PlotCanvas(FigureCanvas):
                 self.cursor.onmove(event)
             self.mpl_connect('button_press_event', onclick)
 
+        # Plot the condition data on a separate axis if it exists
+        if not condition_data.empty:
+            self.condition_axes.set_axis_on()
+            self.condition_axes.spines['right'].set_color('red')
+            self.axes.spines['right'].set_visible(False)
+            self.condition_axes.tick_params(axis='y', colors='red')
+            self.condition_axes.yaxis.label.set_color('red')
+            cdata = condition_data.data_files[0]
+            condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
+            condition_ydata = cdata.signals[0].data
+            for sig in cdata.signals:
+                if sig.name == config.condition_yvar:
+                    condition_ydata = sig.data
+                    condition_y_title = sig.title()
+                    if(config.condition_yname != ''):
+                        condition_y_title = condition_y_title.replace(sig.name, config.condition_yname)
+                    if(config.condition_yunit != ''):
+                        condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
+            self.condition_axes.set_ylabel(condition_y_title)
+            self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0])
+
         # Show the plot
         self.draw()
 
+    def convert_xdata(self, xaxisdata, config):
+        xdata = xaxisdata.data
+        x_title = xaxisdata.title()
+        if(config.xname != ''):
+            x_title = x_title.replace(xaxisdata.name, config.xname)
+        x_unit = xaxisdata.unit
+        if(config.xvar == 'minutes'):
+            xdata = xdata / 60.
+            x_unit = 'min'
+        if(config.xvar == 'hours'):
+            xdata = xdata / (60.*60.)
+            x_unit = 'hr'
+        if(config.xvar == 'days'):
+            xdata = xdata / (60.*60.*24.)
+            x_unit = 'day'
+        if(config.xunit != ''):
+            x_unit = config.xunit
+        x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
+        return xdata, x_title
 
     def save(self, config):
         if(config.file_name == ''):
