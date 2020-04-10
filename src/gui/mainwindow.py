@@ -4,6 +4,9 @@ from plotter.mainplot import PlotCanvas
 from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 
+# Standard imports
+import csv
+
 # pyqt imports
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
 from PyQt5.QtGui import QPalette, QColor
@@ -91,7 +94,8 @@ class App(QMainWindow):
 
         # Export options
         export_button = QPushButton('Export', self)
-        export_button.setToolTip('Export the data to xlxs')
+        export_button.clicked.connect(self.export_to_csv)
+        export_button.setToolTip('Export the data to csv file')
         export_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(export_button, 6, 1)
 
@@ -209,6 +213,21 @@ class App(QMainWindow):
 
     def toggle_cursor(self):
         self.config.cursor = not self.config.cursor
+
+    def export_to_csv(self):
+        for data in self.data.data_files:
+            filename = data.name.replace('.txt', '.csv')
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                header = [data.xaxis.name]
+                for sig in data.signals:
+                    header.append(sig.name)
+                writer.writerow(header)
+                for i, xdat in enumerate(data.xaxis.data):
+                    row = [xdat]
+                    for sig in data.signals:
+                        row.append(sig.data[i])
+                    writer.writerow(row)
 
     def update_config(self):
         self.config.file_name = self.file_name.text()
