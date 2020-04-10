@@ -1,6 +1,7 @@
 # Local imports
 from reader.dataholder import DataHolder
 from gui.configuration import Configuration
+from plotter.cursor import Cursor, SnapToCursor
 
 # Standard imports
 import random
@@ -60,57 +61,79 @@ class PlotCanvas(FigureCanvas):
         if(data.empty):
             self.axes.set_title('Empty plot')
             self.draw()
-        else:
-            x_title = ''
-            y_title = ''
-            for data in data.data_files:
-                # Convert the units of time if needed
-                xdata = data.xaxis.data
-                x_title = data.xaxis.title()
-                if(config.xname != ''):
-                    x_title = x_title.replace(data.xaxis.name, config.xname)
-                x_unit = data.xaxis.unit
-                if(config.xvar == 'minutes'):
-                    xdata = xdata / 60.
-                    x_unit = 'min'
-                if(config.xvar == 'hours'):
-                    xdata = xdata / (60.*60.)
-                    x_unit = 'hr'
-                if(config.xvar == 'days'):
-                    xdata = xdata / (60.*60.*24.)
-                    x_unit = 'day'
-                if(config.xunit != ''):
-                    x_unit = config.xunit
-                x_title = x_title.replace("["+data.xaxis.unit+"]", "["+x_unit+"]")
+            return
+         
+        x_title = ''
+        y_title = ''
+        xdata_list = []
+        ydata_list = []
+        for i, data in enumerate(data.data_files):
+            # Convert the units of time if needed
+            xdata = data.xaxis.data
+            x_title = data.xaxis.title()
+            if(config.xname != ''):
+                x_title = x_title.replace(data.xaxis.name, config.xname)
+            x_unit = data.xaxis.unit
+            if(config.xvar == 'minutes'):
+                xdata = xdata / 60.
+                x_unit = 'min'
+            if(config.xvar == 'hours'):
+                xdata = xdata / (60.*60.)
+                x_unit = 'hr'
+            if(config.xvar == 'days'):
+                xdata = xdata / (60.*60.*24.)
+                x_unit = 'day'
+            if(config.xunit != ''):
+                x_unit = config.xunit
+            x_title = x_title.replace("["+data.xaxis.unit+"]", "["+x_unit+"]")
 
-                # Get the y axis data for plotting
-                ydata = data.signals[0].data
-                for sig in data.signals:
-                    if sig.name == config.yvar:
-                        ydata = sig.data
-                        y_title = sig.title()
-                        if(config.yname != ''):
-                            y_title = y_title.replace(sig.name, config.yname)
-                        if(config.yunit != ''):
-                            y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
+            # Get the y axis data for plotting
+            ydata = data.signals[0].data
+            for sig in data.signals:
+                if sig.name == config.yvar:
+                    ydata = sig.data
+                    y_title = sig.title()
+                    if(config.yname != ''):
+                        y_title = y_title.replace(sig.name, config.yname)
+                    if(config.yunit != ''):
+                        y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
 
-                # Plot the data
-                if(config.smooth):
-                    ydata = savitzky_golay(ydata, 61, 0)
-                self.axes.plot(xdata, ydata, '-', label=data.label)
+            # Plot the data
+            if(config.smooth):
+                ydata = savitzky_golay(ydata, 61, 0)
+            self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+
+            xdata_list.append(xdata)
+            ydata_list.append(ydata)
  
-            if(config.legend):
-                self.axes.legend()
+        # Switch legend on/off
+        if(config.legend):
+            self.axes.legend()
 
-            # Configure axis labels
-            self.axes.set_title('')
-            if( config.title != ''):
-                self.axes.set_title(config.title)
-            self.axes.set_xlabel(x_title)
-            self.axes.set_ylabel(y_title)
-            self.draw()
+        # Configure axis labels
+        self.axes.set_title('')
+        if( config.title != ''):
+            self.axes.set_title(config.title)
+        self.axes.set_xlabel(x_title)
+        self.axes.set_ylabel(y_title)
+
+        # Configure the measurement cursor
+        if(config.cursor):
+            self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list, useblit=False, color='red', linewidth=1)
+
+            def onclick(event):
+                self.cursor.onmove(event)
+            self.mpl_connect('button_press_event', onclick)
+
+        # Show the plot
+        self.draw()
 
 
-    def save(self):
-       self.fig.savefig('graph.png')
+    def save(self, config):
+        if(config.file_name == ''):
+            self.fig.savefig('graph.png')
+        elif(config.file_name.find('.') == -1):
+            self.fig.savefig(config.file_name + '.png')
+        else:
+            self.fig.savefig(config.file_name)
 

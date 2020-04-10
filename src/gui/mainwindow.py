@@ -83,7 +83,8 @@ class App(QMainWindow):
 
         # Saving options
         save_button = QPushButton('Save', self)
-        save_button.clicked.connect(plot.save)
+        plot_button.clicked.connect(self.update_config)
+        save_button.clicked.connect(lambda: plot.save(self.config))
         save_button.setToolTip('Save the figure')
         save_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(save_button, 6, 0)
@@ -96,6 +97,8 @@ class App(QMainWindow):
 
         # Measure gradient
         measure_button = QPushButton('Measure', self)
+        measure_button.clicked.connect(self.toggle_cursor)
+        measure_button.clicked.connect(lambda: plot.plot(self.data, self.config))
         measure_button.setToolTip('Measure the growth rate')
         measure_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(measure_button, 6, 2)
@@ -111,10 +114,15 @@ class App(QMainWindow):
         options_layout.setContentsMargins(0,0,0,0)
         options_layout.setSpacing(20)
 
+        # File name
+        options_layout.addWidget(QLabel('File name:'), 0, 0)
+        self.file_name = QLineEdit(self) 
+        options_layout.addWidget(self.file_name, 0, 1)
+
         # Figure title
-        options_layout.addWidget(QLabel('Figure title:'), 0, 0)
+        options_layout.addWidget(QLabel('Figure title:'), 0, 2)
         self.figure_title = QLineEdit(self) 
-        options_layout.addWidget(self.figure_title, 0, 1)
+        options_layout.addWidget(self.figure_title, 0, 3)
 
         # Axis configuration
         options_layout.addWidget(QLabel('Axis configuration:'), 1, 0)
@@ -163,6 +171,12 @@ class App(QMainWindow):
         self.legend_toggle = QCheckBox(self)
         options_layout.addWidget(self.legend_toggle, 8, 1)
 
+        options_layout.addWidget(QLabel('Legend titles:'), 8, 2)
+        self.legend_names = QComboBox(self)
+        self.legend_names.setEditable(True)
+        self.legend_names.setInsertPolicy(2)
+        options_layout.addWidget(self.legend_names, 8, 3)
+
         # Add layouts to tabs via widgets
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -177,8 +191,10 @@ class App(QMainWindow):
     def update_data_list(self):
         self.data_list.clear()
         self.yaxis_dropdown.clear()
+        self.legend_names.clear()
         for i, data in enumerate(self.data.data_files):
             self.data_list.addItem(data.name)
+            self.legend_names.addItem(data.label)
             if i > 0:
                 continue
             for sig in data.signals:
@@ -191,7 +207,11 @@ class App(QMainWindow):
             self.data.delete_data(i)
         self.update_data_list()
 
+    def toggle_cursor(self):
+        self.config.cursor = not self.config.cursor
+
     def update_config(self):
+        self.config.file_name = self.file_name.text()
         self.config.title = self.figure_title.text()
         self.config.xvar = self.xaxis_dropdown.currentText()
         self.config.xname = self.xaxis_name.text()
@@ -201,3 +221,6 @@ class App(QMainWindow):
         self.config.yunit = self.yaxis_unit.text()
         self.config.smooth = self.smooth_data.isChecked()
         self.config.legend = self.legend_toggle.isChecked()
+        self.config.label_names.clear()
+        for i in range(self.legend_names.count()):
+            self.config.label_names.append(self.legend_names.itemText(i))

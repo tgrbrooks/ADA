@@ -1,6 +1,7 @@
 class Configuration():
 
     def __init__(self):
+        self.file_name = ''
         self.title = ''
         self.xvar = ''
         self.xname = ''
@@ -10,3 +11,5 @@ class Configuration():
         self.yunit = ''
         self.smooth = False
         self.legend = False
+        self.label_names = []
+        self.cursor = False
