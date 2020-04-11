@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import matplotlib.style
+import matplotlib as mpl
 
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     
@@ -42,6 +44,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
+
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         self.condition_axes = self.axes.twinx()
@@ -62,11 +65,43 @@ class PlotCanvas(FigureCanvas):
         self.plot(empty_data, empty_condition, empty_config)
 
     def plot(self, data, condition_data, config):
-        self.axes.cla()
-        self.condition_axes.cla()
+
+        # Style configuration
+        if(config.style != ''):
+            if(config.style == 'default'):
+                mpl.style.use('default')
+            if(config.style == 'greyscale'):
+                mpl.style.use('grayscale')
+            if(config.style == 'colour blind'):
+                mpl.style.use('seaborn-colorblind')
+            if(config.style == 'pastel'):
+                mpl.style.use('seaborn-pastel')
+            if(config.style == 'deep'):
+                mpl.style.use('seaborn-colorblind')
+        if(config.font_style != ''):
+            mpl.rcParams['font.family'] = config.font_style
+        if(config.font_size >= 0):
+            mpl.rcParams['font.size'] = config.font_size
+        if(config.line_width >= 0):
+            mpl.rcParams['lines.linewidth'] = config.line_width
+
+        # Clear axes and set default visibility
+        self.axes.clear()
+        self.condition_axes.clear()
         self.condition_axes.set_axis_off()
         self.axes.patch.set_visible(False)
         self.axes.spines['right'].set_visible(True)
+
+        # More style settings
+        if(config.font_style != ''):
+            self.axes.xaxis.label.set_family(config.font_style)
+            self.axes.yaxis.label.set_family(config.font_style)
+            self.condition_axes.yaxis.label.set_family(config.font_style)
+        if(config.font_size >= 0):
+            self.axes.xaxis.label.set_size(config.font_size)
+            self.axes.yaxis.label.set_size(config.font_size)
+            self.condition_axes.yaxis.label.set_size(config.font_size)
+
         if(data.empty):
             self.axes.set_title('Empty plot')
             self.draw()
@@ -79,6 +114,10 @@ class PlotCanvas(FigureCanvas):
         for i, data in enumerate(data.data_files):
             # Convert the units of time if needed
             xdata, x_title = self.convert_xdata(data.xaxis, config)
+
+            # Align at time 0 if option selected
+            if config.align:
+                xdata - xdata[0]
 
             # Get the y axis data for plotting
             ydata = data.signals[0].data
@@ -113,6 +152,22 @@ class PlotCanvas(FigureCanvas):
         self.axes.set_xlabel(x_title)
         self.axes.set_ylabel(y_title)
 
+        # Set the axis range
+        xmin = self.axes.get_xbound()[0]
+        if(config.xmin != -1):
+            xmin = config.xmin
+        xmax = self.axes.get_xbound()[1]
+        if(config.xmax != -1):
+            xmax = config.xmax
+        ymin = self.axes.get_ybound()[0]
+        if(config.ymin != -1):
+            ymin = config.ymin
+        ymax = self.axes.get_ybound()[1]
+        if(config.ymax != -1):
+            ymax = config.ymax
+        self.axes.set_xlim([xmin, xmax])
+        self.axes.set_ylim([ymin, ymax])
+
         # Configure the measurement cursor
         if(config.cursor):
             self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list, useblit=False, color='red', linewidth=1)
@@ -141,6 +196,16 @@ class PlotCanvas(FigureCanvas):
                         condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
             self.condition_axes.set_ylabel(condition_y_title)
             self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0])
+
+            # Configure the axis range
+            condition_ymin = self.condition_axes.get_ybound()[0]
+            if(config.condition_ymin != -1):
+                condition_ymin = config.condition_ymin
+            condition_ymax = self.condition_axes.get_ybound()[1]
+            if(config.condition_ymax != -1):
+                condition_ymax = config.condition_ymax
+            self.condition_axes.set_ylim([condition_ymin, condition_ymax])
+
 
         # Show the plot
         self.draw()

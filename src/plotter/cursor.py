@@ -102,10 +102,11 @@ class SnapToCursor(AxesWidget):
         self.x = x
         self.y = y
         # text location in axes coords
-        self.txt = ax.text(0.2, 0.9, '', transform=ax.transAxes)
-        self.gradtxt = ax.text(0.2, 0.8, '', transform=ax.transAxes)
+        self.txt = ax.text(0.25, 0.95, '', transform=ax.transAxes, bbox=dict(boxstyle="round",ec=(1., 0.5, 0.5),fc=(1., 0.8, 0.8)))
+        self.gradtxt = ax.text(0.25, 0.8, '', transform=ax.transAxes, bbox=dict(boxstyle="round",ec=(1., 0.5, 0.5),fc=(1., 0.8, 0.8)))
         self.positions = []
         self.lines = []
+
 
     def clear(self, event):
         """Internal event handler to clear the cursor."""
@@ -155,7 +156,7 @@ class SnapToCursor(AxesWidget):
         self.lineh.set_visible(self.visible and self.horizOn)
         self.marker.set_visible(self.visible)
 
-        self.txt.set_text('x=%1.2f, y=%1.2f' % (x, y))
+        self.txt.set_text('x: %1.2f | y: %1.2f' % (x, y))
 
         self._update()
 
@@ -196,7 +197,10 @@ class SnapToCursor(AxesWidget):
             gradient = (y_points[1] - y_points[0])/(x_points[1] - x_points[0])
             exponent = np.floor(np.log10(np.abs(gradient))).astype(int)
             gradient = gradient/(1.*10.**exponent)
-            self.gradtxt.set_text(r'gradient=%1.2f$\times10^{%i}$' % (gradient, exponent))
+            x_unit = (self.ax.xaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            y_unit = (self.ax.yaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            grad_unit = y_unit + "/" + x_unit
+            self.gradtxt.set_text(r'grad = %1.2f$\times10^{%i}$ %s' % (gradient, exponent, grad_unit))
         
         self.positions.append(position)
                 
