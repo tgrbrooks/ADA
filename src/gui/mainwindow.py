@@ -3,41 +3,15 @@ from gui.filehandler import open_files
 from plotter.mainplot import PlotCanvas
 from reader.dataholder import DataHolder
 from gui.configuration import Configuration
+from gui.errorwindow import ErrorWindow
+from gui.label import Label
+from gui.functions import isfloat
 
 # Standard imports
 import csv
 
 # pyqt imports
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
-from PyQt5.QtGui import QPalette, QColor
-
-def isfloat(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
-
-class Color(QWidget):
-
-    def __init__(self, color, *args, **kwargs):
-        super(Color, self).__init__(*args, **kwargs)
-        self.setAutoFillBackground(True)
-        
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(color))
-        self.setPalette(palette)
-
-class Label(QWidget):
-    def __init__(self, text, bold=False, *args, **kwargs):
-        super(Label, self).__init__(*args, **kwargs)
-        text = QLabel(text)
-        text.setStyleSheet('font-size: 12pt; font-family: Courier;')
-        if(bold):
-            text.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
-        layout = QVBoxLayout()
-        layout.addWidget(text)
-        self.setLayout(layout)
 
 class App(QMainWindow):
 
@@ -68,18 +42,22 @@ class App(QMainWindow):
         default_font = 'font-size: 14pt; font-family: Courier;'
         big_font = 'font-size: 28pt; font-family: Courier;'
 
+        #--------------------------------------------------------------------------------------
+        #                                   PLOTTING TAB
+        #--------------------------------------------------------------------------------------
+
         # Main plotting window
         plot_layout = QGridLayout()
         plot_layout.setContentsMargins(0,0,0,0)
         plot_layout.setSpacing(20)
 
         # Main plot window (row, column, row extent, column extent)
-        plot = PlotCanvas(self, width=10, height=4)
-        plot_layout.addWidget(plot, 0, 0, 6, 4)
+        self.plot = PlotCanvas(self, width=10, height=4)
+        plot_layout.addWidget(self.plot, 0, 0, 6, 4)
 
         # Add data button
         data_button = QPushButton('Add Data', self)
-        data_button.clicked.connect(lambda: open_files(self.data))
+        data_button.clicked.connect(self.open_data_files)
         data_button.clicked.connect(self.update_data_list)
         data_button.setToolTip('Import data for plotting')
         data_button.setStyleSheet(default_font)
@@ -88,7 +66,7 @@ class App(QMainWindow):
         # Configure list behaviour
         self.data_list.clicked.connect(self.remove_item)
 
-        # List of data
+        # List of data in a scrollable area
         list_scroll = QScrollArea(self)
         list_scroll.setWidgetResizable(True)
         scroll_content = QWidget(list_scroll)
@@ -101,7 +79,7 @@ class App(QMainWindow):
 
         # Add data button
         condition_data_button = QPushButton('Add Condition Data', self)
-        condition_data_button.clicked.connect(lambda: open_files(self.condition_data))
+        condition_data_button.clicked.connect(self.open_condition_files)
         condition_data_button.clicked.connect(self.update_condition_data_list)
         condition_data_button.setToolTip('Import condition data (temp, light, etc) for plotting')
         condition_data_button.setStyleSheet(default_font)
@@ -110,7 +88,7 @@ class App(QMainWindow):
         # Configure list behaviour
         self.condition_data_list.clicked.connect(self.remove_condition_item)
 
-        # List of data
+        # List of condition data
         condition_list_scroll = QScrollArea(self)
         condition_list_scroll.setWidgetResizable(True)
         condition_scroll_content = QWidget(condition_list_scroll)
@@ -124,7 +102,7 @@ class App(QMainWindow):
         # Plot button
         plot_button = QPushButton('Plot!', self)
         plot_button.clicked.connect(self.update_config)
-        plot_button.clicked.connect(lambda: plot.plot(self.data, self.condition_data, self.config))
+        plot_button.clicked.connect(self.update_plot)
         plot_button.setToolTip('Plot the data')
         plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_button.setStyleSheet(big_font)
@@ -133,7 +111,7 @@ class App(QMainWindow):
         # Saving options
         save_button = QPushButton('Save', self)
         plot_button.clicked.connect(self.update_config)
-        save_button.clicked.connect(lambda: plot.save(self.config))
+        save_button.clicked.connect(self.save_plot)
         save_button.setToolTip('Save the figure')
         save_button.setStyleSheet(default_font)
         plot_layout.addWidget(save_button, 6, 0)
@@ -148,7 +126,7 @@ class App(QMainWindow):
         # Measure gradient
         measure_button = QPushButton('Measure', self)
         measure_button.clicked.connect(self.toggle_cursor)
-        measure_button.clicked.connect(lambda: plot.plot(self.data, self.condition_data, self.config))
+        measure_button.clicked.connect(self.update_plot)
         measure_button.setToolTip('Measure the growth rate')
         measure_button.setStyleSheet(default_font)
         plot_layout.addWidget(measure_button, 6, 2)
@@ -156,10 +134,14 @@ class App(QMainWindow):
         # Toggle grid
         grid_button = QPushButton('Grid', self)
         grid_button.clicked.connect(self.toggle_grid)
-        grid_button.clicked.connect(lambda: plot.plot(self.data, self.condition_data, self.config))
+        grid_button.clicked.connect(self.update_plot)
         grid_button.setToolTip('Toggle grid on/off')
         grid_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(grid_button, 6, 3)
+
+        #--------------------------------------------------------------------------------------
+        #                                   OPTIONS TAB
+        #--------------------------------------------------------------------------------------
 
         # Plotting options window
         options_layout = QGridLayout()
@@ -167,14 +149,14 @@ class App(QMainWindow):
         options_layout.setSpacing(5)
 
         # File name
-        options_layout.addWidget(Label('File name:'), 0, 0)
+        options_layout.addWidget(Label('File name:', True), 0, 0)
         self.file_name = QLineEdit(self) 
         options_layout.addWidget(self.file_name, 0, 1, 1, 2)
 
         # Figure title
-        options_layout.addWidget(Label('Figure title:'), 0, 4)
+        options_layout.addWidget(Label('Figure title:', True), 0, 3)
         self.figure_title = QLineEdit(self) 
-        options_layout.addWidget(self.figure_title, 0, 5, 1, 2)
+        options_layout.addWidget(self.figure_title, 0, 4, 1, 2)
 
         # Axis configuration
         options_layout.addWidget(Label('Axis configuration:', True), 1, 0)
@@ -247,7 +229,7 @@ class App(QMainWindow):
         self.smooth_data = QCheckBox(self)
         options_layout.addWidget(self.smooth_data, 6, 1)
 
-        # Align all data with 0 button
+        # Align all data with 0 checkbox
         options_layout.addWidget(Label('Align at time = 0:'), 6, 2)
         self.align_data = QCheckBox(self)
         options_layout.addWidget(self.align_data, 6, 3)
@@ -255,10 +237,12 @@ class App(QMainWindow):
         # Legend configuration options
         options_layout.addWidget(Label('Legend configuration:', True), 7, 0)
 
+        # Legend on/off checkbox
         options_layout.addWidget(Label('Legend on:'), 8, 0)
         self.legend_toggle = QCheckBox(self)
         options_layout.addWidget(self.legend_toggle, 8, 1)
 
+        # Legend options dropdown menu (editable)
         options_layout.addWidget(Label('Legend titles:'), 8, 2)
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
@@ -275,6 +259,7 @@ class App(QMainWindow):
         # Style configuration
         options_layout.addWidget(Label('Style configuration:', True), 9, 0)
 
+        # Plot style dropdown menu
         options_layout.addWidget(Label('Style:'), 10, 0)
         self.style_dropdown = QComboBox(self)
         self.style_dropdown.addItem("default")
@@ -284,6 +269,7 @@ class App(QMainWindow):
         self.style_dropdown.addItem("deep")
         options_layout.addWidget(self.style_dropdown, 10, 1)
 
+        # Font style dropdown menu
         options_layout.addWidget(Label('Font style:'), 10, 2)
         self.font_dropdown = QComboBox(self)
         self.font_dropdown.addItem("sans-serif")
@@ -292,9 +278,13 @@ class App(QMainWindow):
         self.font_dropdown.addItem("fantasy")
         self.font_dropdown.addItem("monospace")
         options_layout.addWidget(self.font_dropdown, 10, 3)
+
+        # Font size textbox
         options_layout.addWidget(Label('Font size:'), 10, 4)
         self.font_size = QLineEdit(self) 
         options_layout.addWidget(self.font_size, 10, 5)
+
+        # Line width textbox
         options_layout.addWidget(Label('Line width:'), 11, 0)
         self.line_width = QLineEdit(self) 
         options_layout.addWidget(self.line_width, 11, 1)
@@ -310,6 +300,47 @@ class App(QMainWindow):
         self.setCentralWidget(tabs)
         self.show()
 
+    #--------------------------------------------------------------------------------------
+    #                                   MEMBER FUNCTIONS
+    #--------------------------------------------------------------------------------------
+
+    # Function: Open and read in data files
+    def open_data_files(self):
+        try:
+            open_files(self.data)
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
+
+    # Function: Open and read in condition data files
+    def open_condition_files(self):
+        try:
+            open_files(self.condition_data)
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
+
+    # Function: Update the main plot
+    def update_plot(self):
+        try:
+            self.plot.plot(self.data, self.condition_data, self.config)
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
+
+    # Function: Save the main plot
+    def save_plot(self):
+        try:
+            self.plot.save(self.config)
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            elf.error.show()
+
+    # Function: Update the list of data files and associated options
     def update_data_list(self):
         self.data_list.clear()
         self.yaxis_dropdown.clear()
@@ -322,6 +353,7 @@ class App(QMainWindow):
             for sig in data.signals:
                 self.yaxis_dropdown.addItem(sig.name)
 
+    # Function: Update the list of condition data and associated options
     def update_condition_data_list(self):
         self.condition_data_list.clear()
         self.condition_yaxis_dropdown.clear()
@@ -334,6 +366,7 @@ class App(QMainWindow):
             for sig in data.signals:
                 self.condition_yaxis_dropdown.addItem(sig.name)
 
+    # Function: Remove file from list of data
     def remove_item(self, index):
         for i, data in enumerate(self.data.data_files):
             if i != index.row():
@@ -341,6 +374,7 @@ class App(QMainWindow):
             self.data.delete_data(i)
         self.update_data_list()
 
+    # Function: Remove file from list of condition data
     def remove_condition_item(self, index):
         for i, data in enumerate(self.condition_data.data_files):
             if i != index.row():
@@ -348,27 +382,37 @@ class App(QMainWindow):
             self.condition_data.delete_data(i)
         self.update_condition_data_list()
 
+    # Function: Toggle cursor on and off
     def toggle_cursor(self):
         self.config.cursor = not self.config.cursor
 
+    # Function: Toggle grid on and off
     def toggle_grid(self):
         self.config.grid = not self.config.grid
 
+    # Function: Export data to csv format
     def export_to_csv(self):
         for data in self.data.data_files:
-            filename = data.name.replace('.txt', '.csv')
-            with open(filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                header = [data.xaxis.name]
-                for sig in data.signals:
-                    header.append(sig.name)
-                writer.writerow(header)
-                for i, xdat in enumerate(data.xaxis.data):
-                    row = [xdat]
+            try:
+                filename = data.name.replace('.txt', '.csv')
+                with open(filename, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    header = [data.xaxis.name]
                     for sig in data.signals:
-                        row.append(sig.data[i])
-                    writer.writerow(row)
+                        header.append(sig.name)
+                    writer.writerow(header)
+                    for i, xdat in enumerate(data.xaxis.data):
+                        row = [xdat]
+                        for sig in data.signals:
+                            row.append(sig.data[i])
+                        writer.writerow(row)
+            except:
+                e = str('Could not convert file %s to csv' % (data.name))
+                print('Error: ' + e)
+                self.error = ErrorWindow(e, self)
+                self.error.show()
 
+    # Function: Update the global configuration
     def update_config(self):
         self.config.file_name = self.file_name.text()
         self.config.title = self.figure_title.text()

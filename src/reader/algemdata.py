@@ -1,6 +1,7 @@
 from datetime import datetime, date, time
 import numpy as np
 
+# Class to store algem data
 class AlgemData():
 
     def __init__(self, file_name, lines):
@@ -15,6 +16,7 @@ class AlgemData():
         self.process_header()
         self.read_data()
 
+    # Function: Read the header and extract useful information
     def process_header(self):
 
         begin_read = False
@@ -48,12 +50,20 @@ class AlgemData():
                 info = (line.split('"')[1]).split(',')
                 self.signals.append(self.Signal(info))
 
+        # Some error checking
+        if(self.xaxis.name == ''):
+            raise RuntimeError('Issue processing header:\nCould not find time (Horiz) data')
+
+        if(len(self.signals) == 0):
+            raise RuntimeError('Issue processing header:\nCould not find sensor data')
+
+    # Function: Read the data and store it in a useful way
     def read_data(self):
 
         begin_read = False
         end_read = False
 
-        for line in self.lines:
+        for line_i, line in enumerate(self.lines):
             
             # Check we're in the data section
             if line.find('[Data]') != -1:
@@ -71,11 +81,24 @@ class AlgemData():
             if len(data_str) != 1+len(self.signals):
                 continue
             for i, dat in enumerate(data_str):
+                try:
+                    float(dat)
+                except:
+                    raise RuntimeError('Issue processing data:\nCould not convert %s on line %i to a number' % (dat, line_i))
                 if i == 0:
                     self.xaxis.append(float(dat))
                     continue
                 self.signals[i-1].append(float(dat))
 
+        # Check data has been read in
+        if(self.xaxis.data.size == 0):
+            raise RuntimeError('Issue processing data:\nDid not read in any data')
+        for sig in self.signals:
+            if(sig.data.size != self.xaxis.data.size):
+                raise RuntimeError('Issue processing data:\nDifferent number of %s entries' % (sig.name))
+
+
+    # Class: Store x axis data (time)
     class XAxis():
 
         def __init__(self):
@@ -96,6 +119,7 @@ class AlgemData():
         def title(self):
             return self.name + " [" + self.unit + "]"
 
+    # Class: Store generic sensor data
     class Signal():
 
         def __init__(self):

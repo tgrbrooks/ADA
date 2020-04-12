@@ -6,6 +6,7 @@ from reader.dataholder import DataHolder
 # pyqt imports
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
+# Class to handle the file browser
 class FileHandlerGui(QWidget):
 
     def __init__(self, mode, data):
@@ -37,6 +38,8 @@ class FileHandlerGui(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getOpenFileName(self,"Open File", "","All Files (*);;Text Files (*.txt)", options=options)
         if file_name:
+            if not file_name.endswith('.txt'):
+                raise RuntimeError('%s is not a text file' % (file_name))
             algem_data = read_text_file(file_name)
             self.data.add_data(algem_data)
     
@@ -46,6 +49,8 @@ class FileHandlerGui(QWidget):
         files, _ = QFileDialog.getOpenFileNames(self,"Open File(s)", "","All Files (*);;Text Files (*.txt)", options=options)
         if files:
             for file_name in files:
+                if not file_name.endswith('.txt'):
+                    raise RuntimeError('%s is not a text file' % (file_name))
                 algem_data = read_text_file(file_name)
                 self.data.add_data(algem_data)
     
