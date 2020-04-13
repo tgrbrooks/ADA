@@ -65,13 +65,16 @@ There are two tabs, a plotting tab and an options tab
 ### Growth curve data
 
 Algal growth curve data can be imported using the `Add Data` button, this will open a file browser to allow you to select the data.
+
 Currently only text files from the Algem photobioreactor are supported, contact me if you need other file types added.
 The selected files will be displayed in the box below, files can be remove by clicking their names.
+
 The files will be plotted in the order that they are loaded.
 
 ### Growth condition data
 
 It is possible to display growth condition data (temperature, pH, light, etc) on the right hand y axis.
+
 Data is loaded and removed in the same way as the growth curve data.
 
 ### Quick access functions
@@ -88,6 +91,7 @@ Data is loaded and removed in the same way as the growth curve data.
 ### Axis configuration
 
 Choose the plotting variable, axis label and axis range for the x (time), y (usually some measure of growth/algae density) and y2 (growth conditions).
+
 Leaving text boxes blank will use the variable and unit names from the data files.
 
 ### Data configuration
@@ -98,6 +102,7 @@ Leaving text boxes blank will use the variable and unit names from the data file
 ### Legend configuration
 
 Toggle the legend on and off.
+
 The default legend titles are taken from the file names, they can be modified by selecting them in the drop-down menu, changing the text, and pressing return.
 
 ### Style configuration
@@ -105,5 +110,7 @@ The default legend titles are taken from the file names, they can be modified by
 The default matplotlib plotting [style](https://matplotlib.org/3.1.1/gallery/style_sheets/style_sheets_reference.html), font family, font size and line width can be modified.
 
 [1] A. Savitzky, M. J. E. Golay, Smoothing and Differentiation of Data by Simplified Least Squares Procedures. Analytical Chemistry, 1964, 36 (8), pp 1627-1639.
+
 [2] Numerical Recipes 3rd Edition: The Art of Scientific Computing W.H. Press, S.A. Teukolsky, W.T. Vetterling, B.P. Flannery Cambridge University Press ISBN-13: 9780521880688
+
 [3] SciPy Cookbook (http://scipy.github.io/old-wiki/pages/Cookbook/SavitzkyGolay)
