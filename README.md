@@ -6,7 +6,7 @@ An interactive PyQt5 based plotting package for algae growth curves.
 
 ## Just the application
 
-Installers for MacOS are available on [DropBox](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0).
+Installers for MacOS are available on [Dropbox](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0).
 
 Other operating systems can be supported upon request.
 
