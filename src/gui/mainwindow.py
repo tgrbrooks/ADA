@@ -6,6 +6,7 @@ from gui.configuration import Configuration
 from gui.errorwindow import ErrorWindow
 from gui.label import Label
 from gui.functions import isfloat
+from gui.collapsiblebox import CollapsibleBox
 
 # Standard imports
 import csv
@@ -148,6 +149,9 @@ class App(QMainWindow):
         options_layout.setContentsMargins(5,5,5,5)
         options_layout.setSpacing(5)
 
+        options_scroll = QScrollArea(self)
+        options_scroll.setWidgetResizable(True)
+
         # File name
         options_layout.addWidget(Label('File name:', True), 0, 0)
         self.file_name = QLineEdit(self) 
@@ -158,16 +162,20 @@ class App(QMainWindow):
         self.figure_title = QLineEdit(self) 
         options_layout.addWidget(self.figure_title, 0, 4, 1, 2)
 
+        # --------------- AXIS CONFIGURATION
+
         # Axis configuration
-        options_layout.addWidget(Label('Axis configuration:', True), 1, 0)
-        options_layout.addWidget(Label('Variable'), 1, 1)
-        options_layout.addWidget(Label('Label name'), 1, 2)
-        options_layout.addWidget(Label('Unit name'), 1, 3)
-        options_layout.addWidget(Label('Range min'), 1, 4)
-        options_layout.addWidget(Label('Range max'), 1, 5)
-        options_layout.addWidget(Label('X:'), 2, 0)
-        options_layout.addWidget(Label('Y:'), 3, 0)
-        options_layout.addWidget(Label('Y2 (conditions):'), 4, 0)
+        axis_box = CollapsibleBox('Axis configuration:')
+        options_layout.addWidget(axis_box, 1, 0, 1, 6)
+        axis_box_layout = QGridLayout()
+        axis_box_layout.addWidget(Label('Variable'), 0, 1)
+        axis_box_layout.addWidget(Label('Label name'), 0, 2)
+        axis_box_layout.addWidget(Label('Unit name'), 0, 3)
+        axis_box_layout.addWidget(Label('Range min'), 0, 4)
+        axis_box_layout.addWidget(Label('Range max'), 0, 5)
+        axis_box_layout.addWidget(Label('X:'), 1, 0)
+        axis_box_layout.addWidget(Label('Y:'), 2, 0)
+        axis_box_layout.addWidget(Label('Y2 (conditions):'), 3, 0)
 
         # X axis drop down menu
         self.xaxis_dropdown = QComboBox(self)
@@ -175,119 +183,139 @@ class App(QMainWindow):
         self.xaxis_dropdown.addItem("minutes")
         self.xaxis_dropdown.addItem("hours")
         self.xaxis_dropdown.addItem("days")
-        options_layout.addWidget(self.xaxis_dropdown, 2, 1)
+        axis_box_layout.addWidget(self.xaxis_dropdown, 1, 1)
 
         # X axis titles
         self.xaxis_name = QLineEdit(self) 
-        options_layout.addWidget(self.xaxis_name, 2, 2)
+        axis_box_layout.addWidget(self.xaxis_name, 1, 2)
         self.xaxis_unit = QLineEdit(self) 
-        options_layout.addWidget(self.xaxis_unit, 2, 3)
+        axis_box_layout.addWidget(self.xaxis_unit, 1, 3)
 
         # X axis range
         self.xaxis_min = QLineEdit(self) 
-        options_layout.addWidget(self.xaxis_min, 2, 4)
+        axis_box_layout.addWidget(self.xaxis_min, 1, 4)
         self.xaxis_max = QLineEdit(self) 
-        options_layout.addWidget(self.xaxis_max, 2, 5)
+        axis_box_layout.addWidget(self.xaxis_max, 1, 5)
 
         # Y axis drop down menu
         self.yaxis_dropdown = QComboBox(self)
-        options_layout.addWidget(self.yaxis_dropdown, 3, 1)
+        axis_box_layout.addWidget(self.yaxis_dropdown, 2, 1)
 
         # Y axis titles
         self.yaxis_name = QLineEdit(self) 
-        options_layout.addWidget(self.yaxis_name, 3, 2)
+        axis_box_layout.addWidget(self.yaxis_name, 2, 2)
         self.yaxis_unit = QLineEdit(self) 
-        options_layout.addWidget(self.yaxis_unit, 3, 3)
+        axis_box_layout.addWidget(self.yaxis_unit, 2, 3)
 
         # Y axis range
         self.yaxis_min = QLineEdit(self) 
-        options_layout.addWidget(self.yaxis_min, 3, 4)
+        axis_box_layout.addWidget(self.yaxis_min, 2, 4)
         self.yaxis_max = QLineEdit(self) 
-        options_layout.addWidget(self.yaxis_max, 3, 5)
+        axis_box_layout.addWidget(self.yaxis_max, 2, 5)
 
         # Condition Y axis drop down menu
         self.condition_yaxis_dropdown = QComboBox(self)
-        options_layout.addWidget(self.condition_yaxis_dropdown, 4, 1)
+        axis_box_layout.addWidget(self.condition_yaxis_dropdown, 3, 1)
 
         # Condition Y axis titles
         self.condition_yaxis_name = QLineEdit(self) 
-        options_layout.addWidget(self.condition_yaxis_name, 4, 2)
+        axis_box_layout.addWidget(self.condition_yaxis_name, 3, 2)
         self.condition_yaxis_unit = QLineEdit(self) 
-        options_layout.addWidget(self.condition_yaxis_unit, 4, 3)
+        axis_box_layout.addWidget(self.condition_yaxis_unit, 3, 3)
 
         # Condition Y axis range
         self.condition_yaxis_min = QLineEdit(self) 
-        options_layout.addWidget(self.condition_yaxis_min, 4, 4)
+        axis_box_layout.addWidget(self.condition_yaxis_min, 3, 4)
         self.condition_yaxis_max = QLineEdit(self) 
-        options_layout.addWidget(self.condition_yaxis_max, 4, 5)
+        axis_box_layout.addWidget(self.condition_yaxis_max, 3, 5)
+
+        axis_box.setContentLayout(axis_box_layout)
+
+        # --------------- DATA CONFIGURATION
 
         # Data configuration options
-        options_layout.addWidget(Label('Data configuration:', True), 5, 0)
+        data_box = CollapsibleBox('Data configuration:')
+        options_layout.addWidget(data_box, 2, 0, 1, 6)
+        data_box_layout = QGridLayout()
 
         # Smooth noisy data button
-        options_layout.addWidget(Label('Smooth data:'), 6, 0)
+        data_box_layout.addWidget(Label('Smooth data:'), 0, 0)
         self.smooth_data = QCheckBox(self)
-        options_layout.addWidget(self.smooth_data, 6, 1)
+        data_box_layout.addWidget(self.smooth_data, 0, 1)
 
         # Align all data with 0 checkbox
-        options_layout.addWidget(Label('Align at time = 0:'), 6, 2)
+        data_box_layout.addWidget(Label('Align at time = 0:'), 0, 2)
         self.align_data = QCheckBox(self)
-        options_layout.addWidget(self.align_data, 6, 3)
+        data_box_layout.addWidget(self.align_data, 0, 3)
+
+        data_box.setContentLayout(data_box_layout)
+
+        # --------------- LEGEND CONFIGURATION
 
         # Legend configuration options
-        options_layout.addWidget(Label('Legend configuration:', True), 7, 0)
+        legend_box = CollapsibleBox('Legend configuration:')
+        options_layout.addWidget(legend_box, 3, 0, 1, 6)
+        legend_box_layout = QGridLayout()
 
         # Legend on/off checkbox
-        options_layout.addWidget(Label('Legend on:'), 8, 0)
+        legend_box_layout.addWidget(Label('Legend on:'), 0, 0)
         self.legend_toggle = QCheckBox(self)
-        options_layout.addWidget(self.legend_toggle, 8, 1)
+        legend_box_layout.addWidget(self.legend_toggle, 0, 1)
 
-        # Legend options dropdown menu (editable)
-        options_layout.addWidget(Label('Legend titles:'), 8, 2)
+        # Legend legend_box dropdown menu (editable)
+        legend_box_layout.addWidget(Label('Legend titles:'), 0, 2)
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
-        options_layout.addWidget(self.legend_names, 8, 3)
+        legend_box_layout.addWidget(self.legend_names, 0, 3)
 
         # Condition legend configuration
-        options_layout.addWidget(Label('Condition legend:'), 8, 4)
+        legend_box_layout.addWidget(Label('Condition legend:'), 0, 4)
         self.condition_legend_names = QComboBox(self)
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
-        options_layout.addWidget(self.condition_legend_names, 8, 5)
+        legend_box_layout.addWidget(self.condition_legend_names, 0, 5)
+
+        legend_box.setContentLayout(legend_box_layout)
+
+        # --------------- STYLE CONFIGURATION
 
         # Style configuration
-        options_layout.addWidget(Label('Style configuration:', True), 9, 0)
+        style_box = CollapsibleBox('Style configuration:')
+        options_layout.addWidget(style_box, 4, 0, 1, 6)
+        style_box_layout = QGridLayout()
 
         # Plot style dropdown menu
-        options_layout.addWidget(Label('Style:'), 10, 0)
+        style_box_layout.addWidget(Label('Style:'), 0, 0)
         self.style_dropdown = QComboBox(self)
         self.style_dropdown.addItem("default")
         self.style_dropdown.addItem("greyscale")
         self.style_dropdown.addItem("colour blind")
         self.style_dropdown.addItem("pastel")
         self.style_dropdown.addItem("deep")
-        options_layout.addWidget(self.style_dropdown, 10, 1)
+        style_box_layout.addWidget(self.style_dropdown, 0, 1)
 
         # Font style dropdown menu
-        options_layout.addWidget(Label('Font style:'), 10, 2)
+        style_box_layout.addWidget(Label('Font style:'), 0, 2)
         self.font_dropdown = QComboBox(self)
         self.font_dropdown.addItem("sans-serif")
         self.font_dropdown.addItem("serif")
         self.font_dropdown.addItem("cursive")
         self.font_dropdown.addItem("fantasy")
         self.font_dropdown.addItem("monospace")
-        options_layout.addWidget(self.font_dropdown, 10, 3)
+        style_box_layout.addWidget(self.font_dropdown, 0, 3)
 
         # Font size textbox
-        options_layout.addWidget(Label('Font size:'), 10, 4)
+        style_box_layout.addWidget(Label('Font size:'), 0, 4)
         self.font_size = QLineEdit(self) 
-        options_layout.addWidget(self.font_size, 10, 5)
+        style_box_layout.addWidget(self.font_size, 0, 5)
 
         # Line width textbox
-        options_layout.addWidget(Label('Line width:'), 11, 0)
+        style_box_layout.addWidget(Label('Line width:'), 1, 0)
         self.line_width = QLineEdit(self) 
-        options_layout.addWidget(self.line_width, 11, 1)
+        style_box_layout.addWidget(self.line_width, 1, 1)
+
+        style_box.setContentLayout(style_box_layout)
 
         # Add layouts to tabs via widgets
         plot_widget = QWidget()
@@ -295,7 +323,8 @@ class App(QMainWindow):
         tabs.addTab(plot_widget, 'Plotting')
         options_widget = QWidget()
         options_widget.setLayout(options_layout)
-        tabs.addTab(options_widget, 'Options')
+        options_scroll.setWidget(options_widget)
+        tabs.addTab(options_scroll, 'Options')
 
         self.setCentralWidget(tabs)
         self.show()
