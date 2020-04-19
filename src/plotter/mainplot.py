@@ -45,7 +45,7 @@ class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
 
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.fig = Figure(figsize=(width, height), dpi=dpi, tight_layout=True)
         self.axes = self.fig.add_subplot(111)
         self.condition_axes = self.axes.twinx()
         self.condition_axes.set_axis_off()
@@ -129,7 +129,9 @@ class PlotCanvas(FigureCanvas):
                     y_title = sig.title()
                     if(config.yname != ''):
                         y_title = y_title.replace(sig.name, config.yname)
-                    if(config.yunit != ''):
+                    if(config.yunit.lower() == 'none'):
+                        y_title = y_title.replace("["+sig.unit+"]", "")
+                    elif(config.yunit != ''):
                         y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
             if not found_ydata:
                 raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
@@ -196,7 +198,9 @@ class PlotCanvas(FigureCanvas):
                     condition_y_title = sig.title()
                     if(config.condition_yname != ''):
                         condition_y_title = condition_y_title.replace(sig.name, config.condition_yname)
-                    if(config.condition_yunit != ''):
+                    if(config.condition_yunit.lower() != 'none'):
+                        condition_y_title = condition_y_title.replace("["+sig.unit+"]", "")
+                    elif(config.condition_yunit != ''):
                         condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
             self.condition_axes.set_ylabel(condition_y_title)
             self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0])
@@ -231,14 +235,18 @@ class PlotCanvas(FigureCanvas):
             x_unit = 'day'
         if(config.xunit != ''):
             x_unit = config.xunit
-        x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
+
+        if(config.xunit.lower() == 'none'):
+            x_title = x_title.replace("["+xaxisdata.unit+"]", "")
+        else:
+            x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
         return xdata, x_title
 
     def save(self, config):
         if(config.file_name == ''):
-            self.fig.savefig('graph.png')
+            self.fig.savefig('graph.png',bbox_inches='tight',dpi=100)
         elif(config.file_name.find('.') == -1):
-            self.fig.savefig(config.file_name + '.png')
+            self.fig.savefig(config.file_name + '.png',bbox_inches='tight',dpi=100)
         else:
-            self.fig.savefig(config.file_name)
+            self.fig.savefig(config.file_name,bbox_inches='tight',dpi=100)
 
