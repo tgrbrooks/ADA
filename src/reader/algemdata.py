@@ -135,7 +135,7 @@ class AlgemData():
                 if i.find('Unit=') != -1:
                     self.unit = i.split('=')[1]
                 if i.find('Range=') != -1:
-                    self.range = int(i.split('=')[1])
+                    self.range = float(i.split('=')[1])
             self.data = np.array([])
 
         def append(self, dat):

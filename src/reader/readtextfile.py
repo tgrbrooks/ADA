@@ -11,6 +11,6 @@ def read_text_file(file_name):
             lines = f.readlines()
             algem_data = AlgemData(file_name, lines)
             return algem_data
-        except:
-            raise RuntimeError('Error reading file '+file_name)
+        except Exception as e:
+            raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
     return

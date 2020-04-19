@@ -121,8 +121,8 @@ class PlotCanvas(FigureCanvas):
 
             # Get the y axis data for plotting
             ydata = data.signals[0].data
+            found_ydata = False
             for sig in data.signals:
-                found_ydata = False
                 if sig.name == config.yvar:
                     found_ydata = True
                     ydata = sig.data
@@ -131,8 +131,8 @@ class PlotCanvas(FigureCanvas):
                         y_title = y_title.replace(sig.name, config.yname)
                     if(config.yunit != ''):
                         y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
-                if not found_ydata:
-                    raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
+            if not found_ydata:
+                raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
 
             # Plot the data
             if(config.smooth):
