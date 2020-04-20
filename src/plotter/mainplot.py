@@ -2,6 +2,7 @@
 from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 from plotter.cursor import Cursor, SnapToCursor
+from gui.linestylewindow import LineStyleWindow
 
 # Standard imports
 import random
@@ -55,6 +56,9 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
+        self.legend_on = False
+        self.condition_legend_on = False
+
         FigureCanvas.setSizePolicy(self,
                 QSizePolicy.Expanding,
                 QSizePolicy.Expanding)
@@ -91,6 +95,7 @@ class PlotCanvas(FigureCanvas):
         self.condition_axes.set_axis_off()
         self.axes.patch.set_visible(False)
         self.axes.spines['right'].set_visible(True)
+        plot_list = []
 
         # More style settings
         if(config.font_style != ''):
@@ -139,13 +144,16 @@ class PlotCanvas(FigureCanvas):
             # Plot the data
             if(config.smooth):
                 ydata = savitzky_golay(ydata, 61, 0)
-            self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+            growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i], picker=5)
+            plot_list.append(growth_plot)
 
             xdata_list.append(xdata)
             ydata_list.append(ydata)
  
         # Switch legend on/off
         if(config.legend):
+            self.legend_on = True
+            self.legend_title = config.legend_title
             self.axes.legend(title=config.legend_title, loc = 'upper left')
 
         # Switch grid on/off
@@ -172,15 +180,7 @@ class PlotCanvas(FigureCanvas):
         if(config.ymax != -1):
             ymax = config.ymax
         self.axes.set_xlim([xmin, xmax])
-        self.axes.set_ylim([ymin, ymax])
-
-        # Configure the measurement cursor
-        if(config.cursor):
-            self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list, useblit=False, color='red', linewidth=1)
-
-            def onclick(event):
-                self.cursor.onmove(event)
-            self.mpl_connect('button_press_event', onclick)
+        self.axes.set_ylim([ymin, ymax]) 
 
         # Plot the condition data on a separate axis if it exists
         if not condition_data.empty:
@@ -203,7 +203,8 @@ class PlotCanvas(FigureCanvas):
                     elif(config.condition_yunit != ''):
                         condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
             self.condition_axes.set_ylabel(condition_y_title)
-            self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0])
+            condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0], picker=5)
+            plot_list.append(condition_plot)
 
             # Configure the axis range
             condition_ymin = self.condition_axes.get_ybound()[0]
@@ -216,7 +217,39 @@ class PlotCanvas(FigureCanvas):
 
         # Toggle condition legend on
         if(config.condition_legend):
+            self.condition_legend_on = True
+            self.condition_legend_title = config.condition_legend_title
             self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
+
+        # Control mouse clicking behaviour
+        # Create a special cursor that snaps to growth curves
+        self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list, useblit=False, color='red', linewidth=1)
+        # Configure the measurement cursor
+        if(config.cursor):
+            # Clean up previous attributes
+            if hasattr(self, 'cid'):
+                self.mpl_disconnect(self.cid)
+
+
+            # Define actions for button press: measure gradient
+            def onclick(event):
+                self.cursor.onmove(event)
+            # Connect action to button press
+            self.cid = self.mpl_connect('button_press_event', onclick)
+        # Otherwise allow user to change line style
+        else:
+            delattr(self, 'cursor')
+            # Clean up previous attributes
+            if hasattr(self, 'cid'):
+                self.mpl_disconnect(self.cid)
+                
+            # Define action on button press: open line style window
+            def onpick(event):
+                selected_line = self.find_closest(plot_list, event.xdata, event.ydata)
+                self.linewindow = LineStyleWindow(selected_line, self)
+                self.linewindow.show()
+            # Connect action to button press
+            self.cid = self.mpl_connect('button_press_event', onpick)
 
         # Show the plot
         self.draw()
@@ -244,6 +277,18 @@ class PlotCanvas(FigureCanvas):
         else:
             x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
         return xdata, x_title
+
+    def find_closest(self, plots, x, y):
+        min_dist = 99999
+        min_ind = -1
+        for i, plot in enumerate(plots):
+            dist = np.argmin(np.sqrt(np.power(plot[0].get_xdata()-x,2)+np.power(plot[0].get_ydata()-y,2)))
+            if(dist < min_dist):
+                min_dist = dist
+                min_ind = i
+        if (min_ind == -1):
+            raise RuntimeError('No selected plot')
+        return plots[i][0]
 
     def save(self, config):
         if(config.file_name == ''):

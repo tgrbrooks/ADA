@@ -387,7 +387,7 @@ class App(QMainWindow):
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
-            elf.error.show()
+            self.error.show()
 
     # Function: Update the list of data files and associated options
     def update_data_list(self):
