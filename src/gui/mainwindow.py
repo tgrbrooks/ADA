@@ -254,6 +254,7 @@ class App(QMainWindow):
         self.align_data.setToolTip('Start growth curves at 0 time')
         data_box_layout.addWidget(self.align_data, 0, 3)
 
+        # Remove any obvious outliers from the growth data
         data_box_layout.addWidget(Label('Remove outliers:'), 1, 0)
         data_box_layout.addWidget(Label('Auto:'), 1, 1)
         self.auto_remove = QCheckBox(self)
@@ -507,6 +508,11 @@ class App(QMainWindow):
         # Data config
         self.config.smooth = self.smooth_data.isChecked()
         self.config.align = self.align_data.isChecked()
+        self.config.auto_remove = self.auto_remove.isChecked()
+        if(isfloat(self.remove_above.text())):
+            self.config.remove_above = float(self.remove_above.text())
+        if(isfloat(self.remove_below.text())):
+            self.config.remove_below = float(self.remove_below.text())
 
         # Legend config
         self.config.legend = self.legend_toggle.isChecked()

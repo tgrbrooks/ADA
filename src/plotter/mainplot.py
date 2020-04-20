@@ -142,6 +142,8 @@ class PlotCanvas(FigureCanvas):
             if not found_ydata:
                 raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
 
+            # remove outliers
+
             # Plot the data
             if(config.smooth):
                 ydata = savitzky_golay(ydata, 61, 0)

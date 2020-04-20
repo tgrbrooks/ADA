@@ -48,15 +48,15 @@ class LineStyleWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def apply_changes(self):
-        if(self.line_colour.text() != ''):
-            try:
+        try:
+            if(self.line_colour.text() != ''):
                 self.artist.set_color(self.line_colour.text())
-            except:
-                pass
-        self.artist.set_linestyle(self.line_style.currentText())
-        if(self.parent.legend_on):
-            self.parent.axes.legend(title=self.parent.legend_title, loc='upper left')
-        if(self.parent.condition_legend_on):
-            self.parent.condition_axes.legend(title=self.parent.condition_legend_title, loc='lower right')
-        self.parent.draw()
+            self.artist.set_linestyle(self.line_style.currentText())
+            if(self.parent.legend_on):
+                self.parent.axes.legend(title=self.parent.legend_title, loc='upper left')
+            if(self.parent.condition_legend_on):
+                self.parent.condition_axes.legend(title=self.parent.condition_legend_title, loc='lower right')
+            self.parent.draw()
+        except:
+            pass
 

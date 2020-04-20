@@ -24,6 +24,9 @@ class Configuration():
         # Data config
         self.smooth = False
         self.align = False
+        self.auto_remove = False
+        self.remove_above = -1
+        self.remove_below = -1
         # Legend config
         self.legend = False
         self.condition_legend = False
