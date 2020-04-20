@@ -49,7 +49,10 @@ class LineStyleWindow(QMainWindow):
 
     def apply_changes(self):
         if(self.line_colour.text() != ''):
-            self.artist.set_color(self.line_colour.text())
+            try:
+                self.artist.set_color(self.line_colour.text())
+            except:
+                pass
         self.artist.set_linestyle(self.line_style.currentText())
         if(self.parent.legend_on):
             self.parent.axes.legend(title=self.parent.legend_title, loc='upper left')

@@ -111,7 +111,7 @@ class App(QMainWindow):
 
         # Saving options
         save_button = QPushButton('Save', self)
-        plot_button.clicked.connect(self.update_config)
+        save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         save_button.setToolTip('Save the figure')
         save_button.setStyleSheet(default_font)
@@ -253,6 +253,17 @@ class App(QMainWindow):
         self.align_data = QCheckBox(self)
         self.align_data.setToolTip('Start growth curves at 0 time')
         data_box_layout.addWidget(self.align_data, 0, 3)
+
+        data_box_layout.addWidget(Label('Remove outliers:'), 1, 0)
+        data_box_layout.addWidget(Label('Auto:'), 1, 1)
+        self.auto_remove = QCheckBox(self)
+        data_box_layout.addWidget(self.auto_remove, 1, 2)
+        data_box_layout.addWidget(Label('Above:'), 1, 3)
+        self.remove_above = QLineEdit(self)
+        data_box_layout.addWidget(self.remove_above, 1, 4)
+        data_box_layout.addWidget(Label('Below:'), 1, 5)
+        self.remove_below = QLineEdit(self)
+        data_box_layout.addWidget(self.remove_below, 1, 6)
 
         data_box.setContentLayout(data_box_layout)
 

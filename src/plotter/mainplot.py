@@ -3,6 +3,7 @@ from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 from plotter.cursor import Cursor, SnapToCursor
 from gui.linestylewindow import LineStyleWindow
+from gui.filehandler import save_file
 
 # Standard imports
 import random
@@ -291,10 +292,11 @@ class PlotCanvas(FigureCanvas):
         return plots[i][0]
 
     def save(self, config):
-        if(config.file_name == ''):
-            self.fig.savefig('graph.png',bbox_inches='tight',dpi=100)
-        elif(config.file_name.find('.') == -1):
-            self.fig.savefig(config.file_name + '.png',bbox_inches='tight',dpi=100)
-        else:
-            self.fig.savefig(config.file_name,bbox_inches='tight',dpi=100)
+        save_file(self.fig)
+        #if(config.file_name == ''):
+        #    self.fig.savefig('graph.png')
+        #elif(config.file_name.find('.') == -1):
+        #    self.fig.savefig(config.file_name + '.png')
+        #else:
+        #    self.fig.savefig(config.file_name)
 
