@@ -13,7 +13,7 @@ Other operating systems can be supported upon request.
 ## Installing the code
 
 Dependencies:
-* Python 3
+* Python 3.6 (other version may have unexpected behaviour)
 * PyQt5
 * Matplotlib
 
@@ -31,7 +31,7 @@ Check your version of python
 python3 --version
 ```
 
-If you don't have python 3 installed then [download it](https://docs.python-guide.org/starting/install3/osx/)
+If you don't have python 3.6 installed then [download it](https://docs.python-guide.org/starting/install3/osx/)
 
 Create a virtual environment in the AlgaePlotter directory for installing the dependencies
 
