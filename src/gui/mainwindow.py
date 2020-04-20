@@ -152,16 +152,10 @@ class App(QMainWindow):
         options_scroll = QScrollArea(self)
         options_scroll.setWidgetResizable(True)
 
-        # File name
-        options_layout.addWidget(Label('File name:', True), 0, 0)
-        self.file_name = QLineEdit(self) 
-        self.file_name.setToolTip('Set name of plot file to save to')
-        options_layout.addWidget(self.file_name, 0, 1, 1, 2)
-
         # Figure title
-        options_layout.addWidget(Label('Figure title:', True), 0, 3)
+        options_layout.addWidget(Label('Figure title:', True), 0, 0)
         self.figure_title = QLineEdit(self)
-        options_layout.addWidget(self.figure_title, 0, 4, 1, 2)
+        options_layout.addWidget(self.figure_title, 0, 1, 1, 2)
 
         # --------------- AXIS CONFIGURATION
 
@@ -475,7 +469,6 @@ class App(QMainWindow):
 
     # Function: Update the global configuration
     def update_config(self):
-        self.config.file_name = self.file_name.text()
         self.config.title = self.figure_title.text()
 
         # x axis config

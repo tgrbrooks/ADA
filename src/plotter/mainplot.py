@@ -309,10 +309,4 @@ class PlotCanvas(FigureCanvas):
 
     def save(self, config):
         save_file(self.fig)
-        #if(config.file_name == ''):
-        #    self.fig.savefig('graph.png')
-        #elif(config.file_name.find('.') == -1):
-        #    self.fig.savefig(config.file_name + '.png')
-        #else:
-        #    self.fig.savefig(config.file_name)
 

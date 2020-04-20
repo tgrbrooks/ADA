@@ -1,7 +1,6 @@
 class Configuration():
 
     def __init__(self):
-        self.file_name = ''
         self.title = ''
         # X axis config
         self.xvar = ''
