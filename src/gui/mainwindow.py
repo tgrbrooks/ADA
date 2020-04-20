@@ -477,8 +477,12 @@ class App(QMainWindow):
         self.config.xunit = self.xaxis_unit.text()
         if(isfloat(self.xaxis_min.text())):
             self.config.xmin = float(self.xaxis_min.text())
+        if(self.xaxis_min.text() == ''):
+            self.config.xmin = -1
         if(isfloat(self.xaxis_max.text())):
             self.config.xmax = float(self.xaxis_max.text())
+        if(self.xaxis_max.text() == ''):
+            self.config.xmax = -1
 
         # y axis config
         self.config.yvar = self.yaxis_dropdown.currentText()
@@ -486,8 +490,12 @@ class App(QMainWindow):
         self.config.yunit = self.yaxis_unit.text()
         if(isfloat(self.yaxis_min.text())):
             self.config.ymin = float(self.yaxis_min.text())
+        if(self.yaxis_min.text() == ''):
+            self.config.ymin = -1
         if(isfloat(self.yaxis_max.text())):
             self.config.ymax = float(self.yaxis_max.text())
+        if(self.yaxis_max.text() == ''):
+            self.config.ymax = -1
 
         # Condition y axis config
         self.config.condition_yvar = self.condition_yaxis_dropdown.currentText()
@@ -495,8 +503,12 @@ class App(QMainWindow):
         self.config.condition_yunit = self.condition_yaxis_unit.text()
         if(isfloat(self.condition_yaxis_min.text())):
             self.config.condition_ymin = float(self.condition_yaxis_min.text())
+        if(self.condition_yaxis_min.text() == ''):
+            self.config.condition_ymin = -1
         if(isfloat(self.condition_yaxis_max.text())):
             self.config.condition_ymax = float(self.condition_yaxis_max.text())
+        if(self.condition_yaxis_max.text() == ''):
+            self.config.condition_ymax = -1
 
         # Data config
         self.config.smooth = self.smooth_data.isChecked()
