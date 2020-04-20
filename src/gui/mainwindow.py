@@ -155,11 +155,12 @@ class App(QMainWindow):
         # File name
         options_layout.addWidget(Label('File name:', True), 0, 0)
         self.file_name = QLineEdit(self) 
+        self.file_name.setToolTip('Set name of plot file to save to')
         options_layout.addWidget(self.file_name, 0, 1, 1, 2)
 
         # Figure title
         options_layout.addWidget(Label('Figure title:', True), 0, 3)
-        self.figure_title = QLineEdit(self) 
+        self.figure_title = QLineEdit(self)
         options_layout.addWidget(self.figure_title, 0, 4, 1, 2)
 
         # --------------- AXIS CONFIGURATION
@@ -188,7 +189,8 @@ class App(QMainWindow):
         # X axis titles
         self.xaxis_name = QLineEdit(self) 
         axis_box_layout.addWidget(self.xaxis_name, 1, 2)
-        self.xaxis_unit = QLineEdit(self) 
+        self.xaxis_unit = QLineEdit(self)
+        self.xaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.xaxis_unit, 1, 3)
 
         # X axis range
@@ -205,6 +207,7 @@ class App(QMainWindow):
         self.yaxis_name = QLineEdit(self) 
         axis_box_layout.addWidget(self.yaxis_name, 2, 2)
         self.yaxis_unit = QLineEdit(self) 
+        self.yaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.yaxis_unit, 2, 3)
 
         # Y axis range
@@ -221,6 +224,7 @@ class App(QMainWindow):
         self.condition_yaxis_name = QLineEdit(self) 
         axis_box_layout.addWidget(self.condition_yaxis_name, 3, 2)
         self.condition_yaxis_unit = QLineEdit(self) 
+        self.xaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.condition_yaxis_unit, 3, 3)
 
         # Condition Y axis range
@@ -241,11 +245,13 @@ class App(QMainWindow):
         # Smooth noisy data button
         data_box_layout.addWidget(Label('Smooth data:'), 0, 0)
         self.smooth_data = QCheckBox(self)
+        self.smooth_data.setToolTip('Apply Savitzky-Golay to noisy data')
         data_box_layout.addWidget(self.smooth_data, 0, 1)
 
         # Align all data with 0 checkbox
         data_box_layout.addWidget(Label('Align at time = 0:'), 0, 2)
         self.align_data = QCheckBox(self)
+        self.align_data.setToolTip('Start growth curves at 0 time')
         data_box_layout.addWidget(self.align_data, 0, 3)
 
         data_box.setContentLayout(data_box_layout)
@@ -267,6 +273,7 @@ class App(QMainWindow):
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
+        self.legend_names.setToolTip('Edit names by changing text and pressing return')
         legend_box_layout.addWidget(self.legend_names, 0, 3)
 
         # Condition legend configuration
@@ -274,6 +281,7 @@ class App(QMainWindow):
         self.condition_legend_names = QComboBox(self)
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
+        self.condition_legend_names.setToolTip('Edit names by changing text and pressing return')
         legend_box_layout.addWidget(self.condition_legend_names, 0, 5)
 
         legend_box.setContentLayout(legend_box_layout)
