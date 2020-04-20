@@ -117,18 +117,18 @@ class PlotCanvas(FigureCanvas):
         y_title = ''
         xdata_list = []
         ydata_list = []
-        for i, data in enumerate(data.data_files):
+        for i, dat in enumerate(data.data_files):
             # Convert the units of time if needed
-            xdata, x_title = self.convert_xdata(data.xaxis, config)
+            xdata, x_title = self.convert_xdata(dat.xaxis, config)
 
             # Align at time 0 if option selected
             if config.align:
                 xdata - xdata[0]
 
             # Get the y axis data for plotting
-            ydata = data.signals[0].data
+            ydata = dat.signals[0].data
             found_ydata = False
-            for sig in data.signals:
+            for sig in dat.signals:
                 if sig.name == config.yvar:
                     found_ydata = True
                     ydata = sig.data
@@ -140,7 +140,7 @@ class PlotCanvas(FigureCanvas):
                     elif(config.yunit != ''):
                         y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
             if not found_ydata:
-                raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
+                raise RuntimeError('Could not find signal %s in %s' % (config.yvar, dat.name)) 
 
             # remove outliers
             data_index = 0
@@ -206,7 +206,7 @@ class PlotCanvas(FigureCanvas):
             self.axes.spines['right'].set_visible(False)
             self.condition_axes.tick_params(axis='y', colors='red')
             self.condition_axes.yaxis.label.set_color('red')
-            for i, cdata in enumerate(data.data_files):
+            for i, cdata in enumerate(condition_data.data_files):
                 condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
                 condition_ydata = cdata.signals[0].data
                 for sig in cdata.signals:
