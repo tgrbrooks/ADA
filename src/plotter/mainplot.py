@@ -143,6 +143,20 @@ class PlotCanvas(FigureCanvas):
                 raise RuntimeError('Could not find signal %s in %s' % (config.yvar, data.name)) 
 
             # remove outliers
+            data_index = 0
+            while data_index < len(ydata):
+                if(config.remove_above >= 0 and ydata[data_index] > config.remove_above):
+                    ydata = np.delete(ydata, data_index)
+                    xdata = np.delete(xdata, data_index)
+                    data_index = data_index - 1
+                if(config.remove_below >= 0 and ydata[data_index] < config.remove_below):
+                    ydata = np.delete(ydata, data_index)
+                    xdata = np.delete(xdata, data_index)
+                    data_index = data_index -1
+                # TODO apply automatic
+                #if(config.auto_remove):
+                data_index = data_index + 1
+                    
 
             # Plot the data
             if(config.smooth):
@@ -192,22 +206,22 @@ class PlotCanvas(FigureCanvas):
             self.axes.spines['right'].set_visible(False)
             self.condition_axes.tick_params(axis='y', colors='red')
             self.condition_axes.yaxis.label.set_color('red')
-            cdata = condition_data.data_files[0]
-            condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
-            condition_ydata = cdata.signals[0].data
-            for sig in cdata.signals:
-                if sig.name == config.condition_yvar:
-                    condition_ydata = sig.data
-                    condition_y_title = sig.title()
-                    if(config.condition_yname != ''):
-                        condition_y_title = condition_y_title.replace(sig.name, config.condition_yname)
-                    if(config.condition_yunit.lower() != 'none'):
-                        condition_y_title = condition_y_title.replace("["+sig.unit+"]", "")
-                    elif(config.condition_yunit != ''):
-                        condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
-            self.condition_axes.set_ylabel(condition_y_title)
-            condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, 'r-', label=config.condition_label_names[0], picker=5)
-            plot_list.append(condition_plot)
+            for i, cdata in enumerate(data.data_files):
+                condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
+                condition_ydata = cdata.signals[0].data
+                for sig in cdata.signals:
+                    if sig.name == config.condition_yvar:
+                        condition_ydata = sig.data
+                        condition_y_title = sig.title()
+                        if(config.condition_yname != ''):
+                            condition_y_title = condition_y_title.replace(sig.name, config.condition_yname)
+                        if(config.condition_yunit.lower() != 'none'):
+                            condition_y_title = condition_y_title.replace("["+sig.unit+"]", "")
+                        elif(config.condition_yunit != ''):
+                            condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
+                self.condition_axes.set_ylabel(condition_y_title)
+                condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', label=config.condition_label_names[i])
+                plot_list.append(condition_plot)
 
             # Configure the axis range
             condition_ymin = self.condition_axes.get_ybound()[0]
@@ -218,11 +232,11 @@ class PlotCanvas(FigureCanvas):
                 condition_ymax = config.condition_ymax
             self.condition_axes.set_ylim([condition_ymin, condition_ymax])
 
-        # Toggle condition legend on
-        if(config.condition_legend):
-            self.condition_legend_on = True
-            self.condition_legend_title = config.condition_legend_title
-            self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
+            # Toggle condition legend on
+            if(config.condition_legend):
+                self.condition_legend_on = True
+                self.condition_legend_title = config.condition_legend_title
+                self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
 
         # Control mouse clicking behaviour
         # Create a special cursor that snaps to growth curves
