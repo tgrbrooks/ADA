@@ -264,25 +264,37 @@ class App(QMainWindow):
         legend_box_layout = QGridLayout()
 
         # Legend on/off checkbox
-        legend_box_layout.addWidget(Label('Legend on:'), 0, 0)
+        legend_box_layout.addWidget(Label('Growth Legend:'), 1, 0)
+        legend_box_layout.addWidget(Label('On:'), 0, 1)
         self.legend_toggle = QCheckBox(self)
-        legend_box_layout.addWidget(self.legend_toggle, 0, 1)
+        legend_box_layout.addWidget(self.legend_toggle, 1, 1)
 
-        # Legend legend_box dropdown menu (editable)
-        legend_box_layout.addWidget(Label('Legend titles:'), 0, 2)
+        legend_box_layout.addWidget(Label('Header:'), 0, 2)
+        self.legend_title = QLineEdit(self) 
+        legend_box_layout.addWidget(self.legend_title, 1, 2)
+
+        # Legend options dropdown menu (editable)
+        legend_box_layout.addWidget(Label('Titles:'), 0, 3)
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
         self.legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.legend_names, 0, 3)
+        legend_box_layout.addWidget(self.legend_names, 1, 3)
 
         # Condition legend configuration
-        legend_box_layout.addWidget(Label('Condition legend:'), 0, 4)
+        legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
+        self.condition_legend_toggle = QCheckBox(self)
+        legend_box_layout.addWidget(self.condition_legend_toggle, 2, 1)
+
+        self.condition_legend_title = QLineEdit(self) 
+        legend_box_layout.addWidget(self.condition_legend_title, 2, 2)
+
+        # Condition legend options dropdown menu
         self.condition_legend_names = QComboBox(self)
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
         self.condition_legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.condition_legend_names, 0, 5)
+        legend_box_layout.addWidget(self.condition_legend_names, 2, 3)
 
         legend_box.setContentLayout(legend_box_layout)
 
@@ -484,7 +496,16 @@ class App(QMainWindow):
         # Data config
         self.config.smooth = self.smooth_data.isChecked()
         self.config.align = self.align_data.isChecked()
+
+        # Legend config
         self.config.legend = self.legend_toggle.isChecked()
+        self.config.condition_legend = self.condition_legend_toggle.isChecked()
+        self.config.legend_title = self.legend_title.text()
+        if(self.config.legend_title.lower() == 'none'):
+            self.config.legend_title = ''
+        self.config.condition_legend_title = self.condition_legend_title.text()
+        if(self.config.condition_legend_title.lower() == 'none'):
+            self.config.condition_legend_title = ''
         self.config.label_names.clear()
         for i in range(self.legend_names.count()):
             self.config.label_names.append(self.legend_names.itemText(i))

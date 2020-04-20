@@ -24,7 +24,11 @@ class Configuration():
         # Data config
         self.smooth = False
         self.align = False
+        # Legend config
         self.legend = False
+        self.condition_legend = False
+        self.legend_title = ''
+        self.condition_legend_title = ''
         self.label_names = []
         self.condition_label_names = []
         self.cursor = False

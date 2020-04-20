@@ -146,7 +146,7 @@ class PlotCanvas(FigureCanvas):
  
         # Switch legend on/off
         if(config.legend):
-            self.axes.legend()
+            self.axes.legend(title=config.legend_title, loc = 'upper left')
 
         # Switch grid on/off
         self.axes.grid(config.grid)
@@ -214,6 +214,9 @@ class PlotCanvas(FigureCanvas):
                 condition_ymax = config.condition_ymax
             self.condition_axes.set_ylim([condition_ymin, condition_ymax])
 
+        # Toggle condition legend on
+        if(config.condition_legend):
+            self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
 
         # Show the plot
         self.draw()
