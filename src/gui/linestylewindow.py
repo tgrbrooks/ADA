@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget, QLineEdit, QPushButton, QComboBox
+from matplotlib.colors import is_color_like
 
 class LineStyleWindow(QMainWindow):
     
@@ -49,7 +50,7 @@ class LineStyleWindow(QMainWindow):
 
     def apply_changes(self):
         try:
-            if(self.line_colour.text() != ''):
+            if(is_color_like(self.line_colour.text())):
                 self.artist.set_color(self.line_colour.text())
             self.artist.set_linestyle(self.line_style.currentText())
             if(self.parent.legend_on):
