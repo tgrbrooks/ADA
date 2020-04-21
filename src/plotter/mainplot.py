@@ -122,34 +122,29 @@ class PlotCanvas(FigureCanvas):
         for i, dat in enumerate(data.data_files):
             # Convert the units of time if needed
             xdata, x_title = self.convert_xdata(dat.xaxis, config)
-
-            # Align at time 0 if option selected
-            if config.align:
-                xdata - xdata[0]
-
             # Get the y axis data for plotting
             ydata, y_title = self.get_ydata(dat.signals, config)
 
-            # remove outliers
-            data_index = 0
-            while data_index < len(ydata):
-                if(config.remove_above >= 0 and ydata[data_index] > config.remove_above):
-                    ydata = np.delete(ydata, data_index)
-                    xdata = np.delete(xdata, data_index)
-                    data_index = data_index - 1
-                if(config.remove_below >= 0 and ydata[data_index] < config.remove_below):
-                    ydata = np.delete(ydata, data_index)
-                    xdata = np.delete(xdata, data_index)
-                    data_index = data_index -1
-                # TODO apply automatic
-                #if(config.auto_remove):
-                data_index = data_index + 1         
+            # Apply alignment, outlier removal, and smoothing
+            xdata, ydata = self.process_data(xdata, ydata, config)
 
-            # Plot the data
-            if(config.smooth):
-                ydata = savitzky_golay(ydata, 61, 0)
-            growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i], picker=5)
-            plot_list.append(growth_plot[0])
+            # If there are replicate files then average the data
+            if(len(data.replicate_files[i]) > 1):
+                xdatas = [xdata]
+                ydatas = [ydata]
+                for j in range(1, len(data.replicate_files[i]), 1):
+                    rep_xdata, rep_xtitle = self.convert_xdata(data.replicate_files[i][j].xaxis, config)
+                    rep_ydata, rep_ytitle = self.get_ydata(data.replicate_files[i][j].signals, config)
+                    rep_xdata, rep_ydata = self.process_data(rep_xdata, rep_ydata, config)
+                    xdatas.append(rep_xdata)
+                    ydatas.append(rep_ydata)
+                xdata, ydata, yerr = self.average_data(xdatas, ydatas)
+                growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+                self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
+                plot_list.append(growth_plot[0])
+            else:
+                growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+                plot_list.append(growth_plot[0])
 
             xdata_list.append(xdata)
             ydata_list.append(ydata) 
@@ -211,7 +206,7 @@ class PlotCanvas(FigureCanvas):
                 if(config.condition_average != -1):
                     # Do something
                     condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average)
-                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', color = col, label=config.condition_label_names[i])
+                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=config.condition_label_names[i])
                     plot_list.append(condition_plot[0])
                 else:
                     condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
@@ -329,6 +324,62 @@ class PlotCanvas(FigureCanvas):
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title
 
+    # Function to apply alignment, outlier removal and smoothing
+    def process_data(self, xdata, ydata, config):
+        # Align at time 0 if option selected
+        if config.align:
+            xdata - xdata[0]
+
+        # remove outliers
+        if(config.remove_above >= 0 or config.remove_below >= 0 or config.auto_remove):
+            xdata, ydata = self.remove_outliers(xdata, ydata, config)    
+
+        # Smooth the data
+        if(config.smooth):
+            ydata = savitzky_golay(ydata, 61, 0)
+        return xdata, ydata
+
+    # Function to remove outliers in the data
+    def remove_outliers(self, xdata, ydata, config):
+        data_index = 0
+        while data_index < len(ydata):
+            if(config.remove_above >= 0 and ydata[data_index] > config.remove_above):
+                ydata = np.delete(ydata, data_index)
+                xdata = np.delete(xdata, data_index)
+                data_index = data_index - 1
+            if(config.remove_below >= 0 and ydata[data_index] < config.remove_below):
+                ydata = np.delete(ydata, data_index)
+                xdata = np.delete(xdata, data_index)
+                data_index = data_index -1
+            # TODO apply automatic
+            #if(config.auto_remove):
+            data_index = data_index + 1
+        return xdata, ydata
+
+    # Function to average replicate data sets
+    def average_data(self, xdatas, ydatas):
+        new_xdata = np.array([])
+        new_ydata = np.array([])
+        new_yerr = np.array([])
+        if len(xdatas) <= 1:
+            return xdatas[0], ydatas[0]
+        for i, x_i in enumerate(xdatas[0]):
+            ys = np.array([ydatas[0][i]])
+            for j in range(1, len(xdatas), 1):
+                result = np.where(xdatas[j] == x_i)
+                if(len(result) == 1):
+                    ys = np.append(ys, ydatas[j][result[0]])
+            # Only average time points shared by all curves
+            if(ys.size != len(xdatas)):
+                continue
+            mean = np.mean(ys)
+            std_dev = np.std(ys, ddof=1)
+            #std_err = std_dev/np.sqrt(ys.size)
+            new_xdata = np.append(new_xdata, x_i)
+            new_ydata = np.append(new_ydata, mean)
+            new_yerr = np.append(new_yerr, std_dev)
+        return new_xdata, new_ydata, new_yerr
+
     # Function to average data over time period
     def time_average(self, xdata, ydata, window):
         new_xdata = np.array([])
@@ -337,22 +388,18 @@ class PlotCanvas(FigureCanvas):
         w_i = 1
         i = 0
         while(i < len(xdata)):
-            mean = 0.
-            data = []
+            data = np.array([])
             while(i < len(xdata) and xdata[i] < w_i*window):
-                mean = mean + ydata[i]
-                data.append(ydata[i])
+                #mean = mean + ydata[i]
+                data = np.append(data, ydata[i])
                 i = i + 1
-            mean = mean/len(data)
-            std_dev = 0
-            for d in data:
-                std_dev = std_dev + np.power(d - mean, 2)
-            std_dev = np.sqrt(std_dev / (len(data)-1))
-            if(len(data) == 0):
+            mean = np.mean(data)
+            std_dev = np.std(data, ddof=1)
+            if(data.size == 0):
                 continue
             new_xdata = np.append(new_xdata, (w_i-1)*window + window/2.)
             new_ydata = np.append(new_ydata, mean)
-            if(len(data) == 1):
+            if(data.size == 1):
                 new_yerr = np.append(new_yerr, 0)
             else:
                 new_yerr = np.append(new_yerr, std_dev)

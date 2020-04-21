@@ -197,8 +197,12 @@ class SnapToCursor(AxesWidget):
             gradient = (y_points[1] - y_points[0])/(x_points[1] - x_points[0])
             exponent = np.floor(np.log10(np.abs(gradient))).astype(int)
             gradient = gradient/(1.*10.**exponent)
-            x_unit = (self.ax.xaxis.get_label().get_text().split('[')[1]).split(']')[0]
-            y_unit = (self.ax.yaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            x_unit = ''
+            if(len(self.ax.xaxis.get_label().get_text().split('[')) > 1):
+                x_unit = (self.ax.xaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            y_unit = ''
+            if(len(self.ax.yaxis.get_label().get_text().split('[')) > 1):
+                y_unit = (self.ax.yaxis.get_label().get_text().split('[')[1]).split(']')[0]
             grad_unit = y_unit + "/" + x_unit
             self.gradtxt.set_text(r'grad = %1.2f$\times10^{%i}$ %s' % (gradient, exponent, grad_unit))
         

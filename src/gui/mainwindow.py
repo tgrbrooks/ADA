@@ -7,12 +7,14 @@ from gui.errorwindow import ErrorWindow
 from gui.label import Label
 from gui.functions import isfloat, isint
 from gui.collapsiblebox import CollapsibleBox
+from gui.datalistitem import DataListItem
 
 # Standard imports
 import csv
 
 # pyqt imports
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
+from PyQt5.QtCore import QPoint
 
 class App(QMainWindow):
 
@@ -395,6 +397,7 @@ class App(QMainWindow):
 
     # Function: Update the main plot
     def update_plot(self):
+        self.plot.plot(self.data, self.condition_data, self.config)
         try:
             self.plot.plot(self.data, self.condition_data, self.config)
         except Exception as e:
@@ -417,7 +420,10 @@ class App(QMainWindow):
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
         for i, data in enumerate(self.data.data_files):
-            self.data_list.addItem(data.name)
+            data_list_item = DataListItem(data.name.split('/')[-1], i, self)
+            self.data_list.addItem(data_list_item.item)
+            self.data_list.setItemWidget(data_list_item.item, data_list_item.widget)
+            #self.data_list.addItem(data.name.split('/')[-1])
             self.legend_names.addItem(data.label)
             if i > 0:
                 continue
@@ -430,7 +436,7 @@ class App(QMainWindow):
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
         for i, data in enumerate(self.condition_data.data_files):
-            self.condition_data_list.addItem(data.name)
+            self.condition_data_list.addItem(data.name.split('/')[-1])
             self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
@@ -438,11 +444,29 @@ class App(QMainWindow):
                 self.condition_yaxis_dropdown.addItem(sig.name)
 
     # Function: Remove file from list of data
-    def remove_item(self, index):
+    def remove_item(self):
+        # Horrible stuff to get list item
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = self.data_list.viewport().mapFromGlobal(gp)
+        row = self.data_list.row(self.data_list.itemAt(lp))
         for i, data in enumerate(self.data.data_files):
-            if i != index.row():
+            if i != row:
                 continue
             self.data.delete_data(i)
+        self.update_data_list()
+
+    # Function: Remove file from list of data
+    def remove_replicate(self, index):
+        # Horrible stuff to get list item
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = self.data_list.viewport().mapFromGlobal(gp)
+        row = self.data_list.row(self.data_list.itemAt(lp))
+        for i, data in enumerate(self.data.data_files):
+            if i != row:
+                continue
+            self.data.delete_replicate(i, index)
         self.update_data_list()
 
     # Function: Remove file from list of condition data
@@ -452,6 +476,16 @@ class App(QMainWindow):
                 continue
             self.condition_data.delete_data(i)
         self.update_condition_data_list()
+
+    def add_to_item(self):
+        print('add')
+        # Horrible stuff to get list item
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = self.data_list.viewport().mapFromGlobal(gp)
+        row = self.data_list.row(self.data_list.itemAt(lp))
+        # Open file with file handler
+        open_files(self.data, -1, row)
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):
@@ -532,8 +566,12 @@ class App(QMainWindow):
         self.config.auto_remove = self.auto_remove.isChecked()
         if(isfloat(self.remove_above.text())):
             self.config.remove_above = float(self.remove_above.text())
+        else:
+            self.config.remove_above = -1
         if(isfloat(self.remove_below.text())):
             self.config.remove_below = float(self.remove_below.text())
+        else:
+            self.config.remove_below = -1
         if(isint(self.downsample.text())):
             self.config.downsample = int(self.downsample.text())
         if(isfloat(self.condition_average.text())):
