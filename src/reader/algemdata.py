@@ -4,9 +4,10 @@ import numpy as np
 # Class to store algem data
 class AlgemData():
 
-    def __init__(self, file_name, lines):
+    def __init__(self, file_name, lines, downsample=-1):
         self.lines = lines
         self.name = file_name
+        self.downsample = downsample
         self.label = (file_name.split('/')[-1]).split('.')[0]
         self.date = date(1994, 3, 16)
         self.time = time(0, 0, 0)
@@ -63,13 +64,16 @@ class AlgemData():
         begin_read = False
         end_read = False
 
-        for line_i, line in enumerate(self.lines):
+        increment = 1
+        if(self.downsample != -1):
+            increment = self.downsample
+        for line_i in range(0, len(self.lines), increment):
             
             # Check we're in the data section
-            if line.find('[Data]') != -1:
+            if self.lines[line_i].find('[Data]') != -1:
                 begin_read = True
                 continue
-            if line.find('[End]') != -1:
+            if self.lines[line_i].find('[End]') != -1:
                 end_read = True
             if not begin_read:
                 continue
@@ -77,7 +81,7 @@ class AlgemData():
                 break
 
             # Get the data from the columns
-            data_str = line.split('\t')
+            data_str = self.lines[line_i].split('\t')
             if len(data_str) != 1+len(self.signals):
                 continue
             for i, dat in enumerate(data_str):

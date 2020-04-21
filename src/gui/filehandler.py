@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QWidget, QFileDialog
 # Class to handle the file browser
 class OpenFileHandlerGui(QWidget):
 
-    def __init__(self, data):
+    def __init__(self, data, downsample=-1):
         super().__init__()
         self.title = 'Open Files'
         self.left = 10
@@ -17,6 +17,7 @@ class OpenFileHandlerGui(QWidget):
         self.width = 640
         self.height = 480
         self.data = data
+        self.downsample = downsample
         self.initUI()
 
     def initUI(self):
@@ -35,7 +36,7 @@ class OpenFileHandlerGui(QWidget):
             for file_name in files:
                 if not file_name.endswith('.txt'):
                     raise RuntimeError('%s is not a text file' % (file_name))
-                algem_data = read_text_file(file_name)
+                algem_data = read_text_file(file_name, self.downsample)
                 self.data.add_data(algem_data)
 
 # Class to handle the file browser
@@ -71,8 +72,8 @@ class SaveFileHandlerGui(QWidget):
             else:
                 self.fig.savefig(file_name)
 
-def open_files(data):
-    ex_file = OpenFileHandlerGui(data)
+def open_files(data, downsample=-1):
+    ex_file = OpenFileHandlerGui(data, downsample)
 
 def save_file(fig):
     ex_file = SaveFileHandlerGui(fig)

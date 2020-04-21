@@ -26,6 +26,7 @@ class Configuration():
         self.auto_remove = False
         self.remove_above = -1
         self.remove_below = -1
+        self.downsample = -1
         # Legend config
         self.legend = False
         self.condition_legend = False

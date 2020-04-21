@@ -108,7 +108,7 @@ class PlotCanvas(FigureCanvas):
             self.axes.yaxis.label.set_size(config.font_size)
             self.condition_axes.yaxis.label.set_size(config.font_size)
 
-        if(data.empty):
+        if(data.empty and condition_data.empty):
             self.axes.set_title('Empty plot')
             self.draw()
             return
@@ -200,6 +200,7 @@ class PlotCanvas(FigureCanvas):
         self.axes.set_ylim([ymin, ymax]) 
 
         # Plot the condition data on a separate axis if it exists
+        colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
         if not condition_data.empty:
             self.condition_axes.set_axis_on()
             self.condition_axes.spines['right'].set_color('red')
@@ -220,7 +221,10 @@ class PlotCanvas(FigureCanvas):
                         elif(config.condition_yunit != ''):
                             condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
                 self.condition_axes.set_ylabel(condition_y_title)
-                condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', label=config.condition_label_names[i])
+                col = 'r'
+                if( i < len(colors) ):
+                    col = colors[i]
+                condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
                 plot_list.append(condition_plot)
 
             # Configure the axis range

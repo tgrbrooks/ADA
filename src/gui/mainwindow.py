@@ -5,7 +5,7 @@ from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 from gui.errorwindow import ErrorWindow
 from gui.label import Label
-from gui.functions import isfloat
+from gui.functions import isfloat, isint
 from gui.collapsiblebox import CollapsibleBox
 
 # Standard imports
@@ -260,6 +260,11 @@ class App(QMainWindow):
         self.remove_below = QLineEdit(self)
         data_box_layout.addWidget(self.remove_below, 1, 6)
 
+        data_box_layout.addWidget(Label('Downsample condition:'), 2, 0)
+        self.downsample = QLineEdit(self)
+        self.downsample.setToolTip('Only read in/plot every X data points')
+        data_box_layout.addWidget(self.downsample, 2, 1)
+
         data_box.setContentLayout(data_box_layout)
 
         # --------------- LEGEND CONFIGURATION
@@ -371,7 +376,7 @@ class App(QMainWindow):
     # Function: Open and read in condition data files
     def open_condition_files(self):
         try:
-            open_files(self.condition_data)
+            open_files(self.condition_data, self.config.downsample)
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -405,7 +410,7 @@ class App(QMainWindow):
             self.legend_names.addItem(data.label)
             if i > 0:
                 continue
-            for sig in data.signals:
+            for sig in reversed(data.signals):
                 self.yaxis_dropdown.addItem(sig.name)
 
     # Function: Update the list of condition data and associated options
@@ -518,6 +523,8 @@ class App(QMainWindow):
             self.config.remove_above = float(self.remove_above.text())
         if(isfloat(self.remove_below.text())):
             self.config.remove_below = float(self.remove_below.text())
+        if(isint(self.downsample.text())):
+            self.config.downsample = int(self.downsample.text())
 
         # Legend config
         self.config.legend = self.legend_toggle.isChecked()
