@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QSizePolicy
 # maplotlib imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.colors import is_color_like
 import matplotlib.pyplot as plt
 import matplotlib.style
 import matplotlib as mpl
@@ -203,12 +204,21 @@ class PlotCanvas(FigureCanvas):
         colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
         if not condition_data.empty:
             self.condition_axes.set_axis_on()
-            self.condition_axes.spines['right'].set_color('red')
+            # Configure axis colour and visibility
+            caxis_colour = 'red'
+            if(is_color_like(config.axis_colour)):
+                caxis_colour = config.axis_colour
+            self.condition_axes.spines['right'].set_color(caxis_colour)
             self.axes.spines['right'].set_visible(False)
-            self.condition_axes.tick_params(axis='y', colors='red')
-            self.condition_axes.yaxis.label.set_color('red')
+            self.condition_axes.tick_params(axis='y', colors=caxis_colour)
+            self.condition_axes.yaxis.label.set_color(caxis_colour)
+
+            # Loop over the condition data files
             for i, cdata in enumerate(condition_data.data_files):
+                # Get the x data in the right time units
                 condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
+
+                # Get the desired condition data and configure title
                 condition_ydata = cdata.signals[0].data
                 for sig in cdata.signals:
                     if sig.name == config.condition_yvar:
@@ -221,6 +231,8 @@ class PlotCanvas(FigureCanvas):
                         elif(config.condition_yunit != ''):
                             condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
                 self.condition_axes.set_ylabel(condition_y_title)
+
+                # Plot the condition data with different colour cycle
                 col = 'r'
                 if( i < len(colors) ):
                     col = colors[i]
@@ -251,7 +263,6 @@ class PlotCanvas(FigureCanvas):
             if hasattr(self, 'cid'):
                 self.mpl_disconnect(self.cid)
 
-
             # Define actions for button press: measure gradient
             def onclick(event):
                 self.cursor.onmove(event)
@@ -275,6 +286,7 @@ class PlotCanvas(FigureCanvas):
         # Show the plot
         self.draw()
 
+    # Function to convert the time data into the desired unit and get the axis title
     def convert_xdata(self, xaxisdata, config):
         xdata = xaxisdata.data
         x_title = xaxisdata.title()
@@ -299,6 +311,7 @@ class PlotCanvas(FigureCanvas):
             x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
         return xdata, x_title
 
+    # Function to find the closest curve to an x,y point TODO how to handle different axis units? (will break if y units very different)
     def find_closest(self, plots, x, y):
         min_dist = 99999
         min_ind = -1
@@ -311,6 +324,7 @@ class PlotCanvas(FigureCanvas):
             raise RuntimeError('No selected plot')
         return plots[i][0]
 
+    # Function to save figure through file handler gui
     def save(self, config):
         save_file(self.fig)
 

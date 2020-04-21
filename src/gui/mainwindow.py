@@ -290,7 +290,7 @@ class App(QMainWindow):
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
         self.legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.legend_names, 1, 3)
+        legend_box_layout.addWidget(self.legend_names, 1, 3, 1, 2)
 
         # Condition legend configuration
         legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
@@ -305,7 +305,7 @@ class App(QMainWindow):
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
         self.condition_legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.condition_legend_names, 2, 3)
+        legend_box_layout.addWidget(self.condition_legend_names, 2, 3, 1, 2)
 
         legend_box.setContentLayout(legend_box_layout)
 
@@ -345,6 +345,11 @@ class App(QMainWindow):
         style_box_layout.addWidget(Label('Line width:'), 1, 0)
         self.line_width = QLineEdit(self) 
         style_box_layout.addWidget(self.line_width, 1, 1)
+
+        # Condition axis colour
+        style_box_layout.addWidget(Label('Condition axis colour:'), 1, 2)
+        self.axis_colour = QLineEdit(self) 
+        style_box_layout.addWidget(self.axis_colour, 1, 3)
 
         style_box.setContentLayout(style_box_layout)
 
@@ -549,3 +554,4 @@ class App(QMainWindow):
             self.config.font_size = float(self.font_size.text())
         if(isfloat(self.line_width.text())):
             self.config.line_width  = float(self.line_width.text())
+        self.config.axis_colour = self.axis_colour.text()

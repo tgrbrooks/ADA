@@ -41,3 +41,4 @@ class Configuration():
         self.font_style = ''
         self.font_size = -1
         self.line_width = -1
+        self.axis_colour = -1
