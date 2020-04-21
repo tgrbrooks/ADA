@@ -60,6 +60,7 @@ class PlotCanvas(FigureCanvas):
 
         self.legend_on = False
         self.condition_legend_on = False
+        self.plot_config = []
 
         FigureCanvas.setSizePolicy(self,
                 QSizePolicy.Expanding,
@@ -156,23 +157,16 @@ class PlotCanvas(FigureCanvas):
                     data_index = data_index -1
                 # TODO apply automatic
                 #if(config.auto_remove):
-                data_index = data_index + 1
-                    
+                data_index = data_index + 1         
 
             # Plot the data
             if(config.smooth):
                 ydata = savitzky_golay(ydata, 61, 0)
             growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i], picker=5)
-            plot_list.append(growth_plot)
+            plot_list.append(growth_plot[0])
 
             xdata_list.append(xdata)
-            ydata_list.append(ydata)
- 
-        # Switch legend on/off
-        if(config.legend):
-            self.legend_on = True
-            self.legend_title = config.legend_title
-            self.axes.legend(title=config.legend_title, loc = 'upper left')
+            ydata_list.append(ydata) 
 
         # Switch grid on/off
         self.axes.grid(config.grid)
@@ -237,7 +231,7 @@ class PlotCanvas(FigureCanvas):
                 if( i < len(colors) ):
                     col = colors[i]
                 condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
-                plot_list.append(condition_plot)
+                plot_list.append(condition_plot[0])
 
             # Configure the axis range
             condition_ymin = self.condition_axes.get_ybound()[0]
@@ -247,12 +241,6 @@ class PlotCanvas(FigureCanvas):
             if(config.condition_ymax != -1):
                 condition_ymax = config.condition_ymax
             self.condition_axes.set_ylim([condition_ymin, condition_ymax])
-
-            # Toggle condition legend on
-            if(config.condition_legend):
-                self.condition_legend_on = True
-                self.condition_legend_title = config.condition_legend_title
-                self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
 
         # Control mouse clicking behaviour
         # Create a special cursor that snaps to growth curves
@@ -277,11 +265,30 @@ class PlotCanvas(FigureCanvas):
                 
             # Define action on button press: open line style window
             def onpick(event):
-                selected_line = self.find_closest(plot_list, event.xdata, event.ydata)
-                self.linewindow = LineStyleWindow(selected_line, self)
+                selected_line, line_i = self.find_closest(plot_list, event.xdata, event.ydata)
+                self.linewindow = LineStyleWindow(selected_line, line_i, self)
                 self.linewindow.show()
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onpick)
+
+        # Apply any saved changes from the line style configuration
+        # TODO behaviour when data added/removed
+        for pconf in self.plot_config:
+            if(pconf[0] > len(plot_list)):
+                continue
+            plot_list[pconf[0]].set_color(pconf[1][0])
+            plot_list[pconf[0]].set_linestyle(pconf[1][1])
+
+        # Switch legend on/off
+        if(config.legend):
+            self.legend_on = True
+            self.legend_title = config.legend_title
+            self.axes.legend(title=config.legend_title, loc = 'upper left')
+        # Toggle condition legend on
+        if(config.condition_legend):
+            self.condition_legend_on = True
+            self.condition_legend_title = config.condition_legend_title
+            self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
 
         # Show the plot
         self.draw()
@@ -316,13 +323,13 @@ class PlotCanvas(FigureCanvas):
         min_dist = 99999
         min_ind = -1
         for i, plot in enumerate(plots):
-            dist = np.argmin(np.sqrt(np.power(plot[0].get_xdata()-x,2)+np.power(plot[0].get_ydata()-y,2)))
+            dist = np.argmin(np.sqrt(np.power(plot.get_xdata()-x,2)+np.power(plot.get_ydata()-y,2)))
             if(dist < min_dist):
                 min_dist = dist
                 min_ind = i
         if (min_ind == -1):
             raise RuntimeError('No selected plot')
-        return plots[i][0]
+        return plots[min_ind], min_ind
 
     # Function to save figure through file handler gui
     def save(self, config):

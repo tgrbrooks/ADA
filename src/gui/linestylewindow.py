@@ -3,7 +3,7 @@ from matplotlib.colors import is_color_like
 
 class LineStyleWindow(QMainWindow):
     
-    def __init__(self, artist, parent=None):
+    def __init__(self, artist, line_i, parent=None):
         super(LineStyleWindow, self).__init__(parent)
         self.title = 'LineStyle'
         self.left = 50
@@ -11,6 +11,7 @@ class LineStyleWindow(QMainWindow):
         self.width = 150
         self.height = 100
         self.artist = artist
+        self.line_i = line_i
         self.parent = parent
         self.initUI()
 
@@ -58,6 +59,8 @@ class LineStyleWindow(QMainWindow):
             if(self.parent.condition_legend_on):
                 self.parent.condition_axes.legend(title=self.parent.condition_legend_title, loc='lower right')
             self.parent.draw()
+            self.parent.plot_config.append([self.line_i,[self.artist.get_color(), self.artist.get_linestyle()]])
+            self.close()
         except:
             pass
 
