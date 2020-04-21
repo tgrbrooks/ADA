@@ -52,14 +52,16 @@ class LineStyleWindow(QMainWindow):
     def apply_changes(self):
         try:
             if(is_color_like(self.line_colour.text())):
-                self.artist.set_color(self.line_colour.text())
-            self.artist.set_linestyle(self.line_style.currentText())
+                self.artist[0].set_color(self.line_colour.text())
+                if(len(self.artist) > 1):
+                    self.artist[1].set_color(self.line_colour.text())
+            self.artist[0].set_linestyle(self.line_style.currentText())
             if(self.parent.legend_on):
                 self.parent.axes.legend(title=self.parent.legend_title, loc='upper left')
             if(self.parent.condition_legend_on):
                 self.parent.condition_axes.legend(title=self.parent.condition_legend_title, loc='lower right')
             self.parent.draw()
-            self.parent.plot_config.append([self.line_i,[self.artist.get_color(), self.artist.get_linestyle()]])
+            self.parent.plot_config.append([self.line_i,[self.artist[0].get_color(), self.artist[0].get_linestyle()]])
             self.close()
         except:
             pass
