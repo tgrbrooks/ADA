@@ -128,21 +128,7 @@ class PlotCanvas(FigureCanvas):
                 xdata - xdata[0]
 
             # Get the y axis data for plotting
-            ydata = dat.signals[0].data
-            found_ydata = False
-            for sig in dat.signals:
-                if sig.name == config.yvar:
-                    found_ydata = True
-                    ydata = sig.data
-                    y_title = sig.title()
-                    if(config.yname != ''):
-                        y_title = y_title.replace(sig.name, config.yname)
-                    if(config.yunit.lower() == 'none'):
-                        y_title = y_title.replace("["+sig.unit+"]", "")
-                    elif(config.yunit != ''):
-                        y_title = y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
-            if not found_ydata:
-                raise RuntimeError('Could not find signal %s in %s' % (config.yvar, dat.name)) 
+            ydata, y_title = self.get_ydata(dat.signals, config)
 
             # remove outliers
             data_index = 0
@@ -213,25 +199,23 @@ class PlotCanvas(FigureCanvas):
                 condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
 
                 # Get the desired condition data and configure title
-                condition_ydata = cdata.signals[0].data
-                for sig in cdata.signals:
-                    if sig.name == config.condition_yvar:
-                        condition_ydata = sig.data
-                        condition_y_title = sig.title()
-                        if(config.condition_yname != ''):
-                            condition_y_title = condition_y_title.replace(sig.name, config.condition_yname)
-                        if(config.condition_yunit.lower() != 'none'):
-                            condition_y_title = condition_y_title.replace("["+sig.unit+"]", "")
-                        elif(config.condition_yunit != ''):
-                            condition_y_title = condition_y_title.replace("["+sig.unit+"]", "["+config.yunit+"]")
+                condition_ydata, condition_y_title = self.get_ydata(cdata.signals, config, True)
                 self.condition_axes.set_ylabel(condition_y_title)
 
                 # Plot the condition data with different colour cycle
                 col = 'r'
                 if( i < len(colors) ):
                     col = colors[i]
-                condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
-                plot_list.append(condition_plot[0])
+
+                # Average condition data over time
+                if(config.condition_average != -1):
+                    # Do something
+                    condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average)
+                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', color = col, label=config.condition_label_names[i])
+                    plot_list.append(condition_plot[0])
+                else:
+                    condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
+                    plot_list.append(condition_plot[0])
 
             # Configure the axis range
             condition_ymin = self.condition_axes.get_ybound()[0]
@@ -317,6 +301,63 @@ class PlotCanvas(FigureCanvas):
         else:
             x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
         return xdata, x_title
+
+    # Function to retrieve y data from list of possible signals
+    def get_ydata(self, signals, config, condition=False):
+        ydata = signals[0].data
+        y_title = ''
+        found_ydata = False
+        yvar = config.yvar
+        name = config.yname
+        unit = config.yunit
+        if condition:
+            yvar = config.condition_yvar
+            name = config.condition_yname
+            unit = config.condition_yunit
+        for sig in signals:
+            if sig.name == yvar:
+                found_ydata = True
+                ydata = sig.data
+                y_title = sig.title()
+                if(name != ''):
+                    y_title = y_title.replace(sig.name, name)
+                if(unit.lower() == 'none'):
+                    y_title = y_title.replace("["+sig.unit+"]", "")
+                elif(unit != ''):
+                    y_title = y_title.replace("["+sig.unit+"]", "["+unit+"]")
+        if not found_ydata:
+            raise RuntimeError('Could not find signal %s' % (yvar))
+        return ydata, y_title
+
+    # Function to average data over time period
+    def time_average(self, xdata, ydata, window):
+        new_xdata = np.array([])
+        new_ydata = np.array([])
+        new_yerr = np.array([])
+        w_i = 1
+        i = 0
+        while(i < len(xdata)):
+            mean = 0.
+            data = []
+            while(i < len(xdata) and xdata[i] < w_i*window):
+                mean = mean + ydata[i]
+                data.append(ydata[i])
+                i = i + 1
+            mean = mean/len(data)
+            std_dev = 0
+            for d in data:
+                std_dev = std_dev + np.power(d - mean, 2)
+            std_dev = np.sqrt(std_dev / (len(data)-1))
+            if(len(data) == 0):
+                continue
+            new_xdata = np.append(new_xdata, (w_i-1)*window + window/2.)
+            new_ydata = np.append(new_ydata, mean)
+            if(len(data) == 1):
+                new_yerr = np.append(new_yerr, 0)
+            else:
+                new_yerr = np.append(new_yerr, std_dev)
+            w_i = w_i + 1
+        return new_xdata, new_ydata, new_yerr
 
     # Function to find the closest curve to an x,y point TODO how to handle different axis units? (will break if y units very different)
     def find_closest(self, plots, x, y):

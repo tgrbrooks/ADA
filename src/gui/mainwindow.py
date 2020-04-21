@@ -249,21 +249,27 @@ class App(QMainWindow):
         data_box_layout.addWidget(self.align_data, 0, 3)
 
         # Remove any obvious outliers from the growth data
-        data_box_layout.addWidget(Label('Remove outliers:'), 1, 0)
-        data_box_layout.addWidget(Label('Auto:'), 1, 1)
+        data_box_layout.addWidget(Label('Data outliers:'), 1, 0)
+        data_box_layout.addWidget(Label('Auto remove:'), 1, 1)
         self.auto_remove = QCheckBox(self)
         data_box_layout.addWidget(self.auto_remove, 1, 2)
-        data_box_layout.addWidget(Label('Above:'), 1, 3)
+        data_box_layout.addWidget(Label('Remove above:'), 1, 3)
         self.remove_above = QLineEdit(self)
         data_box_layout.addWidget(self.remove_above, 1, 4)
-        data_box_layout.addWidget(Label('Below:'), 1, 5)
+        data_box_layout.addWidget(Label('Remove below:'), 1, 5)
         self.remove_below = QLineEdit(self)
         data_box_layout.addWidget(self.remove_below, 1, 6)
 
-        data_box_layout.addWidget(Label('Downsample condition:'), 2, 0)
+        # Condition data downsampling and averaging
+        data_box_layout.addWidget(Label('Condition data:'), 2, 0)
+        data_box_layout.addWidget(Label('Downsample readings:'), 2, 1)
         self.downsample = QLineEdit(self)
-        self.downsample.setToolTip('Only read in/plot every X data points')
-        data_box_layout.addWidget(self.downsample, 2, 1)
+        self.downsample.setToolTip('Only read in every X data points')
+        data_box_layout.addWidget(self.downsample, 2, 2)
+        data_box_layout.addWidget(Label('Time average:'), 2, 3)
+        self.condition_average = QLineEdit(self)
+        self.condition_average.setToolTip('Average over time window')
+        data_box_layout.addWidget(self.condition_average, 2, 4)
 
         data_box.setContentLayout(data_box_layout)
 
@@ -487,11 +493,11 @@ class App(QMainWindow):
         self.config.xunit = self.xaxis_unit.text()
         if(isfloat(self.xaxis_min.text())):
             self.config.xmin = float(self.xaxis_min.text())
-        if(self.xaxis_min.text() == ''):
+        else:
             self.config.xmin = -1
         if(isfloat(self.xaxis_max.text())):
             self.config.xmax = float(self.xaxis_max.text())
-        if(self.xaxis_max.text() == ''):
+        else:
             self.config.xmax = -1
 
         # y axis config
@@ -500,11 +506,11 @@ class App(QMainWindow):
         self.config.yunit = self.yaxis_unit.text()
         if(isfloat(self.yaxis_min.text())):
             self.config.ymin = float(self.yaxis_min.text())
-        if(self.yaxis_min.text() == ''):
+        else:
             self.config.ymin = -1
         if(isfloat(self.yaxis_max.text())):
             self.config.ymax = float(self.yaxis_max.text())
-        if(self.yaxis_max.text() == ''):
+        else:
             self.config.ymax = -1
 
         # Condition y axis config
@@ -513,11 +519,11 @@ class App(QMainWindow):
         self.config.condition_yunit = self.condition_yaxis_unit.text()
         if(isfloat(self.condition_yaxis_min.text())):
             self.config.condition_ymin = float(self.condition_yaxis_min.text())
-        if(self.condition_yaxis_min.text() == ''):
+        else:
             self.config.condition_ymin = -1
         if(isfloat(self.condition_yaxis_max.text())):
             self.config.condition_ymax = float(self.condition_yaxis_max.text())
-        if(self.condition_yaxis_max.text() == ''):
+        else:
             self.config.condition_ymax = -1
 
         # Data config
@@ -530,6 +536,10 @@ class App(QMainWindow):
             self.config.remove_below = float(self.remove_below.text())
         if(isint(self.downsample.text())):
             self.config.downsample = int(self.downsample.text())
+        if(isfloat(self.condition_average.text())):
+            self.config.condition_average = float(self.condition_average.text())
+        else:
+            self.config.condition_average = -1
 
         # Legend config
         self.config.legend = self.legend_toggle.isChecked()
