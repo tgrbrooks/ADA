@@ -443,14 +443,25 @@ class PlotCanvas(FigureCanvas):
             w_i = w_i + 1
         return new_xdata, new_ydata, new_yerr
 
-    # Function to find the closest curve to an x,y point TODO how to handle different axis units? (will break if y units very different)
+    # Function to find the closest curve to an x,y point
     def find_closest(self, plots, x, y):
         min_dist = 99999
         min_ind = -1
+        # Transform to display coordinates
+        x_display, y_display = self.axes.transData.transform_point((x, y))
         for i, plot in enumerate(plots):
-            dist = np.argmin(np.sqrt(np.power(plot[0].get_xdata()-x,2)+np.power(plot[0].get_ydata()-y,2)))
-            if(dist < min_dist):
-                min_dist = dist
+            xdata_display = np.array([])
+            ydata_display = np.array([])
+            # Transform all points to display coordinates
+            for j, xold in enumerate(plot[0].get_xdata()):
+                xnew, ynew = plot[0].axes.transData.transform_point((xold, plot[0].get_ydata()[j]))
+                xdata_display = np.append(xdata_display, xnew)
+                ydata_display = np.append(ydata_display, ynew)
+            dist = np.sqrt(np.power(xdata_display-x_display,2)+np.power(ydata_display-y_display,2))
+            dist_i = np.argmin(dist)
+            distance = dist[dist_i]
+            if(distance < min_dist):
+                min_dist = distance
                 min_ind = i
         if (min_ind == -1):
             raise RuntimeError('No selected plot')
