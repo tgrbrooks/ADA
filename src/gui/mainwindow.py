@@ -135,12 +135,11 @@ class App(QMainWindow):
         plot_layout.addWidget(measure_button, 6, 2)
 
         # Toggle grid
-        grid_button = QPushButton('Grid', self)
-        grid_button.clicked.connect(self.toggle_grid)
-        grid_button.clicked.connect(self.update_plot)
-        grid_button.setToolTip('Toggle grid on/off')
-        grid_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
-        plot_layout.addWidget(grid_button, 6, 3)
+        table_button = QPushButton('To Table', self)
+        table_button.clicked.connect(self.create_table)
+        table_button.setToolTip('Create a table of growth rates for all curves\nConfigure in options tab')
+        table_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        plot_layout.addWidget(table_button, 6, 3)
 
         #--------------------------------------------------------------------------------------
         #                                   OPTIONS TAB
@@ -365,6 +364,10 @@ class App(QMainWindow):
         self.axis_colour = QLineEdit(self) 
         style_box_layout.addWidget(self.axis_colour, 1, 3)
 
+        style_box_layout.addWidget(Label('Grid:'), 1, 4)
+        self.grid_toggle = QCheckBox(self)
+        style_box_layout.addWidget(self.grid_toggle, 1, 5)
+
         style_box.setContentLayout(style_box_layout)
 
         # Add layouts to tabs via widgets
@@ -403,7 +406,6 @@ class App(QMainWindow):
 
     # Function: Update the main plot
     def update_plot(self):
-        self.plot.plot(self.data, self.condition_data, self.config)
         try:
             self.plot.plot(self.data, self.condition_data, self.config)
         except Exception as e:
@@ -498,8 +500,8 @@ class App(QMainWindow):
         self.config.cursor = not self.config.cursor
 
     # Function: Toggle grid on and off
-    def toggle_grid(self):
-        self.config.grid = not self.config.grid
+    def create_table(self):
+        print("Making table")
 
     # Function: Export data to csv format
     def export_to_csv(self):
@@ -613,3 +615,4 @@ class App(QMainWindow):
         if(isfloat(self.line_width.text())):
             self.config.line_width  = float(self.line_width.text())
         self.config.axis_colour = self.axis_colour.text()
+        self.config.grid = self.grid_toggle.isChecked()

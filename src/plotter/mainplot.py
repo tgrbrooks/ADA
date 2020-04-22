@@ -367,9 +367,21 @@ class PlotCanvas(FigureCanvas):
                 ydata = np.delete(ydata, data_index)
                 xdata = np.delete(xdata, data_index)
                 data_index = data_index -1
-            # TODO apply automatic
-            #if(config.auto_remove):
             data_index = data_index + 1
+        # Apply automatic outlier detection
+        if(config.auto_remove):
+            # get the average difference between data points
+            mean_diff = 0
+            for i in range(0, len(ydata)-1, 1):
+                mean_diff = mean_diff + abs(ydata[i]-ydata[i+1])
+            mean_diff = mean_diff / (len(ydata)-1)
+            data_index = 0
+            # If the difference to the next point is over 20x the mean, delete the next point
+            while data_index < len(ydata)-1:
+                if abs(ydata[data_index] - ydata[data_index+1]) > 20.*mean_diff:
+                    ydata = np.delete(ydata, data_index+1)
+                    xdata = np.delete(xdata, data_index+1)
+                data_index = data_index + 1
         return xdata, ydata
 
     # Function to average replicate data sets
