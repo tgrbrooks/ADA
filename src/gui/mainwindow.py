@@ -293,32 +293,58 @@ class App(QMainWindow):
         self.legend_toggle = QCheckBox(self)
         legend_box_layout.addWidget(self.legend_toggle, 1, 1)
 
-        legend_box_layout.addWidget(Label('Header:'), 0, 2)
-        self.legend_title = QLineEdit(self) 
-        legend_box_layout.addWidget(self.legend_title, 1, 2)
-
         # Legend options dropdown menu (editable)
-        legend_box_layout.addWidget(Label('Titles:'), 0, 3)
+        legend_box_layout.addWidget(Label('Titles:'), 0, 2)
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
         self.legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.legend_names, 1, 3, 1, 2)
+        legend_box_layout.addWidget(self.legend_names, 1, 2, 1, 2)
+
+        # Heading for legend
+        legend_box_layout.addWidget(Label('Header:'), 0, 4)
+        self.legend_title = QLineEdit(self) 
+        legend_box_layout.addWidget(self.legend_title, 1, 4)
+
+        # Extra information from header dropdown
+        legend_box_layout.addWidget(Label('Extra info:'), 0, 5)
+        self.extra_info = QComboBox(self)
+        self.extra_info.addItem("none")
+        self.extra_info.addItem("reactor")
+        self.extra_info.addItem("profile")
+        self.extra_info.addItem("title")
+        self.extra_info.addItem("date")
+        self.extra_info.addItem("time")
+        self.extra_info.addItem("date+time")
+        self.extra_info.setToolTip('Show extra information from the file in the legend')
+        legend_box_layout.addWidget(self.extra_info, 1, 5)
 
         # Condition legend configuration
         legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
         self.condition_legend_toggle = QCheckBox(self)
         legend_box_layout.addWidget(self.condition_legend_toggle, 2, 1)
 
-        self.condition_legend_title = QLineEdit(self) 
-        legend_box_layout.addWidget(self.condition_legend_title, 2, 2)
-
         # Condition legend options dropdown menu
         self.condition_legend_names = QComboBox(self)
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
         self.condition_legend_names.setToolTip('Edit names by changing text and pressing return')
-        legend_box_layout.addWidget(self.condition_legend_names, 2, 3, 1, 2)
+        legend_box_layout.addWidget(self.condition_legend_names, 2, 2, 1, 2)
+
+        # Heading for condition legend
+        self.condition_legend_title = QLineEdit(self) 
+        legend_box_layout.addWidget(self.condition_legend_title, 2, 4)
+
+        self.condition_extra_info = QComboBox(self)
+        self.condition_extra_info.addItem("none")
+        self.condition_extra_info.addItem("reactor")
+        self.condition_extra_info.addItem("profile")
+        self.condition_extra_info.addItem("title")
+        self.condition_extra_info.addItem("date")
+        self.condition_extra_info.addItem("time")
+        self.condition_extra_info.addItem("date+time")
+        self.condition_extra_info.setToolTip('Show extra information from the file in the legend')
+        legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
 
         legend_box.setContentLayout(legend_box_layout)
 
@@ -606,6 +632,8 @@ class App(QMainWindow):
         self.config.condition_label_names.clear()
         for i in range(self.condition_legend_names.count()):
             self.config.condition_label_names.append(self.condition_legend_names.itemText(i))
+        self.config.extra_info = self.extra_info.currentText()
+        self.config.condition_extra_info = self.condition_extra_info.currentText()
 
         # Style config
         self.config.style = self.style_dropdown.currentText()

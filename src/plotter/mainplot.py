@@ -125,6 +125,10 @@ class PlotCanvas(FigureCanvas):
             # Get the y axis data for plotting
             ydata, y_title = self.get_ydata(dat.signals, config)
 
+            legend_label = config.label_names[i]
+            if(config.extra_info != 'none'):
+                legend_label = legend_label + ' (' + dat.get_header_info(config.extra_info) + ')'
+
             # Apply alignment, outlier removal, and smoothing
             xdata, ydata = self.process_data(xdata, ydata, config)
 
@@ -139,11 +143,11 @@ class PlotCanvas(FigureCanvas):
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
                 xdata, ydata, yerr = self.average_data(xdatas, ydatas)
-                growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+                growth_plot = self.axes.plot(xdata, ydata, '-', label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
                 plot_list.append([growth_plot[0], fill_area])
             else:
-                growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
+                growth_plot = self.axes.plot(xdata, ydata, '-', label=legend_label)
                 plot_list.append([growth_plot[0]])
 
             xdata_list.append(xdata)
@@ -197,6 +201,11 @@ class PlotCanvas(FigureCanvas):
                 condition_ydata, condition_y_title = self.get_ydata(cdata.signals, config, True)
                 self.condition_axes.set_ylabel(condition_y_title)
 
+                # Get the legend label with any extra info specified in the configuration
+                legend_label = config.condition_label_names[i]
+                if(config.condition_extra_info != 'none'):
+                    legend_label = legend_label + ' (' + dat.get_header_info(config.condition_extra_info) + ')'
+
                 # Plot the condition data with different colour cycle
                 col = 'r'
                 if( i < len(colors) ):
@@ -206,10 +215,10 @@ class PlotCanvas(FigureCanvas):
                 if(config.condition_average != -1):
                     # Do something
                     condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average)
-                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=config.condition_label_names[i])
+                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=legend_label)
                     plot_list.append([condition_plot[0]])
                 else:
-                    condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
+                    condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=legend_label)
                     plot_list.append([condition_plot[0]])
 
             # Configure the axis range

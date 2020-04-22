@@ -28,6 +28,8 @@ class Configuration():
         self.remove_above = -1
         self.remove_below = -1
         self.downsample = -1
+        # Measurement config
+        self.cursor = False
         # Legend config
         self.legend = False
         self.condition_legend = False
@@ -35,11 +37,12 @@ class Configuration():
         self.condition_legend_title = ''
         self.label_names = []
         self.condition_label_names = []
-        self.cursor = False
-        self.grid = False
+        self.extra_info = 'none'
+        self.condition_extra_info = 'none'
         # Style config
         self.style = ''
         self.font_style = ''
         self.font_size = -1
         self.line_width = -1
         self.axis_colour = -1
+        self.grid = False

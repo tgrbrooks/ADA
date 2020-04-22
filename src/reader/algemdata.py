@@ -9,13 +9,31 @@ class AlgemData():
         self.name = file_name
         self.downsample = downsample
         self.label = (file_name.split('/')[-1]).split('.')[0]
+        # Header information
         self.date = date(1994, 3, 16)
         self.time = time(0, 0, 0)
         self.title = ''
+        self.reactor = ''
+        self.profile = ''
+        # Data information
         self.xaxis = self.XAxis()
         self.signals = []
         self.process_header()
         self.read_data()
+
+    def get_header_info(self, info):
+        if(info == 'date'):
+            return self.date.strftime('%m/%d/%Y')
+        if(info == 'time'):
+            return self.time.strftime('%H:%M:%S')
+        if(info == 'date+time'):
+            return self.date.strftime('%m/%d/%Y') + ', ' + self.time.strftime('%H:%M:%S')
+        if(info == 'title'):
+            return self.title
+        if(info == 'reactor'):
+            return self.reactor
+        if(info == 'profile'):
+            return self.profile
 
     # Function: Read the header and extract useful information
     def process_header(self):
@@ -44,6 +62,10 @@ class AlgemData():
                 self.time = time(int(time_str[0]), int(time_str[1]), int(time_str[2]))
             if line.find('Title=') == 0:
                 self.title = line.split('"')[1]
+            if line.find('Stats=') == 0:
+                self.reactor = line.split('ReactorName=')[1].split(',')[0]
+            if line.find('Setup=') == 0:
+                self.profile = line.split('.algp')[0].split('\\')[-1]
             if line.find('Horiz=') == 0:
                 info = (line.split('"')[1]).split(',')
                 self.xaxis.set_info(info)
