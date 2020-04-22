@@ -250,6 +250,12 @@ class App(QMainWindow):
         self.align_data.setToolTip('Start growth curves at 0 time')
         data_box_layout.addWidget(self.align_data, 0, 3)
 
+        # Align all data at Y position
+        data_box_layout.addWidget(Label('Align at Y ='), 0, 4)
+        self.y_alignment = QLineEdit(self)
+        self.y_alignment.setToolTip('Align all growth curves at given Y value')
+        data_box_layout.addWidget(self.y_alignment, 0, 5)
+
         # Remove any obvious outliers from the growth data
         data_box_layout.addWidget(Label('Data outliers:'), 1, 0)
         data_box_layout.addWidget(Label('Auto remove:'), 1, 1)
@@ -563,6 +569,10 @@ class App(QMainWindow):
         # Data config
         self.config.smooth = self.smooth_data.isChecked()
         self.config.align = self.align_data.isChecked()
+        if(isfloat(self.y_alignment.text())):
+            self.config.y_alignment = float(self.y_alignment.text())
+        else:
+            self.config.y_alignment = -1
         self.config.auto_remove = self.auto_remove.isChecked()
         if(isfloat(self.remove_above.text())):
             self.config.remove_above = float(self.remove_above.text())

@@ -23,6 +23,7 @@ class Configuration():
         # Data config
         self.smooth = False
         self.align = False
+        self.y_alignment = -1
         self.auto_remove = False
         self.remove_above = -1
         self.remove_below = -1

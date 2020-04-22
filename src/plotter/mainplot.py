@@ -140,11 +140,11 @@ class PlotCanvas(FigureCanvas):
                     ydatas.append(rep_ydata)
                 xdata, ydata, yerr = self.average_data(xdatas, ydatas)
                 growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
-                self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
-                plot_list.append(growth_plot[0])
+                fill_area = self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
+                plot_list.append([growth_plot[0], fill_area])
             else:
                 growth_plot = self.axes.plot(xdata, ydata, '-', label=config.label_names[i])
-                plot_list.append(growth_plot[0])
+                plot_list.append([growth_plot[0]])
 
             xdata_list.append(xdata)
             ydata_list.append(ydata) 
@@ -207,10 +207,10 @@ class PlotCanvas(FigureCanvas):
                     # Do something
                     condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average)
                     condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=config.condition_label_names[i])
-                    plot_list.append(condition_plot[0])
+                    plot_list.append([condition_plot[0]])
                 else:
                     condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=config.condition_label_names[i])
-                    plot_list.append(condition_plot[0])
+                    plot_list.append([condition_plot[0]])
 
             # Configure the axis range
             condition_ymin = self.condition_axes.get_ybound()[0]
@@ -245,7 +245,7 @@ class PlotCanvas(FigureCanvas):
             # Define action on button press: open line style window
             def onpick(event):
                 selected_line, line_i = self.find_closest(plot_list, event.xdata, event.ydata)
-                self.linewindow = LineStyleWindow(selected_line, line_i, self)
+                self.linewindow = LineStyleWindow(plot_list[line_i], line_i, self)
                 self.linewindow.show()
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onpick)
@@ -255,8 +255,10 @@ class PlotCanvas(FigureCanvas):
         for pconf in self.plot_config:
             if(pconf[0] > len(plot_list)):
                 continue
-            plot_list[pconf[0]].set_color(pconf[1][0])
-            plot_list[pconf[0]].set_linestyle(pconf[1][1])
+            plot_list[pconf[0]][0].set_color(pconf[1][0])
+            plot_list[pconf[0]][0].set_linestyle(pconf[1][1])
+            if len(plot_list[pconf[0]]) > 1:
+                plot_list[pconf[0]][1].set_color(pconf[1][0])
 
         # Switch legend on/off
         if(config.legend):
@@ -327,8 +329,11 @@ class PlotCanvas(FigureCanvas):
     # Function to apply alignment, outlier removal and smoothing
     def process_data(self, xdata, ydata, config):
         # Align at time 0 if option selected
-        if config.align:
-            xdata - xdata[0]
+        if config.align and config.y_alignment == -1:
+            xdata = xdata - xdata[0]
+
+        if config.y_alignment != -1:
+            xdata = self.align_to_y(xdata, ydata, config)
 
         # remove outliers
         if(config.remove_above >= 0 or config.remove_below >= 0 or config.auto_remove):
@@ -338,6 +343,17 @@ class PlotCanvas(FigureCanvas):
         if(config.smooth):
             ydata = savitzky_golay(ydata, 61, 0)
         return xdata, ydata
+
+    # Function to align all plots to the same y value
+    def align_to_y(self, xdata, ydata, config):
+        # Find the first y index greater than the alignment point
+        index = 0
+        for i, y in enumerate(ydata):
+            if y >= config.y_alignment:
+                index = i
+                break
+        xdata = xdata - xdata[index]
+        return xdata
 
     # Function to remove outliers in the data
     def remove_outliers(self, xdata, ydata, config):
@@ -411,13 +427,13 @@ class PlotCanvas(FigureCanvas):
         min_dist = 99999
         min_ind = -1
         for i, plot in enumerate(plots):
-            dist = np.argmin(np.sqrt(np.power(plot.get_xdata()-x,2)+np.power(plot.get_ydata()-y,2)))
+            dist = np.argmin(np.sqrt(np.power(plot[0].get_xdata()-x,2)+np.power(plot[0].get_ydata()-y,2)))
             if(dist < min_dist):
                 min_dist = dist
                 min_ind = i
         if (min_ind == -1):
             raise RuntimeError('No selected plot')
-        return plots[min_ind], min_ind
+        return plots[min_ind][0], min_ind
 
     # Function to save figure through file handler gui
     def save(self, config):
