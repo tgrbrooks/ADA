@@ -46,3 +46,5 @@ class Configuration():
         self.line_width = -1
         self.axis_colour = -1
         self.grid = False
+        # Stats config
+        self.std_err = False

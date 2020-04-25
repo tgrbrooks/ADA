@@ -142,7 +142,7 @@ class PlotCanvas(FigureCanvas):
                     rep_xdata, rep_ydata = self.process_data(rep_xdata, rep_ydata, config)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
-                xdata, ydata, yerr = self.average_data(xdatas, ydatas)
+                xdata, ydata, yerr = self.average_data(xdatas, ydatas, config.std_err)
                 growth_plot = self.axes.plot(xdata, ydata, '-', label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
                 plot_list.append([growth_plot[0], fill_area])
@@ -214,7 +214,7 @@ class PlotCanvas(FigureCanvas):
                 # Average condition data over time
                 if(config.condition_average != -1):
                     # Do something
-                    condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average)
+                    condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average, config.std_err)
                     condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=legend_label)
                     plot_list.append([condition_plot[0]])
                 else:
@@ -394,7 +394,7 @@ class PlotCanvas(FigureCanvas):
         return xdata, ydata
 
     # Function to average replicate data sets
-    def average_data(self, xdatas, ydatas):
+    def average_data(self, xdatas, ydatas, show_err=False):
         new_xdata = np.array([])
         new_ydata = np.array([])
         new_yerr = np.array([])
@@ -411,14 +411,15 @@ class PlotCanvas(FigureCanvas):
                 continue
             mean = np.mean(ys)
             std_dev = np.std(ys, ddof=1)
-            #std_err = std_dev/np.sqrt(ys.size)
+            if(show_err):
+                std_dev = std_dev/np.sqrt(ys.size)
             new_xdata = np.append(new_xdata, x_i)
             new_ydata = np.append(new_ydata, mean)
             new_yerr = np.append(new_yerr, std_dev)
         return new_xdata, new_ydata, new_yerr
 
     # Function to average data over time period
-    def time_average(self, xdata, ydata, window):
+    def time_average(self, xdata, ydata, window, show_err=False):
         new_xdata = np.array([])
         new_ydata = np.array([])
         new_yerr = np.array([])
@@ -427,11 +428,12 @@ class PlotCanvas(FigureCanvas):
         while(i < len(xdata)):
             data = np.array([])
             while(i < len(xdata) and xdata[i] < w_i*window):
-                #mean = mean + ydata[i]
                 data = np.append(data, ydata[i])
                 i = i + 1
             mean = np.mean(data)
             std_dev = np.std(data, ddof=1)
+            if(show_err):
+                std_dev = std_dev/np.sqrt(data.size)
             if(data.size == 0):
                 continue
             new_xdata = np.append(new_xdata, (w_i-1)*window + window/2.)

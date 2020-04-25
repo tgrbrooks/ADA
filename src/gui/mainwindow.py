@@ -8,6 +8,7 @@ from gui.label import Label
 from gui.functions import isfloat, isint
 from gui.collapsiblebox import CollapsibleBox
 from gui.datalistitem import DataListItem
+from gui.exportwindow import ExportWindow
 
 # Standard imports
 import csv
@@ -396,6 +397,20 @@ class App(QMainWindow):
 
         style_box.setContentLayout(style_box_layout)
 
+        # --------------- STATS CONFIGURATION
+
+        # Stats configuration
+        stats_box = CollapsibleBox('Stats configuration:')
+        options_layout.addWidget(stats_box, 5, 0, 1, 6)
+        stats_box_layout = QGridLayout()
+
+        stats_box_layout.addWidget(Label('Standard error:'), 0, 0)
+        self.std_err = QCheckBox(self)
+        self.std_err.setToolTip('Checked = show standard error on mean\nUnchecked = show standard deviation')
+        stats_box_layout.addWidget(self.std_err, 0, 1)
+
+        stats_box.setContentLayout(stats_box_layout)
+
         # Add layouts to tabs via widgets
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -512,7 +527,6 @@ class App(QMainWindow):
         self.update_condition_data_list()
 
     def add_to_item(self):
-        print('add')
         # Horrible stuff to get list item
         widget = self.sender()
         gp = widget.mapToGlobal(QPoint())
@@ -531,6 +545,9 @@ class App(QMainWindow):
 
     # Function: Export data to csv format
     def export_to_csv(self):
+        self.export = ExportWindow(self)
+        self.export.show()
+        '''
         for data in self.data.data_files:
             try:
                 filename = data.name.replace('.txt', '.csv')
@@ -550,6 +567,7 @@ class App(QMainWindow):
                 print('Error: ' + e)
                 self.error = ErrorWindow(e, self)
                 self.error.show()
+        '''
 
     # Function: Update the global configuration
     def update_config(self):
@@ -644,3 +662,6 @@ class App(QMainWindow):
             self.config.line_width  = float(self.line_width.text())
         self.config.axis_colour = self.axis_colour.text()
         self.config.grid = self.grid_toggle.isChecked()
+
+        # Stats config
+        self.config.std_err = self.std_err.isChecked()

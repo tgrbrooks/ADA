@@ -5,7 +5,7 @@ class LineStyleWindow(QMainWindow):
     
     def __init__(self, artist, line_i, parent=None):
         super(LineStyleWindow, self).__init__(parent)
-        self.title = 'LineStyle'
+        self.title = 'Line Style'
         self.left = 50
         self.top = 50
         self.width = 150
