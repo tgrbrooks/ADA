@@ -61,6 +61,7 @@ class App(QMainWindow):
 
         # Add data button
         data_button = QPushButton('Add Data', self)
+        data_button.clicked.connect(self.update_config)
         data_button.clicked.connect(self.open_data_files)
         data_button.clicked.connect(self.update_data_list)
         data_button.setToolTip('Import data for plotting')
@@ -83,6 +84,7 @@ class App(QMainWindow):
 
         # Add data button
         condition_data_button = QPushButton('Add Condition Data', self)
+        condition_data_button.clicked.connect(self.update_config)
         condition_data_button.clicked.connect(self.open_condition_files)
         condition_data_button.clicked.connect(self.update_condition_data_list)
         condition_data_button.setToolTip('Import condition data (temp, light, etc) for plotting')
