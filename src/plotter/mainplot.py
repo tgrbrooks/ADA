@@ -2,6 +2,7 @@
 from reader.dataholder import DataHolder
 from gui.configuration import Configuration
 from plotter.cursor import Cursor, SnapToCursor
+from plotter.functions import process_data, average_data, time_average
 from gui.linestylewindow import LineStyleWindow
 from gui.filehandler import save_file
 
@@ -20,29 +21,6 @@ from matplotlib.colors import is_color_like
 import matplotlib.pyplot as plt
 import matplotlib.style
 import matplotlib as mpl
-
-def savitzky_golay(y, window_size, order, deriv=0, rate=1):
-    
-    try:
-        window_size = np.abs(np.int(window_size))
-        order = np.abs(np.int(order))
-    except ValueError:
-        raise ValueError("window_size and order have to be of type int")
-    if window_size % 2 != 1 or window_size < 1:
-        raise TypeError("window_size size must be a positive odd number")
-    if window_size < order + 2:
-        raise TypeError("window_size is too small for the polynomials order")
-    order_range = range(order+1)
-    half_window = (window_size -1) // 2
-    # precompute coefficients
-    b = np.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
-    m = np.linalg.pinv(b).A[deriv] * rate**deriv * factorial(deriv)
-    # pad the signal at the extremes with
-    # values taken from the signal itself
-    firstvals = y[0] - np.abs( y[1:half_window+1][::-1] - y[0] )
-    lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
-    y = np.concatenate((firstvals, y, lastvals))
-    return np.convolve( m[::-1], y, mode='valid')
 
 class PlotCanvas(FigureCanvas):
 
@@ -130,7 +108,7 @@ class PlotCanvas(FigureCanvas):
                 legend_label = legend_label + ' (' + dat.get_header_info(config.extra_info) + ')'
 
             # Apply alignment, outlier removal, and smoothing
-            xdata, ydata = self.process_data(xdata, ydata, config)
+            xdata, ydata = process_data(xdata, ydata, config)
 
             # If there are replicate files then average the data
             if(len(data.replicate_files[i]) > 1):
@@ -139,10 +117,10 @@ class PlotCanvas(FigureCanvas):
                 for j in range(1, len(data.replicate_files[i]), 1):
                     rep_xdata, rep_xtitle = self.convert_xdata(data.replicate_files[i][j].xaxis, config)
                     rep_ydata, rep_ytitle = self.get_ydata(data.replicate_files[i][j].signals, config)
-                    rep_xdata, rep_ydata = self.process_data(rep_xdata, rep_ydata, config)
+                    rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata, config)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
-                xdata, ydata, yerr = self.average_data(xdatas, ydatas, config.std_err)
+                xdata, ydata, yerr = average_data(xdatas, ydatas, config.std_err)
                 growth_plot = self.axes.plot(xdata, ydata, '-', label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr, ydata+yerr, alpha=0.4)
                 plot_list.append([growth_plot[0], fill_area])
@@ -214,7 +192,7 @@ class PlotCanvas(FigureCanvas):
                 # Average condition data over time
                 if(config.condition_average != -1):
                     # Do something
-                    condition_xdata, condition_ydata, condition_yerr = self.time_average(condition_xdata, condition_ydata, config.condition_average, config.std_err)
+                    condition_xdata, condition_ydata, condition_yerr = time_average(condition_xdata, condition_ydata, config.condition_average, config.std_err)
                     condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=legend_label)
                     plot_list.append([condition_plot[0]])
                 else:
@@ -335,116 +313,6 @@ class PlotCanvas(FigureCanvas):
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title
 
-    # Function to apply alignment, outlier removal and smoothing
-    def process_data(self, xdata, ydata, config):
-        # Align at time 0 if option selected
-        if config.align and config.y_alignment == -1:
-            xdata = xdata - xdata[0]
-
-        if config.y_alignment != -1:
-            xdata = self.align_to_y(xdata, ydata, config)
-
-        # remove outliers
-        if(config.remove_above >= 0 or config.remove_below >= 0 or config.auto_remove):
-            xdata, ydata = self.remove_outliers(xdata, ydata, config)    
-
-        # Smooth the data
-        if(config.smooth):
-            ydata = savitzky_golay(ydata, 61, 0)
-        return xdata, ydata
-
-    # Function to align all plots to the same y value
-    def align_to_y(self, xdata, ydata, config):
-        # Find the first y index greater than the alignment point
-        index = 0
-        for i, y in enumerate(ydata):
-            if y >= config.y_alignment:
-                index = i
-                break
-        xdata = xdata - xdata[index]
-        return xdata
-
-    # Function to remove outliers in the data
-    def remove_outliers(self, xdata, ydata, config):
-        data_index = 0
-        while data_index < len(ydata):
-            if(config.remove_above >= 0 and ydata[data_index] > config.remove_above):
-                ydata = np.delete(ydata, data_index)
-                xdata = np.delete(xdata, data_index)
-                data_index = data_index - 1
-            if(config.remove_below >= 0 and ydata[data_index] < config.remove_below):
-                ydata = np.delete(ydata, data_index)
-                xdata = np.delete(xdata, data_index)
-                data_index = data_index -1
-            data_index = data_index + 1
-        # Apply automatic outlier detection
-        if(config.auto_remove):
-            # get the average difference between data points
-            mean_diff = 0
-            for i in range(0, len(ydata)-1, 1):
-                mean_diff = mean_diff + abs(ydata[i]-ydata[i+1])
-            mean_diff = mean_diff / (len(ydata)-1)
-            data_index = 0
-            # If the difference to the next point is over 20x the mean, delete the next point
-            while data_index < len(ydata)-1:
-                if abs(ydata[data_index] - ydata[data_index+1]) > 20.*mean_diff:
-                    ydata = np.delete(ydata, data_index+1)
-                    xdata = np.delete(xdata, data_index+1)
-                data_index = data_index + 1
-        return xdata, ydata
-
-    # Function to average replicate data sets
-    def average_data(self, xdatas, ydatas, show_err=False):
-        new_xdata = np.array([])
-        new_ydata = np.array([])
-        new_yerr = np.array([])
-        if len(xdatas) <= 1:
-            return xdatas[0], ydatas[0]
-        for i, x_i in enumerate(xdatas[0]):
-            ys = np.array([ydatas[0][i]])
-            for j in range(1, len(xdatas), 1):
-                result = np.where(xdatas[j] == x_i)
-                if(len(result) == 1):
-                    ys = np.append(ys, ydatas[j][result[0]])
-            # Only average time points shared by all curves
-            if(ys.size != len(xdatas)):
-                continue
-            mean = np.mean(ys)
-            std_dev = np.std(ys, ddof=1)
-            if(show_err):
-                std_dev = std_dev/np.sqrt(ys.size)
-            new_xdata = np.append(new_xdata, x_i)
-            new_ydata = np.append(new_ydata, mean)
-            new_yerr = np.append(new_yerr, std_dev)
-        return new_xdata, new_ydata, new_yerr
-
-    # Function to average data over time period
-    def time_average(self, xdata, ydata, window, show_err=False):
-        new_xdata = np.array([])
-        new_ydata = np.array([])
-        new_yerr = np.array([])
-        w_i = 1
-        i = 0
-        while(i < len(xdata)):
-            data = np.array([])
-            while(i < len(xdata) and xdata[i] < w_i*window):
-                data = np.append(data, ydata[i])
-                i = i + 1
-            mean = np.mean(data)
-            std_dev = np.std(data, ddof=1)
-            if(show_err):
-                std_dev = std_dev/np.sqrt(data.size)
-            if(data.size == 0):
-                continue
-            new_xdata = np.append(new_xdata, (w_i-1)*window + window/2.)
-            new_ydata = np.append(new_ydata, mean)
-            if(data.size == 1):
-                new_yerr = np.append(new_yerr, 0)
-            else:
-                new_yerr = np.append(new_yerr, std_dev)
-            w_i = w_i + 1
-        return new_xdata, new_ydata, new_yerr
-
     # Function to find the closest curve to an x,y point
     def find_closest(self, plots, x, y):
         min_dist = 99999
@@ -472,4 +340,6 @@ class PlotCanvas(FigureCanvas):
     # Function to save figure through file handler gui
     def save(self, config):
         save_file(self.fig)
+
+
 

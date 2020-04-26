@@ -9,9 +9,9 @@ from gui.functions import isfloat, isint
 from gui.collapsiblebox import CollapsibleBox
 from gui.datalistitem import DataListItem
 from gui.exportwindow import ExportWindow
+from gui.tablewindow import TableWindow
 
 # Standard imports
-import csv
 
 # pyqt imports
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
@@ -541,33 +541,13 @@ class App(QMainWindow):
 
     # Function: Toggle grid on and off
     def create_table(self):
-        print("Making table")
+        self.table = TableWindow(self)
+        self.table.show()
 
     # Function: Export data to csv format
     def export_to_csv(self):
         self.export = ExportWindow(self)
         self.export.show()
-        '''
-        for data in self.data.data_files:
-            try:
-                filename = data.name.replace('.txt', '.csv')
-                with open(filename, 'w', newline='') as csvfile:
-                    writer = csv.writer(csvfile)
-                    header = [data.xaxis.name]
-                    for sig in data.signals:
-                        header.append(sig.name)
-                    writer.writerow(header)
-                    for i, xdat in enumerate(data.xaxis.data):
-                        row = [xdat]
-                        for sig in data.signals:
-                            row.append(sig.data[i])
-                        writer.writerow(row)
-            except:
-                e = str('Could not convert file %s to csv' % (data.name))
-                print('Error: ' + e)
-                self.error = ErrorWindow(e, self)
-                self.error.show()
-        '''
 
     # Function: Update the global configuration
     def update_config(self):

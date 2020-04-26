@@ -123,6 +123,21 @@ class AlgemData():
             if(sig.data.size != self.xaxis.data.size):
                 raise RuntimeError('Issue processing data:\nDifferent number of %s entries' % (sig.name))
 
+    def get_signal(self, name):
+        for sig in self.signals:
+            if sig.name == name:
+                return sig.data
+        raise RuntimeError('Signal %s not found' % (name))
+
+    def get_xdata(self, unit):
+        if unit == 'seconds' or unit == '':
+            return self.xaxis.data
+        if unit == 'minutes':
+            return self.xaxis.data / 60.
+        if unit == 'hours':
+            return self.xaxis.data / (60.*60.)
+        if unit == 'days':
+            return self.xaxis.data / (60.*60.*24.)
 
     # Class: Store x axis data (time)
     class XAxis():

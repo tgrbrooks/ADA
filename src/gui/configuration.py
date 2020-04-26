@@ -28,6 +28,7 @@ class Configuration():
         self.remove_above = -1
         self.remove_below = -1
         self.downsample = -1
+        self.condition_average = -1
         # Measurement config
         self.cursor = False
         # Legend config
