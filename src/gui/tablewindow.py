@@ -151,21 +151,21 @@ class TableWindow(QMainWindow):
         for i, data in enumerate(self.parent.data.data_files):
             xdata, ydata = self.get_xy_data(i, data_name)
             # Calculate the gradient
-            x1 = -1.
-            y1 = -1.
-            x2 = -1.
-            y2 = -1.
+            x1 = None
+            y1 = None
+            x2 = None
+            y2 = None
             for i, ydat in enumerate(ydata):
-                if ydat >= grad_from and x1 == -1:
+                if ydat >= grad_from and x1 == None:
                     x1 = xdata[i]
                     y1 = ydat
-                if ydat >= grad_to and x2 == -1:
+                if ydat >= grad_to and x2 == None:
                     x2 = xdata[i]
                     y2 = ydat
-                if x1 != -1 and x2 != -1:
+                if x1 != None and x2 != None:
                     break
-            if x1 == -1. and x2 == -1.:
-                gradients.append(-1.)
+            if x1 == None and x2 == None:
+                gradients.append(None)
             else:
                 gradients.append((y2-y1)/(x2-x1))
         return gradients
@@ -181,7 +181,7 @@ class TableWindow(QMainWindow):
                     found = True
                     break
             if not found:
-                times.append(-1)
+                times.append(None)
         return times
 
     def get_xy_data(self, i, data_name):
@@ -207,8 +207,6 @@ class TableWindow(QMainWindow):
             found = False
             xdata, ydata = self.get_condition_xy_data(i, cond_name)
             dat = np.array([])
-            #dat = np.append(dat, np.interp(start_t, ydata[i]))
-            #dat = np.append(dat, np.interp(end_t, ydata[i]))
             for i, x in enumerate(xdata):
                 if x >= start_t and x <= end_t:
                     dat = np.append(dat, ydata[i])
@@ -246,5 +244,8 @@ class TableWindow(QMainWindow):
             for i, title in enumerate(titles):
                 row = [title]
                 for dat in data[i]:
-                    row.append(str(dat))
+                    if dat is not None:
+                        row.append(str(dat))
+                    else:
+                        row.append('none')
                 writer.writerow(row)
