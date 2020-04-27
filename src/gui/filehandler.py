@@ -76,6 +76,29 @@ class SaveFileHandlerGui(QWidget):
             else:
                 self.fig.savefig(selg.file_name)
 
+# Class to handle the file browser
+class SaveDirectoryHandlerGui(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.title = 'Select Directory'
+        self.width = 640
+        self.height = 480
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(self.title)
+        self.resize(self.width, self.height)
+        
+        self.saveDirectoryDialog()
+        
+        self.show()
+    
+    def saveDirectoryDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.directory_name = QFileDialog.getExistingDirectory(self,"Select Directory", options=options)
+
 
 def open_files(data, downsample=-1, row=-1):
     ex_file = OpenFileHandlerGui(data, downsample, row)
@@ -86,3 +109,7 @@ def save_file(fig):
 def get_save_file_name():
     ex_file = SaveFileHandlerGui()
     return ex_file.file_name
+
+def get_save_directory_name():
+    ex_file = SaveDirectoryHandlerGui()
+    return ex_file.directory_name

@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget, QCheckBox, QPushButton, QComboBox
 
 from gui.errorwindow import ErrorWindow
+from gui.filehandler import get_save_directory_name
 import csv
 
 class ExportWindow(QMainWindow):
@@ -8,17 +9,16 @@ class ExportWindow(QMainWindow):
     def __init__(self, parent=None):
         super(ExportWindow, self).__init__(parent)
         self.title = 'Export Files'
-        self.left = 50
-        self.top = 50
         self.width = 150
         self.height = 100
         self.parent = parent
+        self.test_path = 'none'
         self.initUI()
 
     def initUI(self):
         
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.resize(self.width, self.height)
 
         layout = QGridLayout()
         layout.setContentsMargins(5,5,5,5)
@@ -28,8 +28,8 @@ class ExportWindow(QMainWindow):
         file_text.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
         layout.addWidget(file_text, 0, 0)
         self.file_type = QComboBox(self)
-        self.file_type.addItem('txt')
         self.file_type.addItem('csv')
+        self.file_type.addItem('txt')
         layout.addWidget(self.file_type, 0, 1)
 
         rename_text = QLabel('Rename with profile:')
@@ -51,11 +51,16 @@ class ExportWindow(QMainWindow):
         extension = '.csv'
         if(self.file_type.currentText() == 'txt'):
             extension = '.txt'
-        for data in parent.data.data_files:
+        for data in self.parent.data.data_files:
             try:
                 filename = data.name.split('.')[0] + extension
+                path = self.test_path
+                if self.test_path == 'none':
+                    path = get_save_directory_name()
                 if(self.rename.isChecked()):
-                    filename = data.profile + extension
+                    filename = path + '/' + data.profile + extension
+                else:
+                    filename = path + '/' + filename.split('/')[-1]
                 with open(filename, 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)
                     header = [data.xaxis.name]
@@ -67,6 +72,7 @@ class ExportWindow(QMainWindow):
                         for sig in data.signals:
                             row.append(sig.data[i])
                         writer.writerow(row)
+                self.close()
             except:
                 e = str('Could not convert file %s to csv' % (data.name))
                 print('Error: ' + e)
