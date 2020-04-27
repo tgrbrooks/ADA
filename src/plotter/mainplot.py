@@ -100,6 +100,59 @@ class PlotCanvas(FigureCanvas):
             self.draw()
             return
          
+        # Plot the condition data on a separate axis if it exists
+        colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
+        if not condition_data.empty:
+            self.condition_axes.set_axis_on()
+            # Configure axis colour and visibility
+            caxis_colour = 'red'
+            if(is_color_like(config.axis_colour)):
+                caxis_colour = config.axis_colour
+            self.condition_axes.spines['right'].set_color(caxis_colour)
+            self.axes.spines['right'].set_visible(False)
+            self.condition_axes.tick_params(axis='y', colors=caxis_colour)
+            self.condition_axes.yaxis.label.set_color(caxis_colour)
+
+            # Loop over the condition data files
+            for i, cdata in enumerate(condition_data.data_files):
+                # Get the x data in the right time units
+                condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
+
+                # Get the desired condition data and configure title
+                condition_ydata, condition_y_title = self.get_ydata(cdata.signals, config, True)
+                self.condition_axes.set_ylabel(condition_y_title)
+
+                # Get the legend label with any extra info specified in the configuration
+                legend_label = config.condition_label_names[i]
+                if(config.condition_extra_info != 'none' and not config.condition_only_extra):
+                    legend_label = legend_label + ' (' + dat.get_header_info(config.condition_extra_info) + ')'
+                elif(config.condition_extra_info != 'none' and config.condition_only_extra):
+                    legend_label = dat.get_header_info(config.condition_extra_info)
+
+                # Plot the condition data with different colour cycle
+                col = 'r'
+                if( i < len(colors) ):
+                    col = colors[i]
+
+                # Average condition data over time
+                if(config.condition_average != -1):
+                    # Do something
+                    condition_xdata, condition_ydata, condition_yerr = time_average(condition_xdata, condition_ydata, config.condition_average, config.std_err)
+                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=legend_label)
+                    plot_list.append([condition_plot[0]])
+                else:
+                    condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=legend_label)
+                    plot_list.append([condition_plot[0]])
+
+            # Configure the axis range
+            condition_ymin = self.condition_axes.get_ybound()[0]
+            if(config.condition_ymin != -1):
+                condition_ymin = config.condition_ymin
+            condition_ymax = self.condition_axes.get_ybound()[1]
+            if(config.condition_ymax != -1):
+                condition_ymax = config.condition_ymax
+            self.condition_axes.set_ylim([condition_ymin, condition_ymax])
+
         x_title = ''
         y_title = ''
         xdata_list = []
@@ -165,59 +218,6 @@ class PlotCanvas(FigureCanvas):
             ymax = config.ymax
         self.axes.set_xlim([xmin, xmax])
         self.axes.set_ylim([ymin, ymax]) 
-
-        # Plot the condition data on a separate axis if it exists
-        colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
-        if not condition_data.empty:
-            self.condition_axes.set_axis_on()
-            # Configure axis colour and visibility
-            caxis_colour = 'red'
-            if(is_color_like(config.axis_colour)):
-                caxis_colour = config.axis_colour
-            self.condition_axes.spines['right'].set_color(caxis_colour)
-            self.axes.spines['right'].set_visible(False)
-            self.condition_axes.tick_params(axis='y', colors=caxis_colour)
-            self.condition_axes.yaxis.label.set_color(caxis_colour)
-
-            # Loop over the condition data files
-            for i, cdata in enumerate(condition_data.data_files):
-                # Get the x data in the right time units
-                condition_xdata, condition_x_title = self.convert_xdata(cdata.xaxis, config)
-
-                # Get the desired condition data and configure title
-                condition_ydata, condition_y_title = self.get_ydata(cdata.signals, config, True)
-                self.condition_axes.set_ylabel(condition_y_title)
-
-                # Get the legend label with any extra info specified in the configuration
-                legend_label = config.condition_label_names[i]
-                if(config.condition_extra_info != 'none' and not config.condition_only_extra):
-                    legend_label = legend_label + ' (' + dat.get_header_info(config.condition_extra_info) + ')'
-                elif(config.condition_extra_info != 'none' and config.condition_only_extra):
-                    legend_label = dat.get_header_info(config.condition_extra_info)
-
-                # Plot the condition data with different colour cycle
-                col = 'r'
-                if( i < len(colors) ):
-                    col = colors[i]
-
-                # Average condition data over time
-                if(config.condition_average != -1):
-                    # Do something
-                    condition_xdata, condition_ydata, condition_yerr = time_average(condition_xdata, condition_ydata, config.condition_average, config.std_err)
-                    condition_plot = self.condition_axes.errorbar(condition_xdata, condition_ydata, condition_yerr, fmt='--', capsize=2, color = col, label=legend_label)
-                    plot_list.append([condition_plot[0]])
-                else:
-                    condition_plot = self.condition_axes.plot(condition_xdata, condition_ydata, '--', color = col, label=legend_label)
-                    plot_list.append([condition_plot[0]])
-
-            # Configure the axis range
-            condition_ymin = self.condition_axes.get_ybound()[0]
-            if(config.condition_ymin != -1):
-                condition_ymin = config.condition_ymin
-            condition_ymax = self.condition_axes.get_ybound()[1]
-            if(config.condition_ymax != -1):
-                condition_ymax = config.condition_ymax
-            self.condition_axes.set_ylim([condition_ymin, condition_ymax])
 
         # Control mouse clicking behaviour
         # Create a special cursor that snaps to growth curves
