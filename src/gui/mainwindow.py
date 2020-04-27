@@ -323,6 +323,11 @@ class App(QMainWindow):
         self.extra_info.setToolTip('Show extra information from the file in the legend')
         legend_box_layout.addWidget(self.extra_info, 1, 5)
 
+        # Checkbox to only show extra info
+        legend_box_layout.addWidget(Label('Only extra info:'), 0, 6)
+        self.only_extra = QCheckBox(self)
+        legend_box_layout.addWidget(self.only_extra, 1, 6)
+
         # Condition legend configuration
         legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
         self.condition_legend_toggle = QCheckBox(self)
@@ -349,6 +354,10 @@ class App(QMainWindow):
         self.condition_extra_info.addItem("date+time")
         self.condition_extra_info.setToolTip('Show extra information from the file in the legend')
         legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
+
+        # Checkbox to only show extra info
+        self.condition_only_extra = QCheckBox(self)
+        legend_box_layout.addWidget(self.condition_only_extra, 2, 6)
 
         legend_box.setContentLayout(legend_box_layout)
 
@@ -643,6 +652,8 @@ class App(QMainWindow):
             self.config.condition_label_names.append(self.condition_legend_names.itemText(i))
         self.config.extra_info = self.extra_info.currentText()
         self.config.condition_extra_info = self.condition_extra_info.currentText()
+        self.config.only_extra = self.only_extra.isChecked()
+        self.config.condition_only_extra = self.condition_only_extra.isChecked()
 
         # Style config
         self.config.style = self.style_dropdown.currentText()

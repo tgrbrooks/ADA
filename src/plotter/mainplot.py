@@ -111,8 +111,10 @@ class PlotCanvas(FigureCanvas):
             ydata, y_title = self.get_ydata(dat.signals, config)
 
             legend_label = config.label_names[i]
-            if(config.extra_info != 'none'):
+            if(config.extra_info != 'none' and not config.only_extra):
                 legend_label = legend_label + ' (' + dat.get_header_info(config.extra_info) + ')'
+            elif(config.extra_info != 'none' and config.only_extra):
+                legend_label = dat.get_header_info(config.extra_info)
 
             # Apply alignment, outlier removal, and smoothing
             xdata, ydata = process_data(xdata, ydata, config)
@@ -188,8 +190,10 @@ class PlotCanvas(FigureCanvas):
 
                 # Get the legend label with any extra info specified in the configuration
                 legend_label = config.condition_label_names[i]
-                if(config.condition_extra_info != 'none'):
+                if(config.condition_extra_info != 'none' and not config.condition_only_extra):
                     legend_label = legend_label + ' (' + dat.get_header_info(config.condition_extra_info) + ')'
+                elif(config.condition_extra_info != 'none' and config.condition_only_extra):
+                    legend_label = dat.get_header_info(config.condition_extra_info)
 
                 # Plot the condition data with different colour cycle
                 col = 'r'

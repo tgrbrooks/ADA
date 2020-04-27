@@ -40,6 +40,8 @@ class Configuration():
         self.condition_label_names = []
         self.extra_info = 'none'
         self.condition_extra_info = 'none'
+        self.only_extra = False
+        self.condition_only_extra = False
         # Style config
         self.style = ''
         self.font_style = ''
