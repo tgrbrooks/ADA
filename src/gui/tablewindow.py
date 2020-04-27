@@ -14,8 +14,6 @@ class TableWindow(QMainWindow):
     def __init__(self, parent=None):
         super(TableWindow, self).__init__(parent)
         self.title = 'Create Table'
-        self.left = 50
-        self.top = 50
         self.width = 400
         self.height = 220
         self.parent = parent
@@ -25,7 +23,8 @@ class TableWindow(QMainWindow):
     def initUI(self):
         
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.resize(self.width, self.height)
+        #self.setGeometry(self.left, self.top, self.width, self.height)
 
         layout = QGridLayout()
         layout.setContentsMargins(5,5,5,5)

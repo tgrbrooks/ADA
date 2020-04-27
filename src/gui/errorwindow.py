@@ -5,8 +5,6 @@ class ErrorWindow(QMainWindow):
     def __init__(self, message, parent=None):
         super(ErrorWindow, self).__init__(parent)
         self.title = 'Error'
-        self.left = 50
-        self.top = 50
         self.width = 150
         self.height = 100
         self.message = message
@@ -15,7 +13,7 @@ class ErrorWindow(QMainWindow):
     def initUI(self):
         
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.resize(self.width, self.height)
 
         layout = QGridLayout()
         layout.setContentsMargins(5,5,5,5)

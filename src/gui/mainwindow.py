@@ -139,6 +139,7 @@ class App(QMainWindow):
 
         # Toggle grid
         table_button = QPushButton('To Table', self)
+        save_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         table_button.setToolTip('Create a table of growth rates for all curves\nConfigure in options tab')
         table_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
