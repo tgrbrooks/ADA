@@ -1,5 +1,5 @@
 # Local import
-from reader.algemdata import AlgemData
+from src.reader.algemdata import AlgemData
 
 # Standard imports
 import os

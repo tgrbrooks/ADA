@@ -1,10 +1,10 @@
 # Local imports
-from reader.dataholder import DataHolder
-from gui.configuration import Configuration
-from plotter.cursor import Cursor, SnapToCursor
-from plotter.functions import process_data, average_data, time_average
-from gui.linestylewindow import LineStyleWindow
-from gui.filehandler import save_file
+from src.reader.dataholder import DataHolder
+from src.gui.configuration import Configuration
+from src.plotter.cursor import Cursor, SnapToCursor
+from src.plotter.functions import process_data, average_data, time_average
+from src.gui.linestylewindow import LineStyleWindow
+from src.gui.filehandler import save_file
 
 # Standard imports
 import random

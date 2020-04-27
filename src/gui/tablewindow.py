@@ -3,10 +3,11 @@ from PyQt5.QtCore import QPoint
 
 import numpy as np
 
-from gui.errorwindow import ErrorWindow
-from gui.tablelistitem import TableListItem
-from gui.filehandler import get_save_file_name
-from plotter.functions import process_data, average_data, time_average
+from src.gui.errorwindow import ErrorWindow
+from src.gui.tablelistitem import TableListItem
+from src.gui.filehandler import get_save_file_name
+from src.plotter.functions import process_data, average_data, time_average
+
 import csv
 
 # Class for a table constructor window

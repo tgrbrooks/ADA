@@ -1,7 +1,7 @@
 # local imports
-from reader.readtextfile import read_text_file
-from reader.algemdata import AlgemData
-from reader.dataholder import DataHolder
+from src.reader.readtextfile import read_text_file
+from src.reader.algemdata import AlgemData
+from src.reader.dataholder import DataHolder
 
 # pyqt imports
 from PyQt5.QtWidgets import QWidget, QFileDialog

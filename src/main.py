@@ -1,5 +1,5 @@
 # Local imports
-from gui.mainwindow import App
+from src.gui.mainwindow import App
 
 # Standard imports
 import sys

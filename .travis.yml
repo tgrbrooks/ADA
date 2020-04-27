@@ -1,7 +1,9 @@
 language: python
 python: 
   - "3.6"
+before_install:
+  - python3 setup.py install
 install:
   - pip install -r requirements.txt
 script:
-  - bash runtests.sh
+  - python3 -m unittest discover

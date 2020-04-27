@@ -1,17 +1,15 @@
 # Local imports
-from gui.filehandler import open_files
-from plotter.mainplot import PlotCanvas
-from reader.dataholder import DataHolder
-from gui.configuration import Configuration
-from gui.errorwindow import ErrorWindow
-from gui.label import Label
-from gui.functions import isfloat, isint
-from gui.collapsiblebox import CollapsibleBox
-from gui.datalistitem import DataListItem
-from gui.exportwindow import ExportWindow
-from gui.tablewindow import TableWindow
-
-# Standard imports
+from src.gui.filehandler import open_files
+from src.plotter.mainplot import PlotCanvas
+from src.reader.dataholder import DataHolder
+from src.gui.configuration import Configuration
+from src.gui.errorwindow import ErrorWindow
+from src.gui.label import Label
+from src.gui.functions import isfloat, isint
+from src.gui.collapsiblebox import CollapsibleBox
+from src.gui.datalistitem import DataListItem
+from src.gui.exportwindow import ExportWindow
+from src.gui.tablewindow import TableWindow
 
 # pyqt imports
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox

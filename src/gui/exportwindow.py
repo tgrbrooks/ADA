@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget, QCheckBox, QPushButton, QComboBox
 
-from gui.errorwindow import ErrorWindow
-from gui.filehandler import get_save_directory_name
+from src.gui.errorwindow import ErrorWindow
+from src.gui.filehandler import get_save_directory_name
+
 import csv
 
 class ExportWindow(QMainWindow):

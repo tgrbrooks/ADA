@@ -1,5 +1,5 @@
 # Local includes
-from reader.algemdata import AlgemData
+from src.reader.algemdata import AlgemData
 
 # Class to store data files in
 class DataHolder():

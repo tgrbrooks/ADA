@@ -2,9 +2,9 @@ import unittest, sys, os
 import tempfile, shutil
 from datetime import datetime, date, time
 
-from reader.readtextfile import read_text_file
-from gui.mainwindow import App
-from gui.exportwindow import ExportWindow
+from src.reader.readtextfile import read_text_file
+from src.gui.mainwindow import App
+from src.gui.exportwindow import ExportWindow
 
 from PyQt5.QtWidgets import QApplication
 
@@ -77,4 +77,5 @@ class AlgaePlotterTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    print(sys.path)
     unittest.main()

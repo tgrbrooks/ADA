@@ -1,3 +1,10 @@
 __pycache__*
 *.png
 *.swp
+*.txt
+*.csv
+venv
+build
+dist
+AlgaePlotter*
+.DS_Store
