@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/tgrbrooks/AlgaePlotter.svg?branch=master)](https://travis-ci.org/tgrbrooks/AlgaePlotter)
 ![Logo](/images/logo.png)
 
 An interactive PyQt5 based plotting package for algae growth curves.
