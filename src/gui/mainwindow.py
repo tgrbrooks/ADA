@@ -380,23 +380,31 @@ class App(QMainWindow):
         style_box_layout.addWidget(self.font_dropdown, 0, 3)
 
         # Font size textbox
-        style_box_layout.addWidget(Label('Font size:'), 0, 4)
-        self.font_size = QLineEdit(self) 
-        style_box_layout.addWidget(self.font_size, 0, 5)
+        style_box_layout.addWidget(Label('Title font size:'), 1, 0)
+        self.title_size = QLineEdit(self) 
+        style_box_layout.addWidget(self.title_size, 1, 1)
+
+        style_box_layout.addWidget(Label('Legend font size:'), 1, 2)
+        self.legend_size = QLineEdit(self) 
+        style_box_layout.addWidget(self.legend_size, 1, 3)
+
+        style_box_layout.addWidget(Label('Label font size:'), 1, 4)
+        self.label_size = QLineEdit(self) 
+        style_box_layout.addWidget(self.label_size, 1, 5)
 
         # Line width textbox
-        style_box_layout.addWidget(Label('Line width:'), 1, 0)
+        style_box_layout.addWidget(Label('Line width:'), 2, 0)
         self.line_width = QLineEdit(self) 
-        style_box_layout.addWidget(self.line_width, 1, 1)
+        style_box_layout.addWidget(self.line_width, 2, 1)
 
         # Condition axis colour
-        style_box_layout.addWidget(Label('Condition axis colour:'), 1, 2)
+        style_box_layout.addWidget(Label('Condition axis colour:'), 2, 2)
         self.axis_colour = QLineEdit(self) 
-        style_box_layout.addWidget(self.axis_colour, 1, 3)
+        style_box_layout.addWidget(self.axis_colour, 2, 3)
 
-        style_box_layout.addWidget(Label('Grid:'), 1, 4)
+        style_box_layout.addWidget(Label('Grid:'), 2, 4)
         self.grid_toggle = QCheckBox(self)
-        style_box_layout.addWidget(self.grid_toggle, 1, 5)
+        style_box_layout.addWidget(self.grid_toggle, 2, 5)
 
         style_box.setContentLayout(style_box_layout)
 
@@ -639,10 +647,22 @@ class App(QMainWindow):
         # Style config
         self.config.style = self.style_dropdown.currentText()
         self.config.font_style = self.font_dropdown.currentText()
-        if(isfloat(self.font_size.text())):
-            self.config.font_size = float(self.font_size.text())
+        if(isfloat(self.title_size.text())):
+            self.config.title_size = float(self.title_size.text())
+        else:
+            self.config.title_size = -1
+        if(isfloat(self.legend_size.text())):
+            self.config.legend_size = float(self.legend_size.text())
+        else:
+            self.config.legend_size = -1
+        if(isfloat(self.label_size.text())):
+            self.config.label_size = float(self.label_size.text())
+        else:
+            self.config.label_size = -1
         if(isfloat(self.line_width.text())):
             self.config.line_width  = float(self.line_width.text())
+        else:
+            self.config.line_width = -1
         self.config.axis_colour = self.axis_colour.text()
         self.config.grid = self.grid_toggle.isChecked()
 

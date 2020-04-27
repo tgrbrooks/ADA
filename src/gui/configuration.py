@@ -43,7 +43,9 @@ class Configuration():
         # Style config
         self.style = ''
         self.font_style = ''
-        self.font_size = -1
+        self.title_size = -1
+        self.legend_size = -1
+        self.label_size = -1
         self.line_width = -1
         self.axis_colour = -1
         self.grid = False

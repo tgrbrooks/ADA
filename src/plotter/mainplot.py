@@ -65,8 +65,15 @@ class PlotCanvas(FigureCanvas):
                 mpl.style.use('seaborn-colorblind')
         if(config.font_style != ''):
             mpl.rcParams['font.family'] = config.font_style
-        if(config.font_size >= 0):
-            mpl.rcParams['font.size'] = config.font_size
+        if(config.title_size >= 0):
+            mpl.rcParams['axes.titlesize'] = config.title_size
+            mpl.rcParams['figure.titlesize'] = config.title_size
+        if(config.legend_size >= 0):
+            mpl.rcParams['legend.fontsize'] = config.legend_size
+            mpl.rcParams['legend.title_fontsize'] = config.legend_size
+        if(config.label_size >= 0):
+            mpl.rcParams['xtick.labelsize'] = config.label_size
+            mpl.rcParams['ytick.labelsize'] = config.label_size
         if(config.line_width >= 0):
             mpl.rcParams['lines.linewidth'] = config.line_width
 
@@ -83,10 +90,10 @@ class PlotCanvas(FigureCanvas):
             self.axes.xaxis.label.set_family(config.font_style)
             self.axes.yaxis.label.set_family(config.font_style)
             self.condition_axes.yaxis.label.set_family(config.font_style)
-        if(config.font_size >= 0):
-            self.axes.xaxis.label.set_size(config.font_size)
-            self.axes.yaxis.label.set_size(config.font_size)
-            self.condition_axes.yaxis.label.set_size(config.font_size)
+        if(config.title_size >= 0):
+            self.axes.xaxis.label.set_size(config.title_size)
+            self.axes.yaxis.label.set_size(config.title_size)
+            self.condition_axes.yaxis.label.set_size(config.title_size)
 
         if(data.empty and condition_data.empty):
             self.axes.set_title('Empty plot')
