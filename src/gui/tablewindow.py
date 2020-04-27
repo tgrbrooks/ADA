@@ -5,6 +5,7 @@ import numpy as np
 
 from gui.errorwindow import ErrorWindow
 from gui.tablelistitem import TableListItem
+from gui.filehandler import get_save_file_name
 from plotter.functions import process_data, average_data, time_average
 import csv
 
@@ -238,7 +239,8 @@ class TableWindow(QMainWindow):
         raise RuntimeError('No condition data found for %s' % (self.parent.data.data_files[i].name))
 
     def save_table(self, header, titles, data):
-        with open('table.csv', 'w', newline='') as csvfile:
+        file_name = get_save_file_name()
+        with open(file_name, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(header)
             for i, title in enumerate(titles):

@@ -12,8 +12,6 @@ class OpenFileHandlerGui(QWidget):
     def __init__(self, data, downsample=-1, row=-1):
         super().__init__()
         self.title = 'Open Files'
-        self.left = 10
-        self.top = 10
         self.width = 640
         self.height = 480
         self.data = data
@@ -23,7 +21,7 @@ class OpenFileHandlerGui(QWidget):
 
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.resize(self.width, self.height)
         
         self.openFileNamesDialog()
         
@@ -46,19 +44,21 @@ class OpenFileHandlerGui(QWidget):
 # Class to handle the file browser
 class SaveFileHandlerGui(QWidget):
 
-    def __init__(self, fig):
+    def __init__(self, fig=None):
         super().__init__()
         self.title = 'Save File'
-        self.left = 10
-        self.top = 10
         self.width = 640
         self.height = 480
-        self.fig = fig
+        if fig:
+            self.fig = fig
+            self.save_fig = True
+        else:
+            self.save_fig = False
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.resize(self.width, self.height)
         
         self.saveFileDialog()
         
@@ -67,17 +67,22 @@ class SaveFileHandlerGui(QWidget):
     def saveFileDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getSaveFileName(self,"Save File","","All Files (*);;Text Files (*.txt)", options=options)
-        if file_name:
-            if(file_name == ''):
+        self.file_name, _ = QFileDialog.getSaveFileName(self,"Save File","","All Files (*);;Text Files (*.txt)", options=options)
+        if self.file_name and self.save_fig:
+            if(self.file_name == ''):
                 self.fig.savefig('graph.png')
-            elif(file_name.find('.') == -1):
-                self.fig.savefig(file_name + '.png')
+            elif(self.file_name.find('.') == -1):
+                self.fig.savefig(self.file_name + '.png')
             else:
-                self.fig.savefig(file_name)
+                self.fig.savefig(selg.file_name)
+
 
 def open_files(data, downsample=-1, row=-1):
     ex_file = OpenFileHandlerGui(data, downsample, row)
 
 def save_file(fig):
     ex_file = SaveFileHandlerGui(fig)
+
+def get_save_file_name():
+    ex_file = SaveFileHandlerGui()
+    return ex_file.file_name

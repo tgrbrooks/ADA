@@ -231,9 +231,10 @@ class PlotCanvas(FigureCanvas):
                 
             # Define action on button press: open line style window
             def onpick(event):
-                selected_line, line_i = self.find_closest(plot_list, event.xdata, event.ydata)
-                self.linewindow = LineStyleWindow(plot_list[line_i], line_i, self)
-                self.linewindow.show()
+                selected_line, line_i, min_dist = self.find_closest(plot_list, event.xdata, event.ydata)
+                if min_dist < 5:
+                    self.linewindow = LineStyleWindow(plot_list[line_i], line_i, self)
+                    self.linewindow.show()
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onpick)
 
@@ -251,12 +252,14 @@ class PlotCanvas(FigureCanvas):
         if(config.legend):
             self.legend_on = True
             self.legend_title = config.legend_title
-            self.axes.legend(title=config.legend_title, loc = 'upper left')
+            leg = self.axes.legend(title=config.legend_title, loc = 'upper left')
+            leg.set_draggable(True)
         # Toggle condition legend on
         if(config.condition_legend):
             self.condition_legend_on = True
             self.condition_legend_title = config.condition_legend_title
-            self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
+            cond_leg = self.condition_axes.legend(title=config.condition_legend_title, loc='lower right')
+            cond_leg.set_draggable(True)
 
         # Show the plot
         self.draw()
@@ -335,7 +338,7 @@ class PlotCanvas(FigureCanvas):
                 min_ind = i
         if (min_ind == -1):
             raise RuntimeError('No selected plot')
-        return plots[min_ind][0], min_ind
+        return plots[min_ind][0], min_ind, min_dist
 
     # Function to save figure through file handler gui
     def save(self, config):
