@@ -1,12 +1,14 @@
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget, QCheckBox, QPushButton, QComboBox
+import csv
+
+from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
+from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
 from src.gui.errorwindow import ErrorWindow
 from src.gui.filehandler import get_save_directory_name
 
-import csv
 
 class ExportWindow(QMainWindow):
-    
+
     def __init__(self, parent=None):
         super(ExportWindow, self).__init__(parent)
         self.title = 'Export Files'
@@ -17,16 +19,18 @@ class ExportWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        
+
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
         layout = QGridLayout()
-        layout.setContentsMargins(5,5,5,5)
+        layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
         file_text = QLabel('File type:')
-        file_text.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        file_text.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         layout.addWidget(file_text, 0, 0)
         self.file_type = QComboBox(self)
         self.file_type.addItem('csv')
@@ -34,14 +38,18 @@ class ExportWindow(QMainWindow):
         layout.addWidget(self.file_type, 0, 1)
 
         rename_text = QLabel('Rename with profile:')
-        rename_text.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        rename_text.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         layout.addWidget(rename_text, 1, 0)
         self.rename = QCheckBox(self)
         layout.addWidget(self.rename, 1, 1)
 
         export_button = QPushButton("Export", self)
         export_button.clicked.connect(self.export)
-        export_button.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        export_button.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         layout.addWidget(export_button, 2, 0, 1, 2)
 
         widget = QWidget()
@@ -74,9 +82,8 @@ class ExportWindow(QMainWindow):
                             row.append(sig.data[i])
                         writer.writerow(row)
                 self.close()
-            except:
+            except Exception:
                 e = str('Could not convert file %s to csv' % (data.name))
                 print('Error: ' + e)
                 self.error = ErrorWindow(e, self)
                 self.error.show()
-

@@ -1,18 +1,20 @@
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget, QPushButton, QComboBox, QScrollArea, QListWidget, QVBoxLayout
-from PyQt5.QtCore import QPoint
-
+import csv
 import numpy as np
+
+from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
+                             QPushButton, QComboBox, QScrollArea, QListWidget,
+                             QVBoxLayout)
+from PyQt5.QtCore import QPoint
 
 from src.gui.errorwindow import ErrorWindow
 from src.gui.tablelistitem import TableListItem
 from src.gui.filehandler import get_save_file_name
 from src.plotter.functions import process_data, average_data, time_average
 
-import csv
 
 # Class for a table constructor window
 class TableWindow(QMainWindow):
-    
+
     def __init__(self, parent=None):
         super(TableWindow, self).__init__(parent)
         self.title = 'Create Table'
@@ -23,13 +25,12 @@ class TableWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        
+
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
-        #self.setGeometry(self.left, self.top, self.width, self.height)
 
         layout = QGridLayout()
-        layout.setContentsMargins(5,5,5,5)
+        layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
         # List of row options
@@ -45,7 +46,9 @@ class TableWindow(QMainWindow):
         # Button to add a new row
         add_button = QPushButton("Add Row", self)
         add_button.clicked.connect(self.add_row)
-        add_button.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        add_button.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
@@ -62,7 +65,9 @@ class TableWindow(QMainWindow):
         # Button to produce the table
         make_button = QPushButton("Create Table", self)
         make_button.clicked.connect(self.make_table)
-        make_button.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        make_button.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         layout.addWidget(make_button, 3, 0, 1, 2)
 
         widget = QWidget()
@@ -73,7 +78,8 @@ class TableWindow(QMainWindow):
     def add_row(self):
         table_list_item = TableListItem(self.row_option.currentText(), self)
         self.table_list.addItem(table_list_item.item)
-        self.table_list.setItemWidget(table_list_item.item, table_list_item.widget)
+        self.table_list.setItemWidget(table_list_item.item,
+                                      table_list_item.widget)
         self.rows.append(table_list_item)
 
     # Remove a row from the table
@@ -111,24 +117,45 @@ class TableWindow(QMainWindow):
                     row_titles.append('Reactor')
                     row_data.append(self.get_reactors())
                 if row.type == 'gradient':
-                    row_titles.append('Gradient of %s at between %s and %s' % (row.data.currentText(), row.grad_from.text(), row.grad_to.text()))
-                    row_data.append(self.get_gradients(row.data.currentText(), float(row.grad_from.text()), float(row.grad_to.text())))
+                    row_titles.append('Gradient of %s at between %s and %s'
+                                      % (row.data.currentText(),
+                                         row.grad_from.text(),
+                                         row.grad_to.text()))
+                    row_data.append(self.get_gradients(row.data.currentText(),
+                                    float(row.grad_from.text()),
+                                    float(row.grad_to.text())))
                 if row.type == 'time to':
-                    row_titles.append('Time (%s) to %s of %s' % (tunit, row.data.currentText(), row.time_to.text()))
-                    row_data.append(self.get_time_to(row.data.currentText(), float(row.time_to.text())))
+                    row_titles.append('Time (%s) to %s of %s'
+                                      % (tunit,
+                                         row.data.currentText(),
+                                         row.time_to.text()))
+                    row_data.append(self.get_time_to(row.data.currentText(),
+                                    float(row.time_to.text())))
                 if row.type == 'average of condition':
-                    row_titles.append('Average of %s between %s and %s %s' % (row.condition.currentText(), row.start_t.text(), row.end_t.text(), tunit))
-                    row_data.append(self.get_averages(row.condition.currentText(), float(row.start_t.text()), float(row.end_t.text())))
+                    row_titles.append('Average of %s between %s and %s %s'
+                                      % (row.condition.currentText(),
+                                         row.start_t.text(),
+                                         row.end_t.text(),
+                                         tunit))
+                    row_data.append(self.get_averages(
+                        row.condition.currentText(),
+                        float(row.start_t.text()),
+                        float(row.end_t.text())))
                 if row.type == 'condition at time':
-                    row_titles.append('%s at time %s %s' % (row.condition.currentText(), row.time.text(), tunit))
-                    row_data.append(self.get_condition_at(row.condition.currentText(), float(row.time.text())))
+                    row_titles.append('%s at time %s %s'
+                                      % (row.condition.currentText(),
+                                         row.time.text(),
+                                         tunit))
+                    row_data.append(self.get_condition_at(
+                        row.condition.currentText(),
+                        float(row.time.text())))
             self.save_table(column_headings, row_titles, row_data)
             self.close()
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
-        
+
     def get_headings(self):
         headings = ['File']
         for data in self.parent.data.data_files:
@@ -157,15 +184,15 @@ class TableWindow(QMainWindow):
             x2 = None
             y2 = None
             for i, ydat in enumerate(ydata):
-                if ydat >= grad_from and x1 == None:
+                if ydat >= grad_from and x1 is None:
                     x1 = xdata[i]
                     y1 = ydat
-                if ydat >= grad_to and x2 == None:
+                if ydat >= grad_to and x2 is None:
                     x2 = xdata[i]
                     y2 = ydat
-                if x1 != None and x2 != None:
+                if x1 is not None and x2 is not None:
                     break
-            if x1 == None and x2 == None:
+            if x1 is None and x2 is None:
                 gradients.append(None)
             else:
                 gradients.append((y2-y1)/(x2-x1))
@@ -197,7 +224,7 @@ class TableWindow(QMainWindow):
         if len(xdatas) > 1:
             xdata, ydata, yerr = average_data(xdatas, ydatas)
             return xdata, ydata
-        elif len(xdatas) == 1: 
+        elif len(xdatas) == 1:
             return xdatas[0], ydatas[0]
         else:
             raise RuntimeError('No data found')
@@ -233,9 +260,13 @@ class TableWindow(QMainWindow):
             xdata = cond.get_xdata(self.parent.config.xvar)
             ydata = cond.get_signal(cond_name)
             if self.parent.config.condition_average != -1:
-                xdata, ydata, yerr = time_average(xdata, ydata, self.parent.config.condition_average)
+                xdata, ydata, yerr = time_average(
+                    xdata,
+                    ydata,
+                    self.parent.config.condition_average)
             return xdata, ydata
-        raise RuntimeError('No condition data found for %s' % (self.parent.data.data_files[i].name))
+        raise RuntimeError('No condition data found for %s'
+                           % (self.parent.data.data_files[i].name))
 
     def save_table(self, header, titles, data):
         file_name = get_save_file_name()

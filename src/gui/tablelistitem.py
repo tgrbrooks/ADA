@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout, QPushButton, QLabel, QWidget, QListWidget, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QLayout
+from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QLineEdit, QComboBox
+
 
 class TableListItem():
 
@@ -12,20 +14,22 @@ class TableListItem():
 
         # Add a delete button
         del_button = QPushButton('del')
-        del_button.setStyleSheet("background-color: #eb5a46; border-radius: 5px; padding: 2px")
+        del_button.setStyleSheet(
+            'background-color: #eb5a46; border-radius: 5px; padding: 2px'
+        )
         del_button.clicked.connect(parent.remove_item)
         layout.addWidget(del_button)
 
         # Add a label with row type
-        if( text == 'profile' ):
+        if(text == 'profile'):
             layout.addWidget(QLabel('Profile'))
 
-        if( text == 'reactor' ):
+        if(text == 'reactor'):
             layout.addWidget(QLabel('Reactor'))
 
         # Add other options based on type
         # Gradient needs a start and end measurement point in Y
-        if( text == 'gradient' ):
+        if(text == 'gradient'):
             layout.addWidget(QLabel('Gradient of:'))
             self.data = QComboBox(self.widget)
             if len(parent.parent.data.data_files) > 0:
@@ -40,7 +44,7 @@ class TableListItem():
             layout.addWidget(self.grad_to)
 
         # Time to needs a Y point to reach
-        if( text == 'time to' ):
+        if(text == 'time to'):
             layout.addWidget(QLabel('Time for:'))
             self.data = QComboBox(self.widget)
             if len(parent.parent.data.data_files) > 0:
@@ -52,7 +56,7 @@ class TableListItem():
             layout.addWidget(self.time_to)
 
         # Average of a condition needs condition and start and end time
-        if( text == 'average of condition' ):
+        if(text == 'average of condition'):
             layout.addWidget(QLabel('Average of:'))
             self.condition = QComboBox(self.widget)
             if len(parent.parent.condition_data.data_files) > 0:
@@ -67,7 +71,7 @@ class TableListItem():
             layout.addWidget(self.end_t)
 
         # Condition at time needs condition and time
-        if( text == 'condition at time' ):
+        if(text == 'condition at time'):
             layout.addWidget(QLabel('Value of:'))
             self.condition = QComboBox(self.widget)
             if len(parent.parent.condition_data.data_files) > 0:
@@ -84,4 +88,3 @@ class TableListItem():
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
-        

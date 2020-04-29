@@ -1,4 +1,13 @@
-# Local imports
+# Standard library imports
+
+# Related third party imports
+from PyQt5.QtWidgets import QMainWindow, QWidget, QTabWidget, QSizePolicy
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QScrollArea
+from PyQt5.QtWidgets import QPushButton, QListWidget, QComboBox, QCheckBox
+from PyQt5.QtWidgets import QLabel, QLineEdit
+from PyQt5.QtCore import QPoint
+
+# Local application imports
 from src.gui.filehandler import open_files
 from src.plotter.mainplot import PlotCanvas
 from src.reader.dataholder import DataHolder
@@ -11,9 +20,6 @@ from src.gui.datalistitem import DataListItem
 from src.gui.exportwindow import ExportWindow
 from src.gui.tablewindow import TableWindow
 
-# pyqt imports
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidget, QGridLayout, QWidget, QTabWidget, QScrollArea, QVBoxLayout, QSizePolicy, QComboBox, QLabel, QLineEdit, QCheckBox
-from PyQt5.QtCore import QPoint
 
 class App(QMainWindow):
 
@@ -44,13 +50,13 @@ class App(QMainWindow):
         default_font = 'font-size: 14pt; font-family: Courier;'
         big_font = 'font-size: 28pt; font-family: Courier;'
 
-        #--------------------------------------------------------------------------------------
-        #                                   PLOTTING TAB
-        #--------------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        #                           PLOTTING TAB
+        # ---------------------------------------------------------------------
 
         # Main plotting window
         plot_layout = QGridLayout()
-        plot_layout.setContentsMargins(0,0,0,0)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
         plot_layout.setSpacing(20)
 
         # Main plot window (row, column, row extent, column extent)
@@ -85,7 +91,8 @@ class App(QMainWindow):
         condition_data_button.clicked.connect(self.update_config)
         condition_data_button.clicked.connect(self.open_condition_files)
         condition_data_button.clicked.connect(self.update_condition_data_list)
-        condition_data_button.setToolTip('Import condition data (temp, light, etc) for plotting')
+        condition_data_button.setToolTip('Import condition data '
+                                         '(temp, light, etc) for plotting')
         condition_data_button.setStyleSheet(default_font)
         plot_layout.addWidget(condition_data_button, 3, 4,)
 
@@ -139,17 +146,18 @@ class App(QMainWindow):
         table_button = QPushButton('To Table', self)
         table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
-        table_button.setToolTip('Create a table of growth rates for all curves\nConfigure in options tab')
+        table_button.setToolTip('Create a table of growth rates for all curves'
+                                '\nConfigure in options tab')
         table_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
         plot_layout.addWidget(table_button, 6, 3)
 
-        #--------------------------------------------------------------------------------------
-        #                                   OPTIONS TAB
-        #--------------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
+        #                           OPTIONS TAB
+        # ---------------------------------------------------------------------
 
         # Plotting options window
         options_layout = QGridLayout()
-        options_layout.setContentsMargins(5,5,5,5)
+        options_layout.setContentsMargins(5, 5, 5, 5)
         options_layout.setSpacing(5)
 
         options_scroll = QScrollArea(self)
@@ -184,16 +192,16 @@ class App(QMainWindow):
         axis_box_layout.addWidget(self.xaxis_dropdown, 1, 1)
 
         # X axis titles
-        self.xaxis_name = QLineEdit(self) 
+        self.xaxis_name = QLineEdit(self)
         axis_box_layout.addWidget(self.xaxis_name, 1, 2)
         self.xaxis_unit = QLineEdit(self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.xaxis_unit, 1, 3)
 
         # X axis range
-        self.xaxis_min = QLineEdit(self) 
+        self.xaxis_min = QLineEdit(self)
         axis_box_layout.addWidget(self.xaxis_min, 1, 4)
-        self.xaxis_max = QLineEdit(self) 
+        self.xaxis_max = QLineEdit(self)
         axis_box_layout.addWidget(self.xaxis_max, 1, 5)
 
         # Y axis drop down menu
@@ -201,16 +209,16 @@ class App(QMainWindow):
         axis_box_layout.addWidget(self.yaxis_dropdown, 2, 1)
 
         # Y axis titles
-        self.yaxis_name = QLineEdit(self) 
+        self.yaxis_name = QLineEdit(self)
         axis_box_layout.addWidget(self.yaxis_name, 2, 2)
-        self.yaxis_unit = QLineEdit(self) 
+        self.yaxis_unit = QLineEdit(self)
         self.yaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.yaxis_unit, 2, 3)
 
         # Y axis range
-        self.yaxis_min = QLineEdit(self) 
+        self.yaxis_min = QLineEdit(self)
         axis_box_layout.addWidget(self.yaxis_min, 2, 4)
-        self.yaxis_max = QLineEdit(self) 
+        self.yaxis_max = QLineEdit(self)
         axis_box_layout.addWidget(self.yaxis_max, 2, 5)
 
         # Condition Y axis drop down menu
@@ -218,16 +226,16 @@ class App(QMainWindow):
         axis_box_layout.addWidget(self.condition_yaxis_dropdown, 3, 1)
 
         # Condition Y axis titles
-        self.condition_yaxis_name = QLineEdit(self) 
+        self.condition_yaxis_name = QLineEdit(self)
         axis_box_layout.addWidget(self.condition_yaxis_name, 3, 2)
-        self.condition_yaxis_unit = QLineEdit(self) 
+        self.condition_yaxis_unit = QLineEdit(self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
         axis_box_layout.addWidget(self.condition_yaxis_unit, 3, 3)
 
         # Condition Y axis range
-        self.condition_yaxis_min = QLineEdit(self) 
+        self.condition_yaxis_min = QLineEdit(self)
         axis_box_layout.addWidget(self.condition_yaxis_min, 3, 4)
-        self.condition_yaxis_max = QLineEdit(self) 
+        self.condition_yaxis_max = QLineEdit(self)
         axis_box_layout.addWidget(self.condition_yaxis_max, 3, 5)
 
         axis_box.setContentLayout(axis_box_layout)
@@ -300,12 +308,13 @@ class App(QMainWindow):
         self.legend_names = QComboBox(self)
         self.legend_names.setEditable(True)
         self.legend_names.setInsertPolicy(2)
-        self.legend_names.setToolTip('Edit names by changing text and pressing return')
+        self.legend_names.setToolTip('Edit names by changing text '
+                                     'and pressing return')
         legend_box_layout.addWidget(self.legend_names, 1, 2, 1, 2)
 
         # Heading for legend
         legend_box_layout.addWidget(Label('Header:'), 0, 4)
-        self.legend_title = QLineEdit(self) 
+        self.legend_title = QLineEdit(self)
         legend_box_layout.addWidget(self.legend_title, 1, 4)
 
         # Extra information from header dropdown
@@ -318,7 +327,8 @@ class App(QMainWindow):
         self.extra_info.addItem("date")
         self.extra_info.addItem("time")
         self.extra_info.addItem("date+time")
-        self.extra_info.setToolTip('Show extra information from the file in the legend')
+        self.extra_info.setToolTip('Show extra information from '
+                                   'the file in the legend')
         legend_box_layout.addWidget(self.extra_info, 1, 5)
 
         # Checkbox to only show extra info
@@ -335,11 +345,12 @@ class App(QMainWindow):
         self.condition_legend_names = QComboBox(self)
         self.condition_legend_names.setEditable(True)
         self.condition_legend_names.setInsertPolicy(2)
-        self.condition_legend_names.setToolTip('Edit names by changing text and pressing return')
+        self.condition_legend_names.setToolTip('Edit names by changing text '
+                                               'and pressing return')
         legend_box_layout.addWidget(self.condition_legend_names, 2, 2, 1, 2)
 
         # Heading for condition legend
-        self.condition_legend_title = QLineEdit(self) 
+        self.condition_legend_title = QLineEdit(self)
         legend_box_layout.addWidget(self.condition_legend_title, 2, 4)
 
         self.condition_extra_info = QComboBox(self)
@@ -350,7 +361,8 @@ class App(QMainWindow):
         self.condition_extra_info.addItem("date")
         self.condition_extra_info.addItem("time")
         self.condition_extra_info.addItem("date+time")
-        self.condition_extra_info.setToolTip('Show extra information from the file in the legend')
+        self.condition_extra_info.setToolTip('Show extra information from '
+                                             'the file in the legend')
         legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
 
         # Checkbox to only show extra info
@@ -388,25 +400,25 @@ class App(QMainWindow):
 
         # Font size textbox
         style_box_layout.addWidget(Label('Title font size:'), 1, 0)
-        self.title_size = QLineEdit(self) 
+        self.title_size = QLineEdit(self)
         style_box_layout.addWidget(self.title_size, 1, 1)
 
         style_box_layout.addWidget(Label('Legend font size:'), 1, 2)
-        self.legend_size = QLineEdit(self) 
+        self.legend_size = QLineEdit(self)
         style_box_layout.addWidget(self.legend_size, 1, 3)
 
         style_box_layout.addWidget(Label('Label font size:'), 1, 4)
-        self.label_size = QLineEdit(self) 
+        self.label_size = QLineEdit(self)
         style_box_layout.addWidget(self.label_size, 1, 5)
 
         # Line width textbox
         style_box_layout.addWidget(Label('Line width:'), 2, 0)
-        self.line_width = QLineEdit(self) 
+        self.line_width = QLineEdit(self)
         style_box_layout.addWidget(self.line_width, 2, 1)
 
         # Condition axis colour
         style_box_layout.addWidget(Label('Condition axis colour:'), 2, 2)
-        self.axis_colour = QLineEdit(self) 
+        self.axis_colour = QLineEdit(self)
         style_box_layout.addWidget(self.axis_colour, 2, 3)
 
         style_box_layout.addWidget(Label('Grid:'), 2, 4)
@@ -424,7 +436,8 @@ class App(QMainWindow):
 
         stats_box_layout.addWidget(Label('Standard error:'), 0, 0)
         self.std_err = QCheckBox(self)
-        self.std_err.setToolTip('Checked = show standard error on mean\nUnchecked = show standard deviation')
+        self.std_err.setToolTip('Checked = show standard error on mean\n'
+                                'Unchecked = show standard deviation')
         stats_box_layout.addWidget(self.std_err, 0, 1)
 
         stats_box.setContentLayout(stats_box_layout)
@@ -441,9 +454,9 @@ class App(QMainWindow):
         self.setCentralWidget(tabs)
         self.show()
 
-    #--------------------------------------------------------------------------------------
-    #                                   MEMBER FUNCTIONS
-    #--------------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    #                           MEMBER FUNCTIONS
+    # -------------------------------------------------------------------------
 
     # Function: Open and read in data files
     def open_data_files(self):
@@ -489,8 +502,8 @@ class App(QMainWindow):
         for i, data in enumerate(self.data.data_files):
             data_list_item = DataListItem(data.name.split('/')[-1], i, self)
             self.data_list.addItem(data_list_item.item)
-            self.data_list.setItemWidget(data_list_item.item, data_list_item.widget)
-            #self.data_list.addItem(data.name.split('/')[-1])
+            self.data_list.setItemWidget(data_list_item.item,
+                                         data_list_item.widget)
             self.legend_names.addItem(data.label)
             if i > 0:
                 continue
@@ -598,11 +611,13 @@ class App(QMainWindow):
             self.config.ymax = -1
 
         # Condition y axis config
-        self.config.condition_yvar = self.condition_yaxis_dropdown.currentText()
+        self.config.condition_yvar = \
+            self.condition_yaxis_dropdown.currentText()
         self.config.condition_yname = self.condition_yaxis_name.text()
         self.config.condition_yunit = self.condition_yaxis_unit.text()
         if(isfloat(self.condition_yaxis_min.text())):
-            self.config.condition_ymin = float(self.condition_yaxis_min.text())
+            self.config.condition_ymin = \
+                float(self.condition_yaxis_min.text())
         else:
             self.config.condition_ymin = -1
         if(isfloat(self.condition_yaxis_max.text())):
@@ -629,13 +644,15 @@ class App(QMainWindow):
         if(isint(self.downsample.text())):
             self.config.downsample = int(self.downsample.text())
         if(isfloat(self.condition_average.text())):
-            self.config.condition_average = float(self.condition_average.text())
+            self.config.condition_average = \
+                float(self.condition_average.text())
         else:
             self.config.condition_average = -1
 
         # Legend config
         self.config.legend = self.legend_toggle.isChecked()
-        self.config.condition_legend = self.condition_legend_toggle.isChecked()
+        self.config.condition_legend = \
+            self.condition_legend_toggle.isChecked()
         self.config.legend_title = self.legend_title.text()
         if(self.config.legend_title.lower() == 'none'):
             self.config.legend_title = ''
@@ -647,11 +664,15 @@ class App(QMainWindow):
             self.config.label_names.append(self.legend_names.itemText(i))
         self.config.condition_label_names.clear()
         for i in range(self.condition_legend_names.count()):
-            self.config.condition_label_names.append(self.condition_legend_names.itemText(i))
+            self.config.condition_label_names.append(
+                self.condition_legend_names.itemText(i)
+            )
         self.config.extra_info = self.extra_info.currentText()
-        self.config.condition_extra_info = self.condition_extra_info.currentText()
+        self.config.condition_extra_info = \
+            self.condition_extra_info.currentText()
         self.config.only_extra = self.only_extra.isChecked()
-        self.config.condition_only_extra = self.condition_only_extra.isChecked()
+        self.config.condition_only_extra = \
+            self.condition_only_extra.isChecked()
 
         # Style config
         self.config.style = self.style_dropdown.currentText()
@@ -669,7 +690,7 @@ class App(QMainWindow):
         else:
             self.config.label_size = -1
         if(isfloat(self.line_width.text())):
-            self.config.line_width  = float(self.line_width.text())
+            self.config.line_width = float(self.line_width.text())
         else:
             self.config.line_width = -1
         self.config.axis_colour = self.axis_colour.text()

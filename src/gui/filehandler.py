@@ -1,10 +1,11 @@
+# pyqt imports
+from PyQt5.QtWidgets import QWidget, QFileDialog
+
 # local imports
 from src.reader.readtextfile import read_text_file
 from src.reader.algemdata import AlgemData
 from src.reader.dataholder import DataHolder
 
-# pyqt imports
-from PyQt5.QtWidgets import QWidget, QFileDialog
 
 # Class to handle the file browser
 class OpenFileHandlerGui(QWidget):
@@ -22,15 +23,20 @@ class OpenFileHandlerGui(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
-        
+
         self.openFileNamesDialog()
-        
+
         self.show()
-    
+
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"Open File(s)", "","All Files (*);;Text Files (*.txt)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(
+                    self,
+                    "Open File(s)",
+                    "",
+                    "All Files (*);;Text Files (*.txt)",
+                    options=options)
         if files:
             for file_name in files:
                 if not file_name.endswith('.txt'):
@@ -40,6 +46,7 @@ class OpenFileHandlerGui(QWidget):
                     self.data.add_data(algem_data)
                 else:
                     self.data.add_replicate(algem_data, self.row)
+
 
 # Class to handle the file browser
 class SaveFileHandlerGui(QWidget):
@@ -59,15 +66,20 @@ class SaveFileHandlerGui(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
-        
+
         self.saveFileDialog()
-        
+
         self.show()
-    
+
     def saveFileDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.file_name, _ = QFileDialog.getSaveFileName(self,"Save File","","All Files (*);;Text Files (*.txt)", options=options)
+        self.file_name, _ = QFileDialog.getSaveFileName(
+                             self,
+                             "Save File",
+                             "",
+                             "All Files (*);;Text Files (*.txt)",
+                             options=options)
         if self.file_name and self.save_fig:
             if(self.file_name == ''):
                 self.fig.savefig('graph.png')
@@ -75,6 +87,7 @@ class SaveFileHandlerGui(QWidget):
                 self.fig.savefig(self.file_name + '.png')
             else:
                 self.fig.savefig(selg.file_name)
+
 
 # Class to handle the file browser
 class SaveDirectoryHandlerGui(QWidget):
@@ -89,26 +102,32 @@ class SaveDirectoryHandlerGui(QWidget):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
-        
+
         self.saveDirectoryDialog()
-        
+
         self.show()
-    
+
     def saveDirectoryDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.directory_name = QFileDialog.getExistingDirectory(self,"Select Directory", options=options)
+        self.directory_name = QFileDialog.getExistingDirectory(
+                               self,
+                               "Select Directory",
+                               options=options)
 
 
 def open_files(data, downsample=-1, row=-1):
     ex_file = OpenFileHandlerGui(data, downsample, row)
 
+
 def save_file(fig):
     ex_file = SaveFileHandlerGui(fig)
+
 
 def get_save_file_name():
     ex_file = SaveFileHandlerGui()
     return ex_file.file_name
+
 
 def get_save_directory_name():
     ex_file = SaveDirectoryHandlerGui()

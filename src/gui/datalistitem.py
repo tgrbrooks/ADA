@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout, QPushButton, QLabel, QWidget, QListWidget
+from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout
+from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
+
 
 class DataListItem():
 
@@ -6,10 +8,14 @@ class DataListItem():
         self.item = QListWidgetItem()
         self.widget = QWidget()
         del_button = QPushButton('del')
-        del_button.setStyleSheet("background-color: #eb5a46; border-radius: 5px; padding: 2px")
+        del_button.setStyleSheet(
+            "background-color: #eb5a46; border-radius: 5px; padding: 2px"
+        )
         del_button.clicked.connect(parent.remove_item)
         add_button = QPushButton('add')
-        add_button.setStyleSheet("background-color: #90ee90; border-radius: 5px; padding: 2px")
+        add_button.setStyleSheet(
+            "background-color: #90ee90; border-radius: 5px; padding: 2px"
+        )
         add_button.clicked.connect(parent.add_to_item)
         add_button.clicked.connect(parent.update_data_list)
         label = QLabel(text)
@@ -29,20 +35,25 @@ class DataListItem():
                 hlayout = QHBoxLayout()
                 hlayout.addWidget(QLabel('-'))
                 sub_del_button = QPushButton('del')
-                sub_del_button.setStyleSheet("background-color: #eb5a46; border-radius: 5px; padding: 2px")
+                sub_del_button.setStyleSheet(
+                  "background-color: #eb5a46; border-radius: 5px; padding: 2px"
+                )
                 hlayout.addWidget(sub_del_button)
-                sub_del_button.clicked.connect(lambda j: parent.remove_replicate(j))
-                hlayout.addWidget(QLabel(parent.data.replicate_files[index][j].name.split('/')[-1]))
+                sub_del_button.clicked.connect(
+                    lambda j: parent.remove_replicate(j)
+                )
+                hlayout.addWidget(QLabel(
+                    parent.data.replicate_files[index][j].name.split('/')[-1]
+                ))
                 hlayout.addStretch()
                 hlayout.setSizeConstraint(QLayout.SetFixedSize)
                 subwidget = QWidget()
                 subwidget.setLayout(hlayout)
                 vlayout.addWidget(subwidget)
         vlayout.setSpacing(0)
-        vlayout.setContentsMargins(0,0,0,0)
+        vlayout.setContentsMargins(0, 0, 0, 0)
         vlayout.addStretch()
         vlayout.setSizeConstraint(QLayout.SetFixedSize)
 
         self.widget.setLayout(vlayout)
         self.item.setSizeHint(self.widget.sizeHint())
-        

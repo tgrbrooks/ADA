@@ -1,6 +1,7 @@
 from datetime import datetime, date, time
 import numpy as np
 
+
 # Class to store algem data
 class AlgemData():
 
@@ -23,14 +24,15 @@ class AlgemData():
         if(info == 'time'):
             return self.time.strftime('%H:%M:%S')
         if(info == 'date+time'):
-            return self.date.strftime('%m/%d/%Y') + ', ' + self.time.strftime('%H:%M:%S')
+            return (self.date.strftime('%m/%d/%Y') + ', '
+                    + self.time.strftime('%H:%M:%S'))
         if(info == 'title'):
             return self.title
         if(info == 'reactor'):
             return self.reactor
         if(info == 'profile'):
             return self.profile
-    
+
     def get_signal(self, name):
         for sig in self.signals:
             if sig.name == name:

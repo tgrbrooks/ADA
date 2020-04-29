@@ -2,6 +2,7 @@ from matplotlib.widgets import AxesWidget
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class Cursor(AxesWidget):
 
     def __init__(self, ax, horizOn=True, vertOn=True, useblit=False,
@@ -58,7 +59,6 @@ class Cursor(AxesWidget):
 
         self._update()
 
-
     def _update(self):
         if self.useblit:
             if self.background is not None:
@@ -69,6 +69,7 @@ class Cursor(AxesWidget):
         else:
             self.canvas.draw_idle()
         return False
+
 
 class SnapToCursor(AxesWidget):
     """
@@ -94,7 +95,8 @@ class SnapToCursor(AxesWidget):
         self.lineh = ax.axhline(ax.get_ybound()[0], visible=False, **lineprops)
         self.linev = ax.axvline(ax.get_xbound()[0], visible=False, **lineprops)
 
-        self.marker, = ax.plot(0, 0, marker='o', visible=False, color='red', markersize=4)
+        self.marker, = ax.plot(0, 0, marker='o', visible=False,
+                               color='red', markersize=4)
 
         self.background = None
         self.needclear = False
@@ -102,11 +104,14 @@ class SnapToCursor(AxesWidget):
         self.x = x
         self.y = y
         # text location in axes coords
-        self.txt = ax.text(0.25, 0.95, '', transform=ax.transAxes, bbox=dict(boxstyle="round",ec=(1., 0.5, 0.5),fc=(1., 0.8, 0.8)))
-        self.gradtxt = ax.text(0.25, 0.8, '', transform=ax.transAxes, bbox=dict(boxstyle="round",ec=(1., 0.5, 0.5),fc=(1., 0.8, 0.8)))
+        self.txt = ax.text(0.25, 0.95, '', transform=ax.transAxes,
+                           bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                     fc=(1., 0.8, 0.8)))
+        self.gradtxt = ax.text(0.25, 0.8, '', transform=ax.transAxes,
+                               bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                         fc=(1., 0.8, 0.8)))
         self.positions = []
         self.lines = []
-
 
     def clear(self, event):
         """Internal event handler to clear the cursor."""
@@ -137,11 +142,14 @@ class SnapToCursor(AxesWidget):
 
         x, y = event.xdata, event.ydata
         indx = min(np.searchsorted(self.x[0], x), len(self.x[0]) - 1)
-        min_dist = np.sqrt((self.x[0][indx] - x)**2. + (self.y[0][indx] - y)**2.)
+        min_dist = np.sqrt((self.x[0][indx] - x)**2.
+                           + (self.y[0][indx] - y)**2.)
         min_ind = 0
         for ind, xdat in enumerate(self.x):
-            index_x = min(np.searchsorted(self.x[ind], x), len(self.x[ind]) - 1)
-            dist = np.sqrt((self.x[ind][index_x] - x)**2. + (self.y[ind][index_x] - y)**2.)
+            index_x = min(np.searchsorted(self.x[ind], x),
+                          len(self.x[ind]) - 1)
+            dist = np.sqrt((self.x[ind][index_x] - x)**2.
+                           + (self.y[ind][index_x] - y)**2.)
             if(dist < min_dist):
                 indx = index_x
                 min_ind = ind
@@ -163,32 +171,36 @@ class SnapToCursor(AxesWidget):
     def onclick(self, event):
         x, y = event.xdata, event.ydata
         indx = min(np.searchsorted(self.x[0], x), len(self.x[0]) - 1)
-        min_dist = np.sqrt((self.x[0][indx] - x)**2. + (self.y[0][indx] - y)**2.)
+        min_dist = np.sqrt((self.x[0][indx] - x)**2.
+                           + (self.y[0][indx] - y)**2.)
         min_ind = 0
         for ind, xdat in enumerate(self.x):
-            index_x = min(np.searchsorted(self.x[ind], x), len(self.x[ind]) - 1)
-            dist = np.sqrt((self.x[ind][index_x] - x)**2. + (self.y[ind][index_x] - y)**2.)
+            index_x = min(np.searchsorted(self.x[ind], x),
+                          len(self.x[ind]) - 1)
+            dist = np.sqrt((self.x[ind][index_x] - x)**2.
+                           + (self.y[ind][index_x] - y)**2.)
             if(dist < min_dist):
                 indx = index_x
                 min_ind = ind
         x = self.x[min_ind][indx]
         y = self.y[min_ind][indx]
-        position = self.ax.plot(x, y, marker='o', visible=True, color='red', markersize=4)
+        position = self.ax.plot(x, y, marker='o', visible=True,
+                                color='red', markersize=4)
 
         # Delete old measurement
-        if( len(self.positions) >= 2 ):
+        if(len(self.positions) >= 2):
             for pos in self.positions:
                 p = pos.pop(0)
                 p.remove()
                 del p
             self.positions.clear()
             for line in self.lines:
-                l = line.pop(0)
-                l.remove()
-                del l
+                L = line.pop(0)
+                L.remove()
+                del L
             self.lines.clear()
         # Draw line between points
-        elif( len(self.positions) == 1 ):
+        elif(len(self.positions) == 1):
             pos1 = self.positions[0]
             x_points = np.array([pos1[0].get_xdata()[0], x])
             y_points = np.array([pos1[0].get_ydata()[0], y])
@@ -197,17 +209,20 @@ class SnapToCursor(AxesWidget):
             gradient = (y_points[1] - y_points[0])/(x_points[1] - x_points[0])
             exponent = np.floor(np.log10(np.abs(gradient))).astype(int)
             gradient = gradient/(1.*10.**exponent)
+
+            x_label = self.ax.xaxis.get_label().get_text()
             x_unit = ''
-            if(len(self.ax.xaxis.get_label().get_text().split('[')) > 1):
-                x_unit = (self.ax.xaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            if(len(x_label.split('[')) > 1):
+                x_unit = (x_label.split('[')[1]).split(']')[0]
+            y_label = self.ax.yaxis.get_label().get_text()
             y_unit = ''
-            if(len(self.ax.yaxis.get_label().get_text().split('[')) > 1):
-                y_unit = (self.ax.yaxis.get_label().get_text().split('[')[1]).split(']')[0]
+            if(len(y_label.split('[')) > 1):
+                y_unit = (y_label.split('[')[1]).split(']')[0]
             grad_unit = y_unit + "/" + x_unit
-            self.gradtxt.set_text(r'grad = %1.2f$\times10^{%i}$ %s' % (gradient, exponent, grad_unit))
-        
+            self.gradtxt.set_text(r'grad = %1.2f$\times10^{%i}$ %s'
+                                  % (gradient, exponent, grad_unit))
+
         self.positions.append(position)
-                
 
     def _update(self):
         if self.useblit:
@@ -220,4 +235,3 @@ class SnapToCursor(AxesWidget):
         else:
             self.canvas.draw_idle()
         return False
-

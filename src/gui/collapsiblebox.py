@@ -10,7 +10,9 @@ class CollapsibleBox(QtWidgets.QWidget):
         )
         self.checked = False
         self.toggle_button.setStyleSheet("QToolButton { border: none; }")
-        self.toggle_button.setStyleSheet('font-size: 14pt; font-weight: bold; font-family: Courier;')
+        self.toggle_button.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
         self.toggle_button.setToolButtonStyle(
             QtCore.Qt.ToolButtonTextBesideIcon
         )
