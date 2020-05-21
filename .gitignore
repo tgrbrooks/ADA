@@ -8,3 +8,5 @@ build
 dist
 AlgaePlotter*
 .DS_Store
+_build
+*.pyc
