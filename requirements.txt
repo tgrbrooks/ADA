@@ -25,6 +25,7 @@ sip==4.19.8
 six==1.14.0
 snowballstemmer==2.0.0
 Sphinx==3.0.3
+sphinx-rtd-theme==0.4.3
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==1.0.3
