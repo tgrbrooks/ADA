@@ -15,6 +15,8 @@ User Guide
    :maxdepth: 1
 
    installation
+   gui
+   options
 
 Developer Guide
 ---------------
@@ -23,6 +25,7 @@ Developer Guide
    :maxdepth: 1
 
    contributing
+   api
 
 Authors
 -------
