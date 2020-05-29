@@ -80,7 +80,10 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         # Clear axes and set default visibility
         self.axes.clear()
-        self.condition_axes.clear()
+        # Remove and recreate the twinned axis to prevent the x axis getting
+        # somehow remembered
+        self.condition_axes.remove()
+        self.condition_axes = self.axes.twinx()
         self.condition_axes.set_axis_off()
         self.axes.patch.set_visible(False)
         self.axes.spines['right'].set_visible(True)
@@ -165,13 +168,14 @@ class PlotCanvas(FigureCanvasQTAgg):
                 plot_list.append([condition_plot[0]])
 
         # Configure the axis range
-        condition_ymin = self.condition_axes.get_ybound()[0]
-        if(config.condition_ymin != -1):
-            condition_ymin = config.condition_ymin
-        condition_ymax = self.condition_axes.get_ybound()[1]
-        if(config.condition_ymax != -1):
-            condition_ymax = config.condition_ymax
-        self.condition_axes.set_ylim([condition_ymin, condition_ymax])
+        if not condition_data.empty:
+            condition_ymin = self.condition_axes.get_ybound()[0]
+            if(config.condition_ymin != -1):
+                condition_ymin = config.condition_ymin
+            condition_ymax = self.condition_axes.get_ybound()[1]
+            if(config.condition_ymax != -1):
+                condition_ymax = config.condition_ymax
+            self.condition_axes.set_ylim([condition_ymin, condition_ymax])
 
         x_title = ''
         y_title = ''
@@ -300,7 +304,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                    loc='upper left')
             leg.set_draggable(True)
         # Toggle condition legend on
-        if(config.condition_legend):
+        if(config.condition_legend and not condition_data.empty):
             self.condition_legend_on = True
             self.condition_legend_title = config.condition_legend_title
             cond_leg = self.condition_axes.legend(
