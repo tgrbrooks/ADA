@@ -132,12 +132,12 @@ class PlotCanvas(FigureCanvasQTAgg):
                     config.condition_only_extra):
                 legend_label = \
                     (legend_label + ' ('
-                     + dat.get_header_info(config.condition_extra_info)
+                     + cdata.get_header_info(config.condition_extra_info)
                      + ')')
             elif (config.condition_extra_info != 'none' and
                     config.condition_only_extra):
                 legend_label = \
-                    dat.get_header_info(config.condition_extra_info)
+                    cdata.get_header_info(config.condition_extra_info)
 
             # Plot the condition data with different colour cycle
             col = 'r'
