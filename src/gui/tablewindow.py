@@ -3,7 +3,8 @@ import numpy as np
 
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QScrollArea, QListWidget,
-                             QVBoxLayout)
+                             QVBoxLayout, QTabWidget, QTableWidget,
+                             QTableWidgetItem)
 from PyQt5.QtCore import QPoint
 
 from src.gui.errorwindow import ErrorWindow
@@ -18,8 +19,8 @@ class TableWindow(QMainWindow):
     def __init__(self, parent=None):
         super(TableWindow, self).__init__(parent)
         self.title = 'Create Table'
-        self.width = 400
-        self.height = 220
+        self.width = 600
+        self.height = 330
         self.parent = parent
         self.rows = []
         self.initUI()
@@ -29,9 +30,11 @@ class TableWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        layout = QGridLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        tabs = QTabWidget()
+
+        create_layout = QGridLayout()
+        create_layout.setContentsMargins(5, 5, 5, 5)
+        create_layout.setSpacing(5)
 
         # List of row options
         self.row_option = QComboBox(self)
@@ -41,7 +44,7 @@ class TableWindow(QMainWindow):
         self.row_option.addItem('time to')
         self.row_option.addItem('average of condition')
         self.row_option.addItem('condition at time')
-        layout.addWidget(self.row_option, 0, 0)
+        create_layout.addWidget(self.row_option, 0, 0)
 
         # Button to add a new row
         add_button = QPushButton("Add Row", self)
@@ -49,18 +52,18 @@ class TableWindow(QMainWindow):
         add_button.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
         )
-        layout.addWidget(add_button, 0, 1)
+        create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
-        table_layout = QVBoxLayout()
-        self.table_list = QListWidget(self)
+        row_layout = QVBoxLayout()
+        self.row_list = QListWidget(self)
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
-        table_widget = QWidget()
-        table_widget.setLayout(table_layout)
-        table_layout.addWidget(self.table_list)
-        scroll_area.setWidget(table_widget)
-        layout.addWidget(scroll_area, 1, 0, 2, 2)
+        row_widget = QWidget()
+        row_widget.setLayout(row_layout)
+        row_layout.addWidget(self.row_list)
+        scroll_area.setWidget(row_widget)
+        create_layout.addWidget(scroll_area, 1, 0, 2, 2)
 
         # Button to produce the table
         make_button = QPushButton("Create Table", self)
@@ -68,18 +71,37 @@ class TableWindow(QMainWindow):
         make_button.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
         )
-        layout.addWidget(make_button, 3, 0, 1, 2)
+        create_layout.addWidget(make_button, 3, 0, 1, 2)
 
-        widget = QWidget()
-        widget.setLayout(layout)
-        self.setCentralWidget(widget)
+        create_widget = QWidget()
+        create_widget.setLayout(create_layout)
+
+        tabs.addTab(create_widget, "Create")
+
+        table_layout = QVBoxLayout()
+        self.table = QTableWidget()
+        table_layout.addWidget(self.table)
+
+        save_button = QPushButton("Save Table", self)
+        save_button.clicked.connect(self.save_table)
+        save_button.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
+        table_layout.addWidget(save_button)
+
+        table_widget = QWidget()
+        table_widget.setLayout(table_layout)
+
+        tabs.addTab(table_widget, "Table")
+
+        self.setCentralWidget(tabs)
 
     # Add a new row to the table
     def add_row(self):
         table_list_item = TableListItem(self.row_option.currentText(), self)
-        self.table_list.addItem(table_list_item.item)
-        self.table_list.setItemWidget(table_list_item.item,
-                                      table_list_item.widget)
+        self.row_list.addItem(table_list_item.item)
+        self.row_list.setItemWidget(table_list_item.item,
+                                    table_list_item.widget)
         self.rows.append(table_list_item)
 
     # Remove a row from the table
@@ -87,9 +109,9 @@ class TableWindow(QMainWindow):
         # Horrible stuff to get list item
         widget = self.sender()
         gp = widget.mapToGlobal(QPoint())
-        lp = self.table_list.viewport().mapFromGlobal(gp)
-        row = self.table_list.row(self.table_list.itemAt(lp))
-        self.table_list.takeItem(row)
+        lp = self.row_list.viewport().mapFromGlobal(gp)
+        row = self.row_list.row(self.row_list.itemAt(lp))
+        self.row_list.takeItem(row)
         self.rows.pop(row)
 
     # Create table and write to file
@@ -149,8 +171,10 @@ class TableWindow(QMainWindow):
                     row_data.append(self.get_condition_at(
                         row.condition.currentText(),
                         float(row.time.text())))
-            self.save_table(column_headings, row_titles, row_data)
-            self.close()
+            self.header = column_headings
+            self.titles = row_titles
+            self.data = row_data
+            self.show_table()
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -268,16 +292,37 @@ class TableWindow(QMainWindow):
         raise RuntimeError('No condition data found for %s'
                            % (self.parent.data.data_files[i].name))
 
-    def save_table(self, header, titles, data):
-        file_name = get_save_file_name()
-        with open(file_name, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(header)
-            for i, title in enumerate(titles):
-                row = [title]
-                for dat in data[i]:
-                    if dat is not None:
-                        row.append(str(dat))
-                    else:
-                        row.append('none')
-                writer.writerow(row)
+    def show_table(self):
+        self.table.setRowCount(len(self.titles)+1)
+        self.table.setColumnCount(len(self.header))
+        for col, head in enumerate(self.header):
+            self.table.setItem(0, col, QTableWidgetItem(str(head)))
+        for row, title in enumerate(self.titles):
+            self.table.setItem(row+1, 0, QTableWidgetItem(str(title)))
+            for col, dat in enumerate(self.data[row]):
+                if dat is not None:
+                    self.table.setItem(row+1, col+1, QTableWidgetItem(str(dat)))
+                else:
+                    self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
+
+    def save_table(self):
+        try:
+            file_name = get_save_file_name()
+            if not file_name.endswith('.csv'):
+                file_name = file_name + '.csv'
+            with open(file_name, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(self.header)
+                for i, title in enumerate(self.titles):
+                    row = [title]
+                    for dat in self.data[i]:
+                        if dat is not None:
+                            row.append(str(dat))
+                        else:
+                            row.append('none')
+                    writer.writerow(row)
+            self.close()
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
