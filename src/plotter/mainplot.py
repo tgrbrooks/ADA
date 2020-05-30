@@ -307,10 +307,14 @@ class PlotCanvas(FigureCanvasQTAgg):
         if(config.condition_legend and not condition_data.empty):
             self.condition_legend_on = True
             self.condition_legend_title = config.condition_legend_title
-            cond_leg = self.condition_axes.legend(
+            handles, labels = self.condition_axes.get_legend_handles_labels()
+            cond_leg = self.axes.legend(
+                handles, labels,
                 title=config.condition_legend_title, loc='lower right'
             )
             cond_leg.set_draggable(True)
+            if(config.legend):
+                self.axes.add_artist(leg)
 
         # Show the plot
         self.draw()
