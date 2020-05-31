@@ -3,16 +3,31 @@
 Installation
 ============
 
-From a DMG Image
-----------------
-An installer for MacOS is available on `DropBox <https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0>`_.
+From an installer
+-----------------
+Installers for Windows 10 and MacOS are available on `DropBox <https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0>`_.
 
-Download the file, and click open with DiskImageMounter.
+MacOS
+'''''
+
+Download the file called ``Algae Plotter.dmg``, and click open with DiskImageMounter.
 
 Drag the icon into your applications folder.
 
 When you open it for the first time you will get a warning telling you it's from an unidentified developer, go to System Preferences -> Security & Privacy
 and there should be a message at the bottom of the general tab that will let you open the app.
+
+The installer was made with MacOS Mojave, earlier or later versions may or may not work. If you find any issues please open up an `issue <https://github.com/tgrbrooks/AlgaePlotter/issues>`_.
+
+Windows 10
+''''''''''
+
+There is also an installer available for Windows 10 on DropBox, the file is called ``Algae PlotterSetup.exe``. 
+
+Just open the file and follow the installation instructions.
+
+Other
+'''''
 
 Other operating systems can be supported upon request.
 
