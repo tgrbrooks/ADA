@@ -27,15 +27,6 @@ These software packages should be installed in the order presented before you at
  * PyQt5
  * Matplotlib
 
-Instructions
-''''''''''''
-
-Clone the repository
-
-.. code-block:: bash
-
-  git clone https://github.com/tgrbrooks/AlgaePlotter.git
-
 Check your version of python
 
 .. code-block:: bash
@@ -43,6 +34,34 @@ Check your version of python
   python3 --version
 
 If you don't have python 3.6 installed then `download it <https://docs.python-guide.org/starting/install3/osx/>`_
+
+Downloading the Source Code
+'''''''''''''''''''''''''''
+
+Clone the repository from GitHub
+
+.. code-block:: bash
+
+  git clone https://github.com/tgrbrooks/AlgaePlotter.git
+
+Quick Set-Up
+''''''''''''
+
+After downloading the source code you can install it with
+
+.. code-block:: bash
+
+   cd AlgaePlotter
+   source setup.sh
+
+You only need to install it once, now you can run it with
+
+.. code-block:: bash
+
+   source run.sh
+
+Detailed Instructions
+'''''''''''''''''''''
 
 Create a virtual environment in the AlgaePlotter directory for installing the dependencies
 
@@ -57,8 +76,27 @@ Install the dependencies
 
   pip install matplotlib PyQt5==5.9.2
 
+Install the Algae Plotter app
+
+.. code-block:: bash
+
+   pip install .
+
 Run the program
 
 .. code-block:: bash
 
   python3 src/main.py
+
+When you open a new terminal you will need to activate the virtual environment again
+
+.. code-block:: bash
+
+   source venv/bin/activate
+
+You can check for, download and install updates from GitHub with
+
+.. code-bloack:: bash
+
+   git pull
+   pip install .

@@ -114,7 +114,7 @@ class App(QMainWindow):
         plot_button = QPushButton('Plot!', self)
         plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
-        plot_button.setToolTip('Plot the data')
+        plot_button.setToolTip('Plot the data!')
         plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_button.setStyleSheet(big_font)
         plot_layout.addWidget(plot_button, 5, 4, 2, 1)
