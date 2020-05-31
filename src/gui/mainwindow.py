@@ -14,7 +14,7 @@ from src.reader.dataholder import DataHolder
 from src.gui.configuration import Configuration
 from src.gui.errorwindow import ErrorWindow
 from src.gui.label import Label
-from src.gui.functions import isfloat, isint
+from src.gui.type_functions import isfloat, isint
 from src.gui.collapsiblebox import CollapsibleBox
 from src.gui.datalistitem import DataListItem
 from src.gui.exportwindow import ExportWindow

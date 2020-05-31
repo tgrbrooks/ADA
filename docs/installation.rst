@@ -6,7 +6,15 @@ Installation
 From a DMG Image
 ----------------
 An installer for MacOS is available on `DropBox <https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0>`_.
-Other operating systems can be supported upon request
+
+Download the file, and click open with DiskImageMounter.
+
+Drag the icon into your applications folder.
+
+When you open it for the first time you will get a warning telling you it's from an unidentified developer, go to System Preferences -> Security & Privacy
+and there should be a message at the bottom of the general tab that will let you open the app.
+
+Other operating systems can be supported upon request.
 
 From GitHub
 -----------
