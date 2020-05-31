@@ -1,0 +1,6 @@
+{
+    "app_name": "Algae Plotter",
+    "author": "Tom Brooks",
+    "main_module": "src/main/python/main.py",
+    "version": "0.0.0"
+}
