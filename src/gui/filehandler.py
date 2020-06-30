@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QFileDialog
 
 # local imports
 from src.reader.readtextfile import read_text_file
+from src.reader.readht24 import read_ht24
 from src.reader.algemdata import AlgemData
 from src.reader.dataholder import DataHolder
 
@@ -39,13 +40,19 @@ class OpenFileHandlerGui(QWidget):
                     options=options)
         if files:
             for file_name in files:
-                if not file_name.endswith('.txt'):
-                    raise RuntimeError('%s is not a text file' % (file_name))
-                algem_data = read_text_file(file_name, self.downsample)
-                if(self.row == -1):
-                    self.data.add_data(algem_data)
+                if file_name.endswith('.txt'):
+                    algem_data = read_text_file(file_name, self.downsample)
+                    if(self.row == -1):
+                        self.data.add_data(algem_data)
+                    else:
+                        self.data.add_replicate(algem_data, self.row)
+                elif file_name.endswith('.csv'):
+                    algem_data_list = read_ht24(file_name, self.downsample)
+                    for algem_data in algem_data_list:
+                        self.data.add_data(algem_data)
                 else:
-                    self.data.add_replicate(algem_data, self.row)
+                    raise RuntimeError('%s is not a text or csv file'
+                                       % (file_name))
 
 
 # Class to handle the file browser

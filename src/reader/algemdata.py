@@ -73,13 +73,10 @@ class AlgemData():
     # Class: Store generic sensor data
     class Signal():
 
-        def __init__(self):
+        def __init__(self, info=''):
             self.name = ''
             self.unit = ''
             self.range = 0
-            self.data = np.array([])
-
-        def __init__(self, info):
             for i in info:
                 if i.find('Name=') != -1:
                     self.name = i.split('=')[1]
