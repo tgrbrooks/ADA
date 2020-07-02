@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QWidget, QFileDialog
 
 # local imports
 from src.reader.readtextfile import read_text_file
-from src.reader.readht24 import read_ht24
+from src.reader.readht24 import read_ht24, read_ht24_details
 from src.reader.algemdata import AlgemData
 from src.reader.dataholder import DataHolder
 
@@ -47,9 +47,24 @@ class OpenFileHandlerGui(QWidget):
                     else:
                         self.data.add_replicate(algem_data, self.row)
                 elif file_name.endswith('.csv'):
-                    algem_data_list = read_ht24(file_name, self.downsample)
-                    for algem_data in algem_data_list:
-                        self.data.add_data(algem_data)
+                    # Assume there is no details file
+                    if len(files) == 1:
+                        algem_data_list = read_ht24(file_name, self.downsample)
+                        # Ask user if there is a details file
+                        for algem_data in algem_data_list:
+                            self.data.add_data(algem_data)
+                    elif len(files) == 2 and files[1].endswith('.csv'):
+                        algem_data_list, replicate_data_list = read_ht24_details(file_name, 
+                                                                                 files[1], 
+                                                                                 self.downsample)
+                        for algem_data in algem_data_list:
+                            self.data.add_data(algem_data)
+                        for replicate in replicate_data_list:
+                            self.data.add_replicate(replicate[0], replicate[1])
+                        break
+                    else:
+                        raise RuntimeError('Can only read in one HT-24 file\n'
+                                           '(With optional details file)')
                 else:
                     raise RuntimeError('%s is not a text or csv file'
                                        % (file_name))
