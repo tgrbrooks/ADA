@@ -212,18 +212,28 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                         config)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
+
                 xdata, ydata, yerr = average_data(xdatas, ydatas,
                                                   config.std_err)
+
+                if config.yvar == 'ln(OD/OD0)':
+                    yerr = yerr/ydata
+                    ydata = np.log(ydata/ydata[0])
+
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr,
                                                    ydata+yerr, alpha=0.4)
                 plot_list.append([growth_plot[0], fill_area])
             else:
+                if config.yvar == 'ln(OD/OD0)':
+                    ydata = np.log(ydata/ydata[0])
+
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 plot_list.append([growth_plot[0]])
 
+            
             xdata_list.append(xdata)
             ydata_list.append(ydata)
 
@@ -368,6 +378,10 @@ class PlotCanvas(FigureCanvasQTAgg):
                     y_title = y_title.replace("["+sig.unit+"]", "")
                 elif(unit != ''):
                     y_title = y_title.replace("["+sig.unit+"]", "["+unit+"]")
+            elif yvar == 'ln(OD/OD0)' and sig.name == 'OD':
+                found_ydata = True
+                ydata = sig.data
+                y_title = 'ln(OD/OD$_{0}$)'
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title

@@ -509,6 +509,8 @@ class App(QMainWindow):
                 continue
             for sig in reversed(data.signals):
                 self.yaxis_dropdown.addItem(sig.name)
+                if sig.name == 'OD':
+                    self.yaxis_dropdown.addItem('ln(OD/OD0)')
 
     # Function: Update the list of condition data and associated options
     def update_condition_data_list(self):

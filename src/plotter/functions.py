@@ -5,6 +5,9 @@ from math import factorial
 
 # Function to apply alignment, outlier removal and smoothing
 def process_data(xdata, ydata, config):
+    # Remove any values <= 0
+    xdata, ydata = remove_zeros(xdata, ydata)
+
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:
         xdata = xdata - xdata[0]
@@ -23,6 +26,17 @@ def process_data(xdata, ydata, config):
         ydata = savitzky_golay(ydata, 61, 0)
     return xdata, ydata
 
+
+# Function to remove any values <= 0
+def remove_zeros(xdata, ydata):
+    data_index = 0
+    while data_index < len(ydata):
+        if (ydata[data_index] <= 0):
+            ydata = np.delete(ydata, data_index)
+            xdata = np.delete(xdata, data_index)
+            data_index = data_index - 1
+        data_index = data_index + 1
+    return xdata, ydata
 
 # Function to align all plots to the same y value
 def align_to_y(xdata, ydata, config):
