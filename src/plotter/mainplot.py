@@ -237,6 +237,41 @@ class PlotCanvas(FigureCanvasQTAgg):
             xdata_list.append(xdata)
             ydata_list.append(ydata)
 
+        if config.do_fit:
+            fit_index = -1
+            for i, data in enumerate(data.data_files):
+                if config.fit_curve == data.label:
+                    fit_index = i
+            fit_x = xdata_list[fit_index]
+            fit_y = ydata_list[fit_index]
+            if fit_index != -1:
+                fit_degree = 0
+                if config.fit_type == 'Linear':
+                    fit_degree = 1
+                elif config.fit_type == 'Quadratic':
+                    fit_degree = 2
+                from_index = np.abs(fit_x - config.fit_from).argmin()
+                to_index = np.abs(fit_x - config.fit_to).argmin()
+                fit_x = fit_x[from_index:to_index]
+                fit_y = fit_y[from_index:to_index]
+                fit_result = np.polyfit(fit_x, fit_y, fit_degree)
+                plot_x = np.linspace(config.fit_from, config.fit_to, 1000)
+                plot_y = 0. * plot_x + fit_result[0]
+                fit_func_text = '$y = p$'
+                if fit_degree == 1:
+                    plot_y = fit_result[0] * plot_x + fit_result[1]
+                    fit_func_text = '$y = p_1 \cdot x + p_0$'
+                elif fit_degree == 2:
+                    plot_y = (fit_result[0] * np.power(plot_x,2) +
+                             fit_result[1] * plot_x + fit_result[2])
+                    fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
+                fit_plot = self.axes.plot(plot_x, plot_y, '-', color='r', 
+                                          label='Fit')
+                self.axes.text(0.25, 0.95, fit_func_text,
+                               transform=self.axes.transAxes,
+                               bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                         fc=(1., 0.8, 0.8)))
+
         # Switch grid on/off
         self.axes.grid(config.grid)
 
@@ -267,6 +302,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         # Create a special cursor that snaps to growth curves
         self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list,
                                    useblit=False, color='red', linewidth=1)
+
         # Configure the measurement cursor
         if(config.cursor):
             # Clean up previous attributes
@@ -278,6 +314,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 self.cursor.onmove(event)
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onclick)
+
         # Otherwise allow user to change line style
         else:
             delattr(self, 'cursor')
@@ -313,6 +350,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             leg = self.axes.legend(title=config.legend_title,
                                    loc='upper left')
             leg.set_draggable(True)
+
         # Toggle condition legend on
         if(config.condition_legend and not condition_data.empty):
             self.condition_legend_on = True

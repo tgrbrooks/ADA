@@ -161,3 +161,8 @@ def time_average(xdata, ydata, window, show_err=False):
             new_yerr = np.append(new_yerr, std_dev)
         w_i = w_i + 1
     return new_xdata, new_ydata, new_yerr
+
+
+# Function to find nearest index in numpy array
+def nearest_index(array, value):
+    index = np.abs(array - value).argmin()

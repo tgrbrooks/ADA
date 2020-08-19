@@ -19,6 +19,7 @@ from src.gui.collapsiblebox import CollapsibleBox
 from src.gui.datalistitem import DataListItem
 from src.gui.exportwindow import ExportWindow
 from src.gui.tablewindow import TableWindow
+from src.gui.fitwindow import FitWindow
 
 
 class App(QMainWindow):
@@ -61,7 +62,7 @@ class App(QMainWindow):
 
         # Main plot window (row, column, row extent, column extent)
         self.plot = PlotCanvas(self, width=10, height=4)
-        plot_layout.addWidget(self.plot, 0, 0, 6, 4)
+        plot_layout.addWidget(self.plot, 0, 0, 6, 5)
 
         # Add data button
         data_button = QPushButton('Add Data', self)
@@ -70,7 +71,7 @@ class App(QMainWindow):
         data_button.clicked.connect(self.update_data_list)
         data_button.setToolTip('Import data for plotting')
         data_button.setStyleSheet(default_font)
-        plot_layout.addWidget(data_button, 0, 4)
+        plot_layout.addWidget(data_button, 0, 5)
 
         # Configure list behaviour
         self.data_list.clicked.connect(self.remove_item)
@@ -84,7 +85,7 @@ class App(QMainWindow):
         scroll_layout.addWidget(self.data_list)
         list_scroll.setWidget(scroll_content)
         list_scroll.setToolTip('Click to remove')
-        plot_layout.addWidget(list_scroll, 1, 4)
+        plot_layout.addWidget(list_scroll, 1, 5)
 
         # Add data button
         condition_data_button = QPushButton('Add Condition Data', self)
@@ -94,7 +95,7 @@ class App(QMainWindow):
         condition_data_button.setToolTip('Import condition data '
                                          '(temp, light, etc) for plotting')
         condition_data_button.setStyleSheet(default_font)
-        plot_layout.addWidget(condition_data_button, 3, 4,)
+        plot_layout.addWidget(condition_data_button, 3, 5)
 
         # Configure list behaviour
         self.condition_data_list.clicked.connect(self.remove_condition_item)
@@ -108,7 +109,7 @@ class App(QMainWindow):
         condition_scroll_layout.addWidget(self.condition_data_list)
         condition_list_scroll.setWidget(condition_scroll_content)
         condition_list_scroll.setToolTip('Click to remove')
-        plot_layout.addWidget(condition_list_scroll, 4, 4)
+        plot_layout.addWidget(condition_list_scroll, 4, 5)
 
         # Plot button
         plot_button = QPushButton('Plot!', self)
@@ -117,7 +118,7 @@ class App(QMainWindow):
         plot_button.setToolTip('Plot the data!')
         plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_button.setStyleSheet(big_font)
-        plot_layout.addWidget(plot_button, 5, 4, 2, 1)
+        plot_layout.addWidget(plot_button, 5, 5, 2, 1)
 
         # Saving options
         save_button = QPushButton('Save', self)
@@ -142,14 +143,21 @@ class App(QMainWindow):
         measure_button.setStyleSheet(default_font)
         plot_layout.addWidget(measure_button, 6, 2)
 
-        # Toggle grid
+        # Fit curves
+        fit_button = QPushButton('Fit', self)
+        fit_button.clicked.connect(self.fit_curve)
+        fit_button.setToolTip('Fit the growth curves')
+        fit_button.setStyleSheet(default_font)
+        plot_layout.addWidget(fit_button, 6, 3)
+
+        # Table output button
         table_button = QPushButton('To Table', self)
         table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         table_button.setToolTip('Create a table of growth rates for all curves'
                                 '\nConfigure in options tab')
         table_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
-        plot_layout.addWidget(table_button, 6, 3)
+        plot_layout.addWidget(table_button, 6, 4)
 
         # ---------------------------------------------------------------------
         #                           OPTIONS TAB
@@ -570,7 +578,12 @@ class App(QMainWindow):
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):
+        self.config.do_fit = False
         self.config.cursor = not self.config.cursor
+
+    def fit_curve(self):
+        self.fit = FitWindow(self)
+        self.fit.show()
 
     # Function: Toggle grid on and off
     def create_table(self):
@@ -700,3 +713,5 @@ class App(QMainWindow):
 
         # Stats config
         self.config.std_err = self.std_err.isChecked()
+
+        self.config.do_fit = False
