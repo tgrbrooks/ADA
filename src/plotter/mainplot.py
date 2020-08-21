@@ -19,6 +19,7 @@ from src.reader.dataholder import DataHolder
 from src.gui.configuration import Configuration
 from src.plotter.cursor import Cursor, SnapToCursor
 from src.plotter.functions import process_data, average_data, time_average
+from src.plotter.functions import exponent_text
 from src.gui.linestylewindow import LineStyleWindow
 from src.gui.filehandler import save_file
 
@@ -237,37 +238,93 @@ class PlotCanvas(FigureCanvasQTAgg):
             xdata_list.append(xdata)
             ydata_list.append(ydata)
 
+        # If we're fitting the data
         if config.do_fit:
+            # Find the curve to fit
             fit_index = -1
             for i, data in enumerate(data.data_files):
                 if config.fit_curve == data.label:
                     fit_index = i
             fit_x = xdata_list[fit_index]
             fit_y = ydata_list[fit_index]
+
+            # If the data has been found
             if fit_index != -1:
+                # Set the polynomial degree for the fit
                 fit_degree = 0
-                if config.fit_type == 'Linear':
+                if (config.fit_type == 'Linear' or 
+                    config.fit_type == 'Exponential'):
                     fit_degree = 1
                 elif config.fit_type == 'Quadratic':
                     fit_degree = 2
+
+                # Only fit the data in the given range
                 from_index = np.abs(fit_x - config.fit_from).argmin()
                 to_index = np.abs(fit_x - config.fit_to).argmin()
                 fit_x = fit_x[from_index:to_index]
                 fit_y = fit_y[from_index:to_index]
-                fit_result = np.polyfit(fit_x, fit_y, fit_degree)
+
+                # Need to manipulate the y data and weights if fitting an exp
+                weights = None
+                if config.fit_type == 'Exponential':
+                    weights = np.sqrt(fit_y)
+                    fit_y = np.log(fit_y)
+
+                # Get the fit results
+                fit_result = np.polyfit(fit_x, fit_y, fit_degree, w=weights)
+
+                # Plot the resultant function
                 plot_x = np.linspace(config.fit_from, config.fit_to, 1000)
+                x_unit = ''
+                if(len(x_title.split('[')) > 1):
+                    x_unit = (x_title.split('[')[1]).split(']')[0]
+                y_unit = ''
+                if(len(y_title.split('[')) > 1):
+                    y_unit = (y_title.split('[')[1]).split(']')[0]
+
+                # Flat line fit result
                 plot_y = 0. * plot_x + fit_result[0]
                 fit_func_text = '$y = p$'
-                if fit_degree == 1:
+                param_text = 'p = '+exponent_text(fit_result[0])+' '+y_unit
+
+                # Linear fit result
+                if config.fit_type == 'Linear':
                     plot_y = fit_result[0] * plot_x + fit_result[1]
                     fit_func_text = '$y = p_1 \cdot x + p_0$'
-                elif fit_degree == 2:
+                    param_text = ('$p_0$ = ' + exponent_text(fit_result[1]) +
+                                  ' ' + y_unit + '\n' +
+                                  '$p_1$ = ' + exponent_text(fit_result[0]) +
+                                  ' ' + y_unit + '/' + x_unit)
+
+                # Quadratic fit result
+                elif config.fit_type == 'Quadratic':
                     plot_y = (fit_result[0] * np.power(plot_x,2) +
                              fit_result[1] * plot_x + fit_result[2])
                     fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
+                    param_text = ('$p_0$ = ' + exponent_text(fit_result[2]) +
+                                  ' ' + y_unit + '\n' +
+                                  '$p_1$ = ' + exponent_text(fit_result[1]) +
+                                  ' ' + y_unit + '/' + x_unit + '\n' +
+                                  '$p_2$ = ' + exponent_text(fit_result[0]) +
+                                  ' ' + y_unit + '/' + x_unit + '$^2$')
+
+                # Exponential fit result
+                elif config.fit_type == 'Exponential':
+                    plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
+                    fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
+                    param_text = ('$p_0$ = ' +
+                                  exponent_text(np.exp(fit_result[1])) +
+                                  ' ' + y_unit + '\n' +
+                                  '$p_1$ = ' + exponent_text(fit_result[0]) +
+                                  ' ' + y_unit + '/' + x_unit)
+
                 fit_plot = self.axes.plot(plot_x, plot_y, '-', color='r', 
                                           label='Fit')
                 self.axes.text(0.25, 0.95, fit_func_text,
+                               transform=self.axes.transAxes,
+                               bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                         fc=(1., 0.8, 0.8)))
+                self.axes.text(0.25, 0.75, param_text,
                                transform=self.axes.transAxes,
                                bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
                                          fc=(1., 0.8, 0.8)))

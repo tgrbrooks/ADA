@@ -44,6 +44,7 @@ class TableWindow(QMainWindow):
         self.row_option.addItem('time to')
         self.row_option.addItem('average of condition')
         self.row_option.addItem('condition at time')
+        self.row_option.addItem('fit parameter')
         create_layout.addWidget(self.row_option, 0, 0)
 
         # Button to add a new row
@@ -171,6 +172,16 @@ class TableWindow(QMainWindow):
                     row_data.append(self.get_condition_at(
                         row.condition.currentText(),
                         float(row.time.text())))
+                if row.type == 'fit parameter':
+                    row_titles.append('%s fit of %s, parameter %s'
+                                      % (row.fit.currentText(),
+                                         row.data.currentText(),
+                                         row.param.currentText()))
+                    row_data.append(self.get_fit(row.data.currentText(),
+                                                 row.fit.currentText(),
+                                                 row.param.currentText(),
+                                                 float(row.fit_from.text()),
+                                                 float(row.fit_to.text())))
             self.header = column_headings
             self.titles = row_titles
             self.data = row_data
@@ -291,6 +302,42 @@ class TableWindow(QMainWindow):
             return xdata, ydata
         raise RuntimeError('No condition data found for %s'
                            % (self.parent.data.data_files[i].name))
+
+    def get_fit(self, data_name, fit_name, fit_param, fit_from, fit_to):
+        values = []
+        for i, data in enumerate(self.parent.data.data_files):
+            xdata, ydata = self.get_xy_data(i, data_name)
+            fit_degree = 0
+            if fit_name == 'y = p1*x + p0' or fit_name == 'y = p0*exp(p1*x)':
+                fit_degree = 1
+            if fit_name == 'y = p2*x^2 + p1*x + p0':
+                fit_degree = 2
+
+            from_index = np.abs(xdata - fit_from).argmin()
+            to_index = np.abs(xdata - fit_to).argmin()
+            xdata = xdata[from_index:to_index]
+            ydata = ydata[from_index:to_index]
+
+            weights = None
+            if fit_name == 'y = p0*exp(p1*x)':
+                weights = np.sqrt(ydata)
+                ydata = np.log(ydata)
+
+            fit_result = np.polyfit(xdata, ydata, fit_degree, w=weights)
+
+            if fit_param == 'p2':
+                if fit_name == 'y = p2*x^2 + p1*x + p0':
+                    values.append(fit_result[0])
+                else:
+                    values.append(0)
+            if fit_param == 'p1':
+                if fit_name != 'y = p0':
+                    values.append(fit_result[fit_degree-1])
+                else:
+                    values.append(0)
+            if fit_param == 'p0':
+                values.append(fit_result[fit_degree])
+        return values
 
     def show_table(self):
         self.table.setRowCount(len(self.titles)+1)

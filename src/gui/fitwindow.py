@@ -15,7 +15,7 @@ class FitWindow(QMainWindow):
     def __init__(self, parent=None):
         super(FitWindow, self).__init__(parent)
         self.title = 'Fit Curve'
-        self.width = 500
+        self.width = 250
         self.height = 150
         self.parent = parent
         self.rows = []

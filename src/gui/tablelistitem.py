@@ -36,10 +36,10 @@ class TableListItem():
                 for sig in parent.parent.data.data_files[0].signals:
                     self.data.addItem(sig.name)
             layout.addWidget(self.data)
-            layout.addWidget(QLabel('between:'))
+            layout.addWidget(QLabel('Between:'))
             self.grad_from = QLineEdit(self.widget)
             layout.addWidget(self.grad_from)
-            layout.addWidget(QLabel('and:'))
+            layout.addWidget(QLabel('And:'))
             self.grad_to = QLineEdit(self.widget)
             layout.addWidget(self.grad_to)
 
@@ -51,7 +51,7 @@ class TableListItem():
                 for sig in parent.parent.data.data_files[0].signals:
                     self.data.addItem(sig.name)
             layout.addWidget(self.data)
-            layout.addWidget(QLabel('to reach:'))
+            layout.addWidget(QLabel('To reach:'))
             self.time_to = QLineEdit(self.widget)
             layout.addWidget(self.time_to)
 
@@ -63,10 +63,10 @@ class TableListItem():
                 for sig in parent.parent.condition_data.data_files[0].signals:
                     self.condition.addItem(sig.name)
             layout.addWidget(self.condition)
-            layout.addWidget(QLabel('between time:'))
+            layout.addWidget(QLabel('Between time:'))
             self.start_t = QLineEdit(self.widget)
             layout.addWidget(self.start_t)
-            layout.addWidget(QLabel('and:'))
+            layout.addWidget(QLabel('And:'))
             self.end_t = QLineEdit(self.widget)
             layout.addWidget(self.end_t)
 
@@ -78,9 +78,37 @@ class TableListItem():
                 for sig in parent.parent.condition_data.data_files[0].signals:
                     self.condition.addItem(sig.name)
             layout.addWidget(self.condition)
-            layout.addWidget(QLabel('at time:'))
+            layout.addWidget(QLabel('At time:'))
             self.time = QLineEdit(self.widget)
             layout.addWidget(self.time)
+
+        # Value of fit parameter needs fit and parameter
+        if(text == 'fit parameter'):
+            layout.addWidget(QLabel('Fit:'))
+            self.fit = QComboBox(self.widget)
+            self.fit.addItem('y = p0')
+            self.fit.addItem('y = p1*x + p0')
+            self.fit.addItem('y = p2*x^2 + p1*x + p0')
+            self.fit.addItem('y = p0*exp(p1*x)')
+            layout.addWidget(self.fit)
+            layout.addWidget(QLabel('Of:'))
+            self.data = QComboBox(self.widget)
+            if len(parent.parent.data.data_files) > 0:
+                for sig in parent.parent.data.data_files[0].signals:
+                    self.data.addItem(sig.name)
+            layout.addWidget(self.data)
+            layout.addWidget(QLabel('Parameter:'))
+            self.param = QComboBox(self.widget)
+            self.param.addItem('p0')
+            self.param.addItem('p1')
+            self.param.addItem('p2')
+            layout.addWidget(self.param)
+            layout.addWidget(QLabel('From:'))
+            self.fit_from = QLineEdit(self.widget)
+            layout.addWidget(self.fit_from)
+            layout.addWidget(QLabel('To:'))
+            self.fit_to = QLineEdit(self.widget)
+            layout.addWidget(self.fit_to)
 
         # Pad out the row
         layout.addStretch()

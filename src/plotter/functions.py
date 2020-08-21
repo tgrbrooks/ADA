@@ -164,5 +164,11 @@ def time_average(xdata, ydata, window, show_err=False):
 
 
 # Function to find nearest index in numpy array
-def nearest_index(array, value):
-    index = np.abs(array - value).argmin()
+def exponent_text(value):
+    exponent = np.floor(np.log10(np.abs(value))).astype(int)
+    if exponent >= 0 and exponent <= 2:
+        text = '%1.2f' % (value)
+        return text
+    value = value/(1.*10.**exponent)
+    text = r'%1.2f$\times10^{%i}$' % (value, exponent)
+    return text
