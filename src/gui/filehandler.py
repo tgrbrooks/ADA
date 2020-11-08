@@ -11,7 +11,7 @@ from src.reader.dataholder import DataHolder
 # Class to handle the file browser
 class OpenFileHandlerGui(QWidget):
 
-    def __init__(self, data, downsample=-1, row=-1):
+    def __init__(self, data=None, downsample=-1, row=-1):
         super().__init__()
         self.title = 'Open Files'
         self.width = 640
@@ -27,7 +27,7 @@ class OpenFileHandlerGui(QWidget):
 
         self.openFileNamesDialog()
 
-        self.show()
+        #self.show()
 
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
@@ -38,7 +38,8 @@ class OpenFileHandlerGui(QWidget):
                     "",
                     "All Files (*);;Text Files (*.txt)",
                     options=options)
-        if files:
+        self.files = files
+        if files and self.data:
             for file_name in files:
                 if file_name.endswith('.txt'):
                     algem_data = read_text_file(file_name, self.downsample)
@@ -91,7 +92,7 @@ class SaveFileHandlerGui(QWidget):
 
         self.saveFileDialog()
 
-        self.show()
+        #self.show()
 
     def saveFileDialog(self):
         options = QFileDialog.Options()
@@ -127,7 +128,7 @@ class SaveDirectoryHandlerGui(QWidget):
 
         self.saveDirectoryDialog()
 
-        self.show()
+        #self.show()
 
     def saveDirectoryDialog(self):
         options = QFileDialog.Options()
@@ -136,6 +137,12 @@ class SaveDirectoryHandlerGui(QWidget):
                                self,
                                "Select Directory",
                                options=options)
+
+def get_file_names():
+    ex_file = OpenFileHandlerGui()
+    files = ex_file.files
+    ex_file.close()
+    return ex_file.files
 
 
 def open_files(data, downsample=-1, row=-1):

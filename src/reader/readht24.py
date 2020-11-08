@@ -181,7 +181,7 @@ def read_ht24_details(file_name1, file_name2, downsample=-1):
         f2.close()
         return read_details(file_name2, file_name1, downsample)
     # Second file is details file
-    elif header2[0] == 'Date':
+    elif date2[0] == 'Date':
         f1.close()
         f2.close()
         return read_details(file_name1, file_name2, downsample)

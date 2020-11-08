@@ -20,6 +20,7 @@ from src.gui.datalistitem import DataListItem
 from src.gui.exportwindow import ExportWindow
 from src.gui.tablewindow import TableWindow
 from src.gui.fitwindow import FitWindow
+from src.gui.loadwindow import LoadWindow
 
 
 class App(QMainWindow):
@@ -130,8 +131,8 @@ class App(QMainWindow):
 
         # Export options
         export_button = QPushButton('Export', self)
-        export_button.clicked.connect(self.export_to_csv)
-        export_button.setToolTip('Export the data to csv file')
+        export_button.clicked.connect(self.export_files)
+        export_button.setToolTip('Export the data to another file type')
         export_button.setStyleSheet(default_font)
         plot_layout.addWidget(export_button, 6, 1)
 
@@ -469,7 +470,8 @@ class App(QMainWindow):
     # Function: Open and read in data files
     def open_data_files(self):
         try:
-            open_files(self.data)
+            self.load = LoadWindow(self, self.data)
+            self.load.show()
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -591,7 +593,7 @@ class App(QMainWindow):
         self.table.show()
 
     # Function: Export data to csv format
-    def export_to_csv(self):
+    def export_files(self):
         self.export = ExportWindow(self)
         self.export.show()
 
