@@ -470,7 +470,7 @@ class App(QMainWindow):
     # Function: Open and read in data files
     def open_data_files(self):
         try:
-            self.load = LoadWindow(self, self.data)
+            self.load = LoadWindow(self, self.data, self.condition_data)
             self.load.show()
         except Exception as e:
             print('Error: ' + str(e))
