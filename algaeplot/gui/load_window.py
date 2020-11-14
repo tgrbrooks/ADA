@@ -3,10 +3,11 @@ import csv
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
-from src.gui.errorwindow import ErrorWindow
-from src.gui.filehandler import get_file_names
-from src.reader.readht24 import read_ht24, read_ht24_details
-from src.reader.readtextfile import read_text_file
+from algaeplot.gui.error_window import ErrorWindow
+from algaeplot.gui.file_handler import get_file_names
+from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
+    read_algem_ht24_details)
+from algaeplot.reader.read_algem_pro import read_algem_pro
 
 
 class LoadWindow(QMainWindow):
@@ -38,6 +39,8 @@ class LoadWindow(QMainWindow):
         self.file_type = QComboBox(self)
         self.file_type.addItem('Algem Pro')
         self.file_type.addItem('Algem HT24')
+        self.file_type.addItem('IP T-Iso')
+        self.file_type.addItem('PSI')
         self.file_type.addItem('csv')
         self.file_type.addItem('txt')
         layout.addWidget(self.file_type, 0, 1)
@@ -124,16 +127,16 @@ class LoadWindow(QMainWindow):
             if not file_name.endswith(extension):
                 raise RuntimeError("File %s has the wrong extension" % (file_name))
             if file_type == 'Algem Pro':
-                algem_data = read_text_file(file_name,
+                algem_data = read_algem_pro(file_name,
                                             self.parent.config.downsample)
                 self.data.add_data(algem_data)
             elif file_type == 'Algem HT24' and not self.details:
-                algem_data_list = read_ht24(file_name,
-                                            self.parent.config.downsample)
+                algem_data_list = read_algem_ht24(file_name,
+                                                  self.parent.config.downsample)
                 for algem_data in algem_data_list:
                     self.data.add_data(algem_data)
             elif file_type == 'Algem HT24':
-                algem_data_list, replicate_data_list = read_ht24_details(
+                algem_data_list, replicate_data_list = read_algem_ht24_details(
                     file_name, self.details[0], self.parent.config.downsample)
                 for algem_data in algem_data_list:
                     self.data.add_data(algem_data)

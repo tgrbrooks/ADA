@@ -3,8 +3,8 @@ import csv
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
-from src.gui.errorwindow import ErrorWindow
-from src.gui.filehandler import get_save_directory_name
+from algaeplot.gui.error_window import ErrorWindow
+from algaeplot.gui.file_handler import get_save_directory_name
 
 
 class ExportWindow(QMainWindow):

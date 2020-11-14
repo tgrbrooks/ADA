@@ -2,10 +2,11 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
 # local imports
-from src.reader.readtextfile import read_text_file
-from src.reader.readht24 import read_ht24, read_ht24_details
-from src.reader.algemdata import AlgemData
-from src.reader.dataholder import DataHolder
+from algaeplot.reader.read_algem_pro import read_algem_pro
+from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
+    read_algem_ht24_details)
+from algaeplot.reader.algae_data import AlgaeData
+from algaeplot.reader.data_holder import DataHolder
 
 
 # Class to handle the file browser
@@ -42,7 +43,7 @@ class OpenFileHandlerGui(QWidget):
         if files and self.data:
             for file_name in files:
                 if file_name.endswith('.txt'):
-                    algem_data = read_text_file(file_name, self.downsample)
+                    algem_data = read_algem_pro(file_name, self.downsample)
                     if(self.row == -1):
                         self.data.add_data(algem_data)
                     else:
@@ -50,12 +51,12 @@ class OpenFileHandlerGui(QWidget):
                 elif file_name.endswith('.csv'):
                     # Assume there is no details file
                     if len(files) == 1:
-                        algem_data_list = read_ht24(file_name, self.downsample)
+                        algem_data_list = read_algem_ht24(file_name, self.downsample)
                         # Ask user if there is a details file
                         for algem_data in algem_data_list:
                             self.data.add_data(algem_data)
                     elif len(files) == 2 and files[1].endswith('.csv'):
-                        algem_data_list, replicate_data_list = read_ht24_details(file_name, 
+                        algem_data_list, replicate_data_list = read_algem_ht24_details(file_name, 
                                                                                  files[1], 
                                                                                  self.downsample)
                         for algem_data in algem_data_list:

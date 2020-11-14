@@ -7,10 +7,11 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QTableWidgetItem)
 from PyQt5.QtCore import QPoint
 
-from src.gui.errorwindow import ErrorWindow
-from src.gui.tablelistitem import TableListItem
-from src.gui.filehandler import get_save_file_name
-from src.plotter.functions import process_data, average_data, time_average
+from algaeplot.gui.error_window import ErrorWindow
+from algaeplot.gui.table_list_item import TableListItem
+from algaeplot.gui.file_handler import get_save_file_name
+from algaeplot.plotter.functions import (process_data, average_data,
+    time_average)
 
 
 # Class for a table constructor window

@@ -1,5 +1,5 @@
 # Local includes
-from src.reader.algemdata import AlgemData
+from algaeplot.reader.algae_data import AlgaeData
 
 
 # Class to store data files in

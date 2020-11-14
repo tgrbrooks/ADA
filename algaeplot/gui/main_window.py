@@ -8,19 +8,19 @@ from PyQt5.QtWidgets import QLabel, QLineEdit
 from PyQt5.QtCore import QPoint
 
 # Local application imports
-from src.gui.filehandler import open_files
-from src.plotter.mainplot import PlotCanvas
-from src.reader.dataholder import DataHolder
-from src.gui.configuration import Configuration
-from src.gui.errorwindow import ErrorWindow
-from src.gui.label import Label
-from src.gui.type_functions import isfloat, isint
-from src.gui.collapsiblebox import CollapsibleBox
-from src.gui.datalistitem import DataListItem
-from src.gui.exportwindow import ExportWindow
-from src.gui.tablewindow import TableWindow
-from src.gui.fitwindow import FitWindow
-from src.gui.loadwindow import LoadWindow
+from algaeplot.plotter.main_plot import PlotCanvas
+from algaeplot.reader.data_holder import DataHolder
+from algaeplot.gui.file_handler import open_files
+from algaeplot.gui.configuration import Configuration
+from algaeplot.gui.error_window import ErrorWindow
+from algaeplot.gui.label import Label
+from algaeplot.gui.type_functions import isfloat, isint
+from algaeplot.gui.collapsible_box import CollapsibleBox
+from algaeplot.gui.data_list_item import DataListItem
+from algaeplot.gui.export_window import ExportWindow
+from algaeplot.gui.table_window import TableWindow
+from algaeplot.gui.fit_window import FitWindow
+from algaeplot.gui.load_window import LoadWindow
 
 
 class App(QMainWindow):

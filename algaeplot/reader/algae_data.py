@@ -2,8 +2,8 @@ from datetime import datetime, date, time
 import numpy as np
 
 
-# Class to store algem data
-class AlgemData():
+# Class to store algae data
+class AlgaeData():
 
     def __init__(self, file_name):
         self.name = file_name
