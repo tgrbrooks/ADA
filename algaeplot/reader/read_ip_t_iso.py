@@ -83,6 +83,14 @@ def read_ip_t_iso(file_name):
 
         for row in reader:
             if row[0] == "Event: ":
+                current_datetime = str_to_datetime(row[1])
+                time_diff = (current_datetime - start_datetime).total_seconds()
+                data_event = ip_data.Event()
+                data_event.date = current_datetime.date()
+                data_event.time = current_datetime.time()
+                data_event.xpos = time_diff
+                data_event.label = row[2]
+                ip_data.events.append(data_event)
                 continue
             current_datetime = str_to_datetime(row[0])
             time_diff = (current_datetime - start_datetime).total_seconds()
