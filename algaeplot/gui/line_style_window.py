@@ -3,6 +3,8 @@ from matplotlib.colors import is_color_like
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QComboBox
 
+import algaeplot.configuration as config
+
 
 class LineStyleWindow(QMainWindow):
 
@@ -26,9 +28,7 @@ class LineStyleWindow(QMainWindow):
         layout.setSpacing(5)
 
         style_text = QLabel('Line style:')
-        style_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        style_text.setStyleSheet(config.default_font_bold)
         layout.addWidget(style_text, 0, 0)
         self.line_style = QComboBox(self)
         self.line_style.addItem('solid')
@@ -38,18 +38,14 @@ class LineStyleWindow(QMainWindow):
         layout.addWidget(self.line_style, 0, 1)
 
         colour_text = QLabel('Line colour:')
-        colour_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        colour_text.setStyleSheet(config.default_font_bold)
         layout.addWidget(colour_text, 1, 0)
         self.line_colour = QLineEdit(self)
         layout.addWidget(self.line_colour, 1, 1)
 
         apply_button = QPushButton("Apply", self)
         apply_button.clicked.connect(self.apply_changes)
-        apply_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        apply_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(apply_button, 2, 0, 1, 2)
 
         widget = QWidget()

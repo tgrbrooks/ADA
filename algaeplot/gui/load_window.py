@@ -5,14 +5,17 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_file_names
+from algaeplot.gui.type_functions import isint
+from algaeplot.gui.label import Label
+
 from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
     read_algem_ht24_details)
 from algaeplot.reader.read_algem_pro import read_algem_pro
 from algaeplot.reader.read_ip_t_iso import read_ip_t_iso
 from algaeplot.reader.read_psi import read_psi
 from algaeplot.reader.read_csv import read_csv
-from algaeplot.gui.type_functions import isint
 
+import algaeplot.configuration as config
 
 class LoadWindow(QMainWindow):
 
@@ -39,10 +42,7 @@ class LoadWindow(QMainWindow):
         layout.setSpacing(5)
 
         # Dropdown list of available file types
-        file_text = QLabel('File type:')
-        file_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        file_text = Label('File type:', True)
         layout.addWidget(file_text, 0, 0)
         self.file_type = QComboBox(self)
         self.file_type.addItem('Algem Pro')
@@ -58,40 +58,29 @@ class LoadWindow(QMainWindow):
         select_file_button = QPushButton("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
         select_file_button.clicked.connect(self.update_options)
-        select_file_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        select_file_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(select_file_button, 1, 0)
 
         # List of files to import
         self.file_list = QListWidget(self)
-        self.file_list.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.file_list, 1, 1)
 
         # Button and list for Algem conditions files
         self.select_conditions_button = QPushButton(
             "Select conditions file(s)", self)
         self.select_conditions_button.clicked.connect(self.select_conditions)
-        self.select_conditions_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.select_conditions_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.select_conditions_button, 2, 0)
         self.select_conditions_button.hide()
 
         self.conditions_file_list = QListWidget(self)
-        self.conditions_file_list.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.conditions_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.conditions_file_list, 2, 1)
         self.conditions_file_list.hide()
 
         # Option to downsample conditions data
-        self.downsample_text = QLabel('Downsample conditions:')
-        self.downsample_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.downsample_text = Label('Downsample conditions:', True)
         layout.addWidget(self.downsample_text, 3, 0)
         self.downsample_text.hide()
 
@@ -103,24 +92,17 @@ class LoadWindow(QMainWindow):
         # Button and list for HT24 details file
         self.select_details_button = QPushButton("Select details file", self)
         self.select_details_button.clicked.connect(self.select_details)
-        self.select_details_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.select_details_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.select_details_button, 4, 0)
         self.select_details_button.hide()
 
         self.details_file_list = QListWidget(self)
-        self.details_file_list.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.details_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.details_file_list, 4, 1)
         self.details_file_list.hide()
 
         # Checkbox for merging replicates in HT24 data
-        self.merge_replicates_text = QLabel('Merge replicates')
-        self.merge_replicates_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.merge_replicates_text = Label('Merge replicates')
         layout.addWidget(self.merge_replicates_text, 5, 0)
         self.merge_replicates_text.hide()
 
@@ -131,9 +113,7 @@ class LoadWindow(QMainWindow):
         # Button to load the data
         load_button = QPushButton("Load", self)
         load_button.clicked.connect(self.load)
-        load_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        load_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(load_button, 6, 0, 1, 2)
 
         widget = QWidget()
@@ -267,45 +247,43 @@ class LoadWindow(QMainWindow):
                 else:
                     self.data.add_replicate(csv_data, self.row)
         
-        # If there aren't any extra condition files update and exit
-        if self.condition_files is None:
-            self.parent.update_data_list()
-            self.parent.update_condition_data_list()
-            self.close()
+        if self.condition_files is not None:
+            # Set downsampling if option selected
+            downsample = -1
+            if isint(self.downsample.text()):
+                downsample = int(self.downsample.text())
 
-        # Set downsampling if option selected
-        downsample = -1
-        if isint(self.downsample.text()):
-            downsample = int(self.downsample.text())
+            # Load in optional conditions data for algem machines
+            for file_name in self.condition_files:
+                if not file_name.endswith(extension):
+                    raise RuntimeError("File %s has the wrong extension" %
+                                       (file_name))
 
-        # Load in optional conditions data for algem machines
-        for file_name in self.condition_files:
-            if not file_name.endswith(extension):
-                raise RuntimeError("File %s has the wrong extension" % (file_name))
-
-            # Read in conditions files from Algem Pro
-            if file_type == 'Algem Pro':
-                algem_conditions = read_algem_pro(file_name, downsample)
-                self.condition.add_data(algem_conditions)
-
-            # Read in files from Algem HT24 if details file is provided
-            elif file_type == 'Algem HT24' and not self.details:
-                algem_conditions_list = read_algem_ht24(file_name, downsample)
-                for algem_conditions in algem_conditions_list:
+                # Read in conditions files from Algem Pro
+                if file_type == 'Algem Pro':
+                    algem_conditions = read_algem_pro(file_name, downsample)
                     self.condition.add_data(algem_conditions)
 
-            # Read in files from Algem HT24 without details file
-            elif file_type == 'Algem HT24':
-                algem_conditions_list, replicate_conditions_list = \
-                    read_algem_ht24_details(file_name, self.details[0],
-                                            downsample)
-                for algem_conditions in algem_conditions_list:
-                    self.condition.add_data(algem_conditions)
-                for replicate in replicate_conditions_list:
-                    if self.merge_replicates.isChecked():
-                        self.condition.add_replicate(replicate[0], replicate[1])
-                    else:
-                        self.condition.add_data(replicate[0])
+                # Read in files from Algem HT24 if details file is provided
+                elif file_type == 'Algem HT24' and not self.details:
+                    algem_conditions_list = read_algem_ht24(file_name,
+                                                            downsample)
+                    for algem_conditions in algem_conditions_list:
+                        self.condition.add_data(algem_conditions)
+
+                # Read in files from Algem HT24 without details file
+                elif file_type == 'Algem HT24':
+                    algem_conditions_list, replicate_conditions_list = \
+                        read_algem_ht24_details(file_name, self.details[0],
+                                                downsample)
+                    for algem_conditions in algem_conditions_list:
+                        self.condition.add_data(algem_conditions)
+                    for replicate in replicate_conditions_list:
+                        if self.merge_replicates.isChecked():
+                            self.condition.add_replicate(replicate[0],
+                                                         replicate[1])
+                        else:
+                            self.condition.add_data(replicate[0])
 
         # Update the data lists in the main window
         self.parent.update_data_list()

@@ -9,7 +9,6 @@ from PyQt5.QtCore import QPoint
 # Local application imports
 from algaeplot.plotter.main_plot import PlotCanvas
 from algaeplot.reader.data_holder import DataHolder
-from algaeplot.gui.configuration import Configuration
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.label import Label
 from algaeplot.gui.type_functions import isfloat, isint
@@ -19,6 +18,7 @@ from algaeplot.gui.export_window import ExportWindow
 from algaeplot.gui.table_window import TableWindow
 from algaeplot.gui.fit_window import FitWindow
 from algaeplot.gui.load_window import LoadWindow
+import algaeplot.configuration as config
 
 
 class App(QMainWindow):
@@ -37,7 +37,6 @@ class App(QMainWindow):
         # Container for condition data
         self.condition_data = DataHolder()
         self.condition_data_list = QListWidget(self)
-        self.config = Configuration()
         self.initUI()
 
     def initUI(self):
@@ -46,9 +45,6 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         tabs = QTabWidget()
-
-        default_font = 'font-size: 14pt; font-family: Courier;'
-        big_font = 'font-size: 28pt; font-family: Courier;'
 
         # ---------------------------------------------------------------------
         #                           PLOTTING TAB
@@ -69,7 +65,7 @@ class App(QMainWindow):
         data_button.clicked.connect(self.open_data_files)
         data_button.clicked.connect(self.update_data_list)
         data_button.setToolTip('Import data for plotting')
-        data_button.setStyleSheet(default_font)
+        data_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(data_button, 0, 5)
 
         # Configure list behaviour
@@ -109,7 +105,7 @@ class App(QMainWindow):
         plot_button.clicked.connect(self.update_plot)
         plot_button.setToolTip('Plot the data!')
         plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_button.setStyleSheet(big_font)
+        plot_button.setStyleSheet(config.big_font)
         plot_layout.addWidget(plot_button, 5, 5, 2, 1)
 
         # Saving options
@@ -117,14 +113,14 @@ class App(QMainWindow):
         save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         save_button.setToolTip('Save the figure')
-        save_button.setStyleSheet(default_font)
+        save_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(save_button, 6, 0)
 
         # Export options
         export_button = QPushButton('Export', self)
         export_button.clicked.connect(self.export_files)
         export_button.setToolTip('Export the data to another file type')
-        export_button.setStyleSheet(default_font)
+        export_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(export_button, 6, 1)
 
         # Measure gradient
@@ -132,14 +128,14 @@ class App(QMainWindow):
         measure_button.clicked.connect(self.toggle_cursor)
         measure_button.clicked.connect(self.update_plot)
         measure_button.setToolTip('Measure the growth rate')
-        measure_button.setStyleSheet(default_font)
+        measure_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(measure_button, 6, 2)
 
         # Fit curves
         fit_button = QPushButton('Fit', self)
         fit_button.clicked.connect(self.fit_curve)
         fit_button.setToolTip('Fit the growth curves')
-        fit_button.setStyleSheet(default_font)
+        fit_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(fit_button, 6, 3)
 
         # Table output button
@@ -148,7 +144,7 @@ class App(QMainWindow):
         table_button.clicked.connect(self.create_table)
         table_button.setToolTip('Create a table of growth rates for all curves'
                                 '\nConfigure in options tab')
-        table_button.setStyleSheet('font-size: 14pt; font-family: Courier;')
+        table_button.setStyleSheet(config.default_font)
         plot_layout.addWidget(table_button, 6, 4)
 
         # ---------------------------------------------------------------------
@@ -185,10 +181,7 @@ class App(QMainWindow):
 
         # X axis drop down menu
         self.xaxis_dropdown = QComboBox(self)
-        self.xaxis_dropdown.addItem("seconds")
-        self.xaxis_dropdown.addItem("minutes")
-        self.xaxis_dropdown.addItem("hours")
-        self.xaxis_dropdown.addItem("days")
+        self.xaxis_dropdown.addItems(config.xaxis_units)
         axis_box_layout.addWidget(self.xaxis_dropdown, 1, 1)
 
         # X axis titles
@@ -316,13 +309,7 @@ class App(QMainWindow):
         # Extra information from header dropdown
         legend_box_layout.addWidget(Label('Extra info:'), 0, 5)
         self.extra_info = QComboBox(self)
-        self.extra_info.addItem("none")
-        self.extra_info.addItem("reactor")
-        self.extra_info.addItem("profile")
-        self.extra_info.addItem("title")
-        self.extra_info.addItem("date")
-        self.extra_info.addItem("time")
-        self.extra_info.addItem("date+time")
+        self.extra_info.addItems(config.info_options)
         self.extra_info.setToolTip('Show extra information from '
                                    'the file in the legend')
         legend_box_layout.addWidget(self.extra_info, 1, 5)
@@ -350,13 +337,7 @@ class App(QMainWindow):
         legend_box_layout.addWidget(self.condition_legend_title, 2, 4)
 
         self.condition_extra_info = QComboBox(self)
-        self.condition_extra_info.addItem("none")
-        self.condition_extra_info.addItem("reactor")
-        self.condition_extra_info.addItem("profile")
-        self.condition_extra_info.addItem("title")
-        self.condition_extra_info.addItem("date")
-        self.condition_extra_info.addItem("time")
-        self.condition_extra_info.addItem("date+time")
+        self.condition_extra_info.addItems(config.info_options)
         self.condition_extra_info.setToolTip('Show extra information from '
                                              'the file in the legend')
         legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
@@ -377,21 +358,13 @@ class App(QMainWindow):
         # Plot style dropdown menu
         style_box_layout.addWidget(Label('Style:'), 0, 0)
         self.style_dropdown = QComboBox(self)
-        self.style_dropdown.addItem("default")
-        self.style_dropdown.addItem("greyscale")
-        self.style_dropdown.addItem("colour blind")
-        self.style_dropdown.addItem("pastel")
-        self.style_dropdown.addItem("deep")
+        self.style_dropdown.addItems(config.style_options)
         style_box_layout.addWidget(self.style_dropdown, 0, 1)
 
         # Font style dropdown menu
         style_box_layout.addWidget(Label('Font style:'), 0, 2)
         self.font_dropdown = QComboBox(self)
-        self.font_dropdown.addItem("sans-serif")
-        self.font_dropdown.addItem("serif")
-        self.font_dropdown.addItem("cursive")
-        self.font_dropdown.addItem("fantasy")
-        self.font_dropdown.addItem("monospace")
+        self.font_dropdown.addItems(config.font_options)
         style_box_layout.addWidget(self.font_dropdown, 0, 3)
 
         # Font size textbox
@@ -467,7 +440,7 @@ class App(QMainWindow):
     # Function: Update the main plot
     def update_plot(self):
         try:
-            self.plot.plot(self.data, self.condition_data, self.config)
+            self.plot.plot(self.data, self.condition_data)
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -476,7 +449,7 @@ class App(QMainWindow):
     # Function: Save the main plot
     def save_plot(self):
         try:
-            self.plot.save(self.config)
+            self.plot.save()
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -559,8 +532,8 @@ class App(QMainWindow):
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):
-        self.config.do_fit = False
-        self.config.cursor = not self.config.cursor
+        config.do_fit = False
+        config.cursor = not config.cursor
 
     def fit_curve(self):
         self.fit = FitWindow(self)
@@ -578,119 +551,119 @@ class App(QMainWindow):
 
     # Function: Update the global configuration
     def update_config(self):
-        self.config.title = self.figure_title.text()
+        config.title = self.figure_title.text()
 
         # x axis config
-        self.config.xvar = self.xaxis_dropdown.currentText()
-        self.config.xname = self.xaxis_name.text()
-        self.config.xunit = self.xaxis_unit.text()
+        config.xvar = self.xaxis_dropdown.currentText()
+        config.xname = self.xaxis_name.text()
+        config.xunit = self.xaxis_unit.text()
         if(isfloat(self.xaxis_min.text())):
-            self.config.xmin = float(self.xaxis_min.text())
+            config.xmin = float(self.xaxis_min.text())
         else:
-            self.config.xmin = -1
+            config.xmin = -1
         if(isfloat(self.xaxis_max.text())):
-            self.config.xmax = float(self.xaxis_max.text())
+            config.xmax = float(self.xaxis_max.text())
         else:
-            self.config.xmax = -1
+            config.xmax = -1
 
         # y axis config
-        self.config.yvar = self.yaxis_dropdown.currentText()
-        self.config.yname = self.yaxis_name.text()
-        self.config.yunit = self.yaxis_unit.text()
+        config.yvar = self.yaxis_dropdown.currentText()
+        config.yname = self.yaxis_name.text()
+        config.yunit = self.yaxis_unit.text()
         if(isfloat(self.yaxis_min.text())):
-            self.config.ymin = float(self.yaxis_min.text())
+            config.ymin = float(self.yaxis_min.text())
         else:
-            self.config.ymin = -1
+            config.ymin = -1
         if(isfloat(self.yaxis_max.text())):
-            self.config.ymax = float(self.yaxis_max.text())
+            config.ymax = float(self.yaxis_max.text())
         else:
-            self.config.ymax = -1
+            config.ymax = -1
 
         # Condition y axis config
-        self.config.condition_yvar = \
+        config.condition_yvar = \
             self.condition_yaxis_dropdown.currentText()
-        self.config.condition_yname = self.condition_yaxis_name.text()
-        self.config.condition_yunit = self.condition_yaxis_unit.text()
+        config.condition_yname = self.condition_yaxis_name.text()
+        config.condition_yunit = self.condition_yaxis_unit.text()
         if(isfloat(self.condition_yaxis_min.text())):
-            self.config.condition_ymin = \
+            config.condition_ymin = \
                 float(self.condition_yaxis_min.text())
         else:
-            self.config.condition_ymin = -1
+            config.condition_ymin = -1
         if(isfloat(self.condition_yaxis_max.text())):
-            self.config.condition_ymax = float(self.condition_yaxis_max.text())
+            config.condition_ymax = float(self.condition_yaxis_max.text())
         else:
-            self.config.condition_ymax = -1
+            config.condition_ymax = -1
 
         # Data config
-        self.config.smooth = self.smooth_data.isChecked()
-        self.config.align = self.align_data.isChecked()
+        config.smooth = self.smooth_data.isChecked()
+        config.align = self.align_data.isChecked()
         if(isfloat(self.y_alignment.text())):
-            self.config.y_alignment = float(self.y_alignment.text())
+            config.y_alignment = float(self.y_alignment.text())
         else:
-            self.config.y_alignment = -1
-        self.config.auto_remove = self.auto_remove.isChecked()
+            config.y_alignment = -1
+        config.auto_remove = self.auto_remove.isChecked()
         if(isfloat(self.remove_above.text())):
-            self.config.remove_above = float(self.remove_above.text())
+            config.remove_above = float(self.remove_above.text())
         else:
-            self.config.remove_above = -1
+            config.remove_above = -1
         if(isfloat(self.remove_below.text())):
-            self.config.remove_below = float(self.remove_below.text())
+            config.remove_below = float(self.remove_below.text())
         else:
-            self.config.remove_below = -1
+            config.remove_below = -1
         if(isfloat(self.condition_average.text())):
-            self.config.condition_average = \
+            config.condition_average = \
                 float(self.condition_average.text())
         else:
-            self.config.condition_average = -1
+            config.condition_average = -1
 
         # Legend config
-        self.config.legend = self.legend_toggle.isChecked()
-        self.config.condition_legend = \
+        config.legend = self.legend_toggle.isChecked()
+        config.condition_legend = \
             self.condition_legend_toggle.isChecked()
-        self.config.legend_title = self.legend_title.text()
-        if(self.config.legend_title.lower() == 'none'):
-            self.config.legend_title = ''
-        self.config.condition_legend_title = self.condition_legend_title.text()
-        if(self.config.condition_legend_title.lower() == 'none'):
-            self.config.condition_legend_title = ''
-        self.config.label_names.clear()
+        config.legend_title = self.legend_title.text()
+        if(config.legend_title.lower() == 'none'):
+            config.legend_title = ''
+        config.condition_legend_title = self.condition_legend_title.text()
+        if(config.condition_legend_title.lower() == 'none'):
+            config.condition_legend_title = ''
+        config.label_names.clear()
         for i in range(self.legend_names.count()):
-            self.config.label_names.append(self.legend_names.itemText(i))
-        self.config.condition_label_names.clear()
+            config.label_names.append(self.legend_names.itemText(i))
+        config.condition_label_names.clear()
         for i in range(self.condition_legend_names.count()):
-            self.config.condition_label_names.append(
+            config.condition_label_names.append(
                 self.condition_legend_names.itemText(i)
             )
-        self.config.extra_info = self.extra_info.currentText()
-        self.config.condition_extra_info = \
+        config.extra_info = self.extra_info.currentText()
+        config.condition_extra_info = \
             self.condition_extra_info.currentText()
-        self.config.only_extra = self.only_extra.isChecked()
-        self.config.condition_only_extra = \
+        config.only_extra = self.only_extra.isChecked()
+        config.condition_only_extra = \
             self.condition_only_extra.isChecked()
 
         # Style config
-        self.config.style = self.style_dropdown.currentText()
-        self.config.font_style = self.font_dropdown.currentText()
+        config.style = self.style_dropdown.currentText()
+        config.font_style = self.font_dropdown.currentText()
         if(isfloat(self.title_size.text())):
-            self.config.title_size = float(self.title_size.text())
+            config.title_size = float(self.title_size.text())
         else:
-            self.config.title_size = -1
+            config.title_size = -1
         if(isfloat(self.legend_size.text())):
-            self.config.legend_size = float(self.legend_size.text())
+            config.legend_size = float(self.legend_size.text())
         else:
-            self.config.legend_size = -1
+            config.legend_size = -1
         if(isfloat(self.label_size.text())):
-            self.config.label_size = float(self.label_size.text())
+            config.label_size = float(self.label_size.text())
         else:
-            self.config.label_size = -1
+            config.label_size = -1
         if(isfloat(self.line_width.text())):
-            self.config.line_width = float(self.line_width.text())
+            config.line_width = float(self.line_width.text())
         else:
-            self.config.line_width = -1
-        self.config.axis_colour = self.axis_colour.text()
-        self.config.grid = self.grid_toggle.isChecked()
+            config.line_width = -1
+        config.axis_colour = self.axis_colour.text()
+        config.grid = self.grid_toggle.isChecked()
 
         # Stats config
-        self.config.std_err = self.std_err.isChecked()
+        config.std_err = self.std_err.isChecked()
 
-        self.config.do_fit = False
+        config.do_fit = False

@@ -16,12 +16,13 @@ import matplotlib as mpl
 
 # Local imports
 from algaeplot.reader.data_holder import DataHolder
-from algaeplot.gui.configuration import Configuration
 from algaeplot.plotter.cursor import Cursor, SnapToCursor
 from algaeplot.plotter.functions import (process_data, average_data,
     time_average, exponent_text)
 from algaeplot.gui.line_style_window import LineStyleWindow
 from algaeplot.gui.file_handler import save_file
+
+import algaeplot.configuration as config
 
 
 class PlotCanvas(FigureCanvasQTAgg):
@@ -48,10 +49,9 @@ class PlotCanvas(FigureCanvasQTAgg):
         FigureCanvasQTAgg.updateGeometry(self)
         empty_data = DataHolder()
         empty_condition = DataHolder()
-        empty_config = Configuration()
-        self.plot(empty_data, empty_condition, empty_config)
+        self.plot(empty_data, empty_condition)
 
-    def plot(self, data, condition_data, config):
+    def plot(self, data, condition_data):
 
         # Style configuration
         if(config.style != ''):
@@ -122,7 +122,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         for i, cdata in enumerate(condition_data.data_files):
             # Get the x data in the right time units
             condition_xdata, condition_x_title = \
-                self.convert_xdata(cdata.xaxis, config)
+                self.convert_xdata(cdata.xaxis)
 
             # Get the desired condition data and configure title
             condition_ydata, condition_y_title = \
@@ -184,9 +184,9 @@ class PlotCanvas(FigureCanvasQTAgg):
         ydata_list = []
         for i, dat in enumerate(data.data_files):
             # Convert the units of time if needed
-            xdata, x_title = self.convert_xdata(dat.xaxis, config)
+            xdata, x_title = self.convert_xdata(dat.xaxis)
             # Get the y axis data for plotting
-            ydata, y_title = self.get_ydata(dat.signals, config)
+            ydata, y_title = self.get_ydata(dat.signals)
 
             legend_label = config.label_names[i]
             if(config.extra_info != 'none' and not config.only_extra):
@@ -196,7 +196,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 legend_label = dat.get_header_info(config.extra_info)
 
             # Apply alignment, outlier removal, and smoothing
-            xdata, ydata = process_data(xdata, ydata, config)
+            xdata, ydata = process_data(xdata, ydata)
 
             # If there are replicate files then average the data
             if(len(data.replicate_files[i]) > 1):
@@ -204,13 +204,10 @@ class PlotCanvas(FigureCanvasQTAgg):
                 ydatas = [ydata]
                 for j in range(1, len(data.replicate_files[i]), 1):
                     rep_xdata, rep_xtitle = \
-                        self.convert_xdata(data.replicate_files[i][j].xaxis,
-                                           config)
+                        self.convert_xdata(data.replicate_files[i][j].xaxis)
                     rep_ydata, rep_ytitle = \
-                        self.get_ydata(data.replicate_files[i][j].signals,
-                                       config)
-                    rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata,
-                                                        config)
+                        self.get_ydata(data.replicate_files[i][j].signals)
+                    rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
 
@@ -285,7 +282,8 @@ class PlotCanvas(FigureCanvasQTAgg):
                 # Flat line fit result
                 plot_y = 0. * plot_x + fit_result[0]
                 fit_func_text = '$y = p$'
-                param_text = 'p = '+exponent_text(fit_result[0])+' '+y_unit
+                param_text = ('p = ' + exponent_text(fit_result[0]) + ' ' +
+                              y_unit)
 
                 # Linear fit result
                 if config.fit_type == 'Linear':
@@ -426,7 +424,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     # Function to convert the time data into the desired unit and
     # get the axis title
-    def convert_xdata(self, xaxisdata, config):
+    def convert_xdata(self, xaxisdata):
         xdata = xaxisdata.data
         x_title = xaxisdata.title()
         if(config.xname != ''):
@@ -451,7 +449,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         return xdata, x_title
 
     # Function to retrieve y data from list of possible signals
-    def get_ydata(self, signals, config, condition=False):
+    def get_ydata(self, signals, condition=False):
         ydata = signals[0].data
         y_title = ''
         found_ydata = False
@@ -509,5 +507,5 @@ class PlotCanvas(FigureCanvasQTAgg):
         return plots[min_ind][0], min_ind, min_dist
 
     # Function to save figure through file handler gui
-    def save(self, config):
+    def save(self):
         save_file(self.fig)

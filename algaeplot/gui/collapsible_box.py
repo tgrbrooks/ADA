@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import algaeplot.configuration as config
+
 
 class CollapsibleBox(QtWidgets.QWidget):
     def __init__(self, title="", parent=None):
@@ -10,9 +12,7 @@ class CollapsibleBox(QtWidgets.QWidget):
         )
         self.checked = False
         self.toggle_button.setStyleSheet("QToolButton { border: none; }")
-        self.toggle_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        self.toggle_button.setStyleSheet(config.default_font_bold)
         self.toggle_button.setToolButtonStyle(
             QtCore.Qt.ToolButtonTextBesideIcon
         )
