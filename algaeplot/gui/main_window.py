@@ -277,6 +277,10 @@ class App(QMainWindow):
         self.condition_average.setToolTip('Average over time window')
         data_box_layout.addWidget(self.condition_average, 2, 2)
 
+        data_box_layout.addWidget(Label('Show Events:'), 3, 0)
+        self.show_events = QCheckBox(self)
+        data_box_layout.addWidget(self.show_events, 3, 1)
+
         data_box.setContentLayout(data_box_layout)
 
         # --------------- LEGEND CONFIGURATION
@@ -615,6 +619,7 @@ class App(QMainWindow):
                 float(self.condition_average.text())
         else:
             config.condition_average = -1
+        config.show_events = self.show_events.isChecked()
 
         # Legend config
         config.legend = self.legend_toggle.isChecked()

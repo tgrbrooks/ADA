@@ -53,6 +53,7 @@ remove_above = -1
 remove_below = -1
 downsample = -1
 condition_average = -1
+show_events = False
 
 # Measurement config
 cursor = False

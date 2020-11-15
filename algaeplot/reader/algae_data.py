@@ -96,7 +96,6 @@ class AlgaeData():
     class Event():
 
         def __init__(self):
-            self.date = date(1994, 3, 16)
-            self.time = time(0, 0, 0)
+            self.datetime = datetime(1994, 3, 16, 0, 0, 0)
             self.xpos = 0
-            self.label = ''
+            self.labels = []

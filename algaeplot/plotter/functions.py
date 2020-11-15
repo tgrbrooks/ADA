@@ -15,13 +15,13 @@ def process_data(xdata, ydata):
         xdata = xdata - xdata[0]
 
     if config.y_alignment != -1:
-        xdata = align_to_y(xdata, ydata, config)
+        xdata = align_to_y(xdata, ydata)
 
     # remove outliers
     if (config.remove_above >= 0 or
             config.remove_below >= 0 or
             config.auto_remove):
-        xdata, ydata = remove_outliers(xdata, ydata, config)
+        xdata, ydata = remove_outliers(xdata, ydata)
 
     # Smooth the data
     if(config.smooth):

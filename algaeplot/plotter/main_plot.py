@@ -235,6 +235,34 @@ class PlotCanvas(FigureCanvasQTAgg):
             xdata_list.append(xdata)
             ydata_list.append(ydata)
 
+        # Show event information
+        event_annotation = self.axes.annotate('',
+                                        xy=(0, 0),
+                                        xytext=(-20,20),
+                                        textcoords="offset points",
+                                        bbox=dict(boxstyle="round", fc="w"),
+                                        arrowprops=dict(arrowstyle="->"))
+        event_annotation.set_visible(False)
+        annotation_names = []
+        annotation_xpos = []
+        annotation_ypos = []
+        if config.show_events:
+            for i, data in enumerate(data.data_files):
+                for data_event in data.events:
+                    event_label = data_event.datetime.strftime('%d/%m/%Y %H:%M:%S')
+                    for lab in data_event.labels:
+                        event_label += '\n' + lab
+                    annotation_names.append(event_label)
+                    event_xpos = self.convert_xpos(data_event.xpos)
+                    annotation_xpos.append(event_xpos)
+                    x_idx = np.abs(xdata_list[i] - event_xpos).argmin()
+                    event_ypos = ydata_list[i][x_idx]
+                    annotation_ypos.append(event_ypos)
+            event_scatter = self.axes.scatter(annotation_xpos,
+                                              annotation_ypos,
+                                              s=10,
+                                              c='black')
+
         # If we're fitting the data
         if config.do_fit:
             # Find the curve to fit
@@ -388,6 +416,29 @@ class PlotCanvas(FigureCanvasQTAgg):
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onpick)
 
+            def update_annotation(ind):
+                evt_pos = event_scatter.get_offsets()[ind["ind"][0]]
+                event_annotation.xy = evt_pos
+                event_text = annotation_names[ind["ind"][0]]
+                event_annotation.set_text(event_text)
+
+            def onhover(event):
+                vis = event_annotation.get_visible()
+                cont = None
+                if event.inaxes == self.axes:
+                    cont, ind = event_scatter.contains(event)
+                if cont:
+                    update_annotation(ind)
+                    event_annotation.set_visible(True)
+                    self.draw_idle()
+                else:
+                    if vis:
+                        event_annotation.set_visible(False)
+                        self.draw_idle()
+
+            if config.show_events:
+                self.mpl_connect('motion_notify_event', onhover)
+
         # Apply any saved changes from the line style configuration
         # TODO behaviour when data added/removed
         for pconf in self.plot_config:
@@ -447,6 +498,17 @@ class PlotCanvas(FigureCanvasQTAgg):
         else:
             x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
         return xdata, x_title
+
+    def convert_xpos(self, xpos):
+        xpos_out = xpos
+        if(config.xvar == 'minutes'):
+            xpos_out = xpos / 60.
+        if(config.xvar == 'hours'):
+            xpos_out = xpos / (60.*60.)
+        if(config.xvar == 'days'):
+            xpos_out = xpos / (60.*60.*24.)
+
+        return xpos_out
 
     # Function to retrieve y data from list of possible signals
     def get_ydata(self, signals, condition=False):
