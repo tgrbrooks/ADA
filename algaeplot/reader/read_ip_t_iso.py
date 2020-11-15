@@ -83,6 +83,20 @@ def read_ip_t_iso(file_name):
 
         for row in reader:
             if row[0] == "Event: ":
+                current_datetime = str_to_datetime(row[1])
+                time_diff = (current_datetime - start_datetime).total_seconds()
+                # Possible to have multiple events at the same time
+                found_existing = False
+                for evt in ip_data.events:
+                    if time_diff == evt.xpos:
+                        found_existing =  True
+                        evt.labels.append(row[2])
+                if not found_existing:
+                    data_event = ip_data.Event()
+                    data_event.datetime = current_datetime
+                    data_event.xpos = time_diff
+                    data_event.labels = [row[2]]
+                    ip_data.events.append(data_event)
                 continue
             current_datetime = str_to_datetime(row[0])
             time_diff = (current_datetime - start_datetime).total_seconds()

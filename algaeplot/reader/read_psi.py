@@ -1,7 +1,7 @@
 # Standard imports
 import os
 import csv
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 import numpy as np
 
 import ezodf as ods
@@ -55,6 +55,22 @@ def read_psi(file_name):
             # Get reactor
             psi_data.reactor = sheet[1, 1].plaintext()
             condition_data.reactor = sheet[1, 1].plaintext()
+
+        if sheet.name == 'Events':
+            for i in range(1, sheet.nrows()):
+                xpos = float(sheet[i, 1].value) * 60 * 60
+                label = sheet[i, 3].plaintext()
+                found_existing = False
+                for evt in psi_data.events:
+                    if xpos == evt.xpos:
+                        found_existing = True
+                        evt.labels.append(label)
+                if not found_existing:
+                    data_event = psi_data.Event()
+                    data_event.xpos = xpos
+                    data_event.labels = [label]
+                    data_event.datetime = start_datetime + timedelta(seconds=xpos)
+                    psi_data.events.append(data_event)
 
         if sheet.name == 'Accessories':
             # Get titles and units of measurements

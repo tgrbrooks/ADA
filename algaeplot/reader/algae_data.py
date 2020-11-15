@@ -17,6 +17,7 @@ class AlgaeData():
         # Data information
         self.xaxis = self.XAxis()
         self.signals = []
+        self.events = []
 
     def get_header_info(self, info):
         if(info == 'date'):
@@ -91,3 +92,10 @@ class AlgaeData():
 
         def title(self):
             return self.name + " [" + self.unit + "]"
+
+    class Event():
+
+        def __init__(self):
+            self.datetime = datetime(1994, 3, 16, 0, 0, 0)
+            self.xpos = 0
+            self.labels = []
