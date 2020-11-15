@@ -126,7 +126,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
             # Get the desired condition data and configure title
             condition_ydata, condition_y_title = \
-                self.get_ydata(cdata.signals, config, True)
+                self.get_ydata(cdata.signals, True)
             self.condition_axes.set_ylabel(condition_y_title)
 
             # Get the legend label with any extra info specified in
