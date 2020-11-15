@@ -576,7 +576,9 @@ class App(QMainWindow):
         lp = self.data_list.viewport().mapFromGlobal(gp)
         row = self.data_list.row(self.data_list.itemAt(lp))
         # Open file with file handler
-        open_files(self.data, -1, row)
+        self.load = LoadWindow(self, self.data, self.condition_data, row)
+        self.load.show()
+        #open_files(self.data, -1, row)
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):

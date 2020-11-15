@@ -12,14 +12,13 @@ from algaeplot.reader.data_holder import DataHolder
 # Class to handle the file browser
 class OpenFileHandlerGui(QWidget):
 
-    def __init__(self, data=None, downsample=-1, row=-1):
+    def __init__(self, data=None, downsample=-1):
         super().__init__()
         self.title = 'Open Files'
         self.width = 640
         self.height = 480
         self.data = data
         self.downsample = downsample
-        self.row = row
         self.initUI()
 
     def initUI(self):
@@ -27,8 +26,6 @@ class OpenFileHandlerGui(QWidget):
         self.resize(self.width, self.height)
 
         self.openFileNamesDialog()
-
-        #self.show()
 
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
@@ -44,10 +41,7 @@ class OpenFileHandlerGui(QWidget):
             for file_name in files:
                 if file_name.endswith('.txt'):
                     algem_data = read_algem_pro(file_name, self.downsample)
-                    if(self.row == -1):
-                        self.data.add_data(algem_data)
-                    else:
-                        self.data.add_replicate(algem_data, self.row)
+                    self.data.add_data(algem_data)
                 elif file_name.endswith('.csv'):
                     # Assume there is no details file
                     if len(files) == 1:
@@ -146,8 +140,8 @@ def get_file_names():
     return ex_file.files
 
 
-def open_files(data, downsample=-1, row=-1):
-    ex_file = OpenFileHandlerGui(data, downsample, row)
+def open_files(data, downsample=-1):
+    ex_file = OpenFileHandlerGui(data, downsample)
 
 
 def save_file(fig):

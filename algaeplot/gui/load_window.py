@@ -15,7 +15,7 @@ from algaeplot.reader.read_csv import read_csv
 
 class LoadWindow(QMainWindow):
 
-    def __init__(self, parent, data, condition):
+    def __init__(self, parent, data, condition, row=-1):
         super(LoadWindow, self).__init__(parent)
         self.title = 'Load Files'
         self.width = 250
@@ -24,6 +24,7 @@ class LoadWindow(QMainWindow):
         self.data = data
         self.condition = condition
         self.details = None
+        self.row = row
         self.initUI()
 
     def initUI(self):
@@ -43,7 +44,9 @@ class LoadWindow(QMainWindow):
         layout.addWidget(file_text, 0, 0)
         self.file_type = QComboBox(self)
         self.file_type.addItem('Algem Pro')
-        self.file_type.addItem('Algem HT24')
+        # Can't add HT24 data as replicate
+        if self.row == -1:
+            self.file_type.addItem('Algem HT24')
         self.file_type.addItem('IP T-Iso')
         self.file_type.addItem('PSI')
         self.file_type.addItem('AlgaePlotter')
@@ -151,14 +154,20 @@ class LoadWindow(QMainWindow):
             if file_type == 'Algem Pro':
                 algem_data = read_algem_pro(file_name,
                                             self.parent.config.downsample)
-                self.data.add_data(algem_data)
+                if self.row == -1:
+                    self.data.add_data(algem_data)
+                else:
+                    self.data.add_replicate(algem_data, self.row)
 
             # Read in files from Algem HT24 if details file is provided
             elif file_type == 'Algem HT24' and not self.details:
                 algem_data_list = read_algem_ht24(file_name,
                                                   self.parent.config.downsample)
                 for algem_data in algem_data_list:
-                    self.data.add_data(algem_data)
+                    if self.row == -1:
+                        self.data.add_data(algem_data)
+                    else:
+                        self.data.add_replicate(algem_data, self.row)
 
             # Read in files from Algem HT24 without details file
             elif file_type == 'Algem HT24':
@@ -178,8 +187,11 @@ class LoadWindow(QMainWindow):
                     ip_data, condition_data = read_ip_t_iso(file_name)
                 except Exception as e:
                     raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
-                self.data.add_data(ip_data)
-                self.condition.add_data(condition_data)
+                if self.row == -1:
+                    self.data.add_data(ip_data)
+                    self.condition.add_data(condition_data)
+                else:
+                    self.data.add_replicate(ip_data, self.row)
 
             # Read in files from Photon System Instruments photobioreactor
             elif file_type == 'PSI':
@@ -187,13 +199,19 @@ class LoadWindow(QMainWindow):
                     psi_data, condition_data = read_psi(file_name)
                 except Exception as e:
                     raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
-                self.data.add_data(psi_data)
-                self.condition.add_data(condition_data)
+                if self.row == -1:
+                    self.data.add_data(psi_data)
+                    self.condition.add_data(condition_data)
+                else:
+                    self.data.add_replicate(psi_data, self.row)
 
             elif file_type == 'AlgaePlotter':
                 csv_data, condition_data = read_csv(file_name)
-                self.data.add_data(csv_data)
-                self.condition.add_data(condition_data)
+                if self.row == -1:
+                    self.data.add_data(csv_data)
+                    self.condition.add_data(condition_data)
+                else:
+                    self.data.add_replicate(csv_data, self.row)
 
         # Update the data lists in the main window
         self.parent.update_data_list()
