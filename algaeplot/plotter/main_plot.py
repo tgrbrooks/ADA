@@ -15,13 +15,13 @@ import matplotlib.style
 import matplotlib as mpl
 
 # Local imports
-from src.reader.dataholder import DataHolder
-from src.gui.configuration import Configuration
-from src.plotter.cursor import Cursor, SnapToCursor
-from src.plotter.functions import process_data, average_data, time_average
-from src.plotter.functions import exponent_text
-from src.gui.linestylewindow import LineStyleWindow
-from src.gui.filehandler import save_file
+from algaeplot.reader.data_holder import DataHolder
+from algaeplot.gui.configuration import Configuration
+from algaeplot.plotter.cursor import Cursor, SnapToCursor
+from algaeplot.plotter.functions import (process_data, average_data,
+    time_average, exponent_text)
+from algaeplot.gui.line_style_window import LineStyleWindow
+from algaeplot.gui.file_handler import save_file
 
 
 class PlotCanvas(FigureCanvasQTAgg):

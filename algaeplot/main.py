@@ -1,5 +1,5 @@
 # Local imports
-from src.gui.mainwindow import App
+from algaeplot.gui.main_window import App
 
 # Standard imports
 import sys

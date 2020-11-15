@@ -4,9 +4,9 @@ import numpy as np
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QLineEdit)
 
-from src.gui.errorwindow import ErrorWindow
-from src.gui.label import Label
-from src.gui.type_functions import isfloat
+from algaeplot.gui.error_window import ErrorWindow
+from algaeplot.gui.label import Label
+from algaeplot.gui.type_functions import isfloat
 
 
 # Class for a table constructor window

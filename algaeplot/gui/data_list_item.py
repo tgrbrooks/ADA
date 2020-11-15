@@ -40,7 +40,7 @@ class DataListItem():
                 )
                 hlayout.addWidget(sub_del_button)
                 sub_del_button.clicked.connect(
-                    lambda j: parent.remove_replicate(j)
+                    lambda: parent.remove_replicate(j)
                 )
                 hlayout.addWidget(QLabel(
                     parent.data.replicate_files[index][j].name.split('/')[-1]

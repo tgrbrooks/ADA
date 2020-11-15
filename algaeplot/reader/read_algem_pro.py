@@ -4,12 +4,12 @@ from datetime import datetime, date, time
 import numpy as np
 
 # Local import
-from src.reader.algemdata import AlgemData
+from algaeplot.reader.algae_data import AlgaeData
 
 
 # Loop over text files and read them in
-def read_text_file(file_name, downsample=-1):
-    algem_data = AlgemData(file_name)
+def read_algem_pro(file_name, downsample=-1):
+    algem_data = AlgaeData(file_name)
     with open(file_name, 'r', errors='ignore') as f:
         try:
             # Process the header data first

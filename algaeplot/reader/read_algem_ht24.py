@@ -5,11 +5,11 @@ from datetime import datetime, date, time
 import numpy as np
 
 # Local import
-from src.reader.algemdata import AlgemData
+from algaeplot.reader.algae_data import AlgaeData
 
 
 # Loop over text files and read them in
-def read_ht24(file_name, downsample=-1):
+def read_algem_ht24(file_name, downsample=-1):
     algem_data_list = []
     with open(file_name, 'r', errors='ignore') as f:
         try:
@@ -25,7 +25,7 @@ def read_ht24(file_name, downsample=-1):
                     if len(info) > 1:
                         x_unit = info[1][1:-1]
                 if i != 0 and len(info) >= 2:
-                    algem_data = AlgemData(file_name + ' (' + info[1] + ')')
+                    algem_data = AlgaeData(file_name + ' (' + info[1] + ')')
                     algem_data.label = algem_data.label + ' (' + info[1] + ')'
                     algem_data.xaxis.name = x_name
                     algem_data.xaxis.unit = x_unit
@@ -98,7 +98,7 @@ def get_index(name, data_list):
 def read_details(file_name, duplicate_name, downsample=-1):
 
     # Read in the algem data from the other file
-    algem_data_list = read_ht24(file_name, downsample)
+    algem_data_list = read_algem_ht24(file_name, downsample)
 
     f = open(duplicate_name, 'r', errors='ignore')
     reader = csv.reader(f, delimiter=',')
@@ -165,7 +165,7 @@ def read_details(file_name, duplicate_name, downsample=-1):
 
     return algem_data_list, replicate_data_list
 
-def read_ht24_details(file_name1, file_name2, downsample=-1):
+def read_algem_ht24_details(file_name1, file_name2, downsample=-1):
     
     # Determine which file is the details file
     f1 = open(file_name1, 'r', errors='ignore')
@@ -181,7 +181,7 @@ def read_ht24_details(file_name1, file_name2, downsample=-1):
         f2.close()
         return read_details(file_name2, file_name1, downsample)
     # Second file is details file
-    elif header2[0] == 'Date':
+    elif date2[0] == 'Date':
         f1.close()
         f2.close()
         return read_details(file_name1, file_name2, downsample)
