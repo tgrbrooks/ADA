@@ -1,16 +1,14 @@
 # Standard library imports
 
 # Related third party imports
-from PyQt5.QtWidgets import QMainWindow, QWidget, QTabWidget, QSizePolicy
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QScrollArea
-from PyQt5.QtWidgets import QPushButton, QListWidget, QComboBox, QCheckBox
-from PyQt5.QtWidgets import QLabel, QLineEdit
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
+    QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
+    QCheckBox, QLabel, QLineEdit)
 from PyQt5.QtCore import QPoint
 
 # Local application imports
 from algaeplot.plotter.main_plot import PlotCanvas
 from algaeplot.reader.data_holder import DataHolder
-from algaeplot.gui.file_handler import open_files
 from algaeplot.gui.configuration import Configuration
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.label import Label
@@ -88,16 +86,9 @@ class App(QMainWindow):
         list_scroll.setToolTip('Click to remove')
         plot_layout.addWidget(list_scroll, 1, 5)
 
-        # Add data button
-        condition_data_button = QPushButton('Add Condition Data', self)
-        condition_data_button.clicked.connect(self.update_config)
-        condition_data_button.clicked.connect(self.open_condition_files)
-        condition_data_button.clicked.connect(self.update_condition_data_list)
-        condition_data_button.setToolTip('Import condition data '
-                                         '(temp, light, etc) for plotting')
-        condition_data_button.setStyleSheet(default_font)
-        plot_layout.addWidget(condition_data_button, 3, 5)
-
+        # Add condition data text
+        condition_data_text = Label('Condition Data:', True)
+        plot_layout.addWidget(condition_data_text, 3, 5)
         # Configure list behaviour
         self.condition_data_list.clicked.connect(self.remove_condition_item)
 
@@ -288,14 +279,10 @@ class App(QMainWindow):
 
         # Condition data downsampling and averaging
         data_box_layout.addWidget(Label('Condition data:'), 2, 0)
-        data_box_layout.addWidget(Label('Downsample readings:'), 2, 1)
-        self.downsample = QLineEdit(self)
-        self.downsample.setToolTip('Only read in every X data points')
-        data_box_layout.addWidget(self.downsample, 2, 2)
-        data_box_layout.addWidget(Label('Time average:'), 2, 3)
+        data_box_layout.addWidget(Label('Time average:'), 2, 1)
         self.condition_average = QLineEdit(self)
         self.condition_average.setToolTip('Average over time window')
-        data_box_layout.addWidget(self.condition_average, 2, 4)
+        data_box_layout.addWidget(self.condition_average, 2, 2)
 
         data_box.setContentLayout(data_box_layout)
 
@@ -477,15 +464,6 @@ class App(QMainWindow):
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
-    # Function: Open and read in condition data files
-    def open_condition_files(self):
-        try:
-            open_files(self.condition_data, self.config.downsample)
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
-
     # Function: Update the main plot
     def update_plot(self):
         try:
@@ -578,7 +556,6 @@ class App(QMainWindow):
         # Open file with file handler
         self.load = LoadWindow(self, self.data, self.condition_data, row)
         self.load.show()
-        #open_files(self.data, -1, row)
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):
@@ -660,8 +637,6 @@ class App(QMainWindow):
             self.config.remove_below = float(self.remove_below.text())
         else:
             self.config.remove_below = -1
-        if(isint(self.downsample.text())):
-            self.config.downsample = int(self.downsample.text())
         if(isfloat(self.condition_average.text())):
             self.config.condition_average = \
                 float(self.condition_average.text())
