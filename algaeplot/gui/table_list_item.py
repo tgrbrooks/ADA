@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QLayout
 from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QLineEdit, QComboBox
 
+import algaeplot.configuration as config
+
 
 class TableListItem():
 
@@ -14,9 +16,7 @@ class TableListItem():
 
         # Add a delete button
         del_button = QPushButton('del')
-        del_button.setStyleSheet(
-            'background-color: #eb5a46; border-radius: 5px; padding: 2px'
-        )
+        del_button.setStyleSheet(config.delete_button_style)
         del_button.clicked.connect(parent.remove_item)
         layout.addWidget(del_button)
 

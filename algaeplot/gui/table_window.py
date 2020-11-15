@@ -13,6 +13,8 @@ from algaeplot.gui.file_handler import get_save_file_name
 from algaeplot.plotter.functions import (process_data, average_data,
     time_average)
 
+import algaeplot.configuration as config
+
 
 # Class for a table constructor window
 class TableWindow(QMainWindow):
@@ -39,21 +41,13 @@ class TableWindow(QMainWindow):
 
         # List of row options
         self.row_option = QComboBox(self)
-        self.row_option.addItem('profile')
-        self.row_option.addItem('reactor')
-        self.row_option.addItem('gradient')
-        self.row_option.addItem('time to')
-        self.row_option.addItem('average of condition')
-        self.row_option.addItem('condition at time')
-        self.row_option.addItem('fit parameter')
+        self.row_option.addItems(config.table_row_options)
         create_layout.addWidget(self.row_option, 0, 0)
 
         # Button to add a new row
         add_button = QPushButton("Add Row", self)
         add_button.clicked.connect(self.add_row)
-        add_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        add_button.setStyleSheet(config.default_font_bold)
         create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
@@ -70,9 +64,7 @@ class TableWindow(QMainWindow):
         # Button to produce the table
         make_button = QPushButton("Create Table", self)
         make_button.clicked.connect(self.make_table)
-        make_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        make_button.setStyleSheet(config.default_font_bold)
         create_layout.addWidget(make_button, 3, 0, 1, 2)
 
         create_widget = QWidget()
@@ -86,9 +78,7 @@ class TableWindow(QMainWindow):
 
         save_button = QPushButton("Save Table", self)
         save_button.clicked.connect(self.save_table)
-        save_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        save_button.setStyleSheet(config.default_font_bold)
         table_layout.addWidget(save_button)
 
         table_widget = QWidget()
@@ -125,11 +115,11 @@ class TableWindow(QMainWindow):
             row_titles = []
             row_data = []
             tunit = 's'
-            if self.parent.config.xvar == 'minutes':
+            if config.xvar == 'minutes':
                 tunit = 'min'
-            if self.parent.config.xvar == 'hours':
+            if config.xvar == 'hours':
                 tunit = 'hr'
-            if self.parent.config.xvar == 'days':
+            if config.xvar == 'days':
                 tunit = 'day'
             # Loop over the rows
             for row in self.rows:
@@ -252,9 +242,9 @@ class TableWindow(QMainWindow):
         xdatas = []
         ydatas = []
         for rep in self.parent.data.replicate_files[i]:
-            xdata = rep.get_xdata(self.parent.config.xvar)
+            xdata = rep.get_xdata(config.xvar)
             ydata = rep.get_signal(data_name)
-            xdata, ydata = process_data(xdata, ydata, self.parent.config)
+            xdata, ydata = process_data(xdata, ydata)
             xdatas.append(xdata)
             ydatas.append(ydata)
         if len(xdatas) > 1:
@@ -293,13 +283,13 @@ class TableWindow(QMainWindow):
                 continue
             if self.parent.data.data_files[i].time != cond.time:
                 continue
-            xdata = cond.get_xdata(self.parent.config.xvar)
+            xdata = cond.get_xdata(config.xvar)
             ydata = cond.get_signal(cond_name)
-            if self.parent.config.condition_average != -1:
+            if config.condition_average != -1:
                 xdata, ydata, yerr = time_average(
                     xdata,
                     ydata,
-                    self.parent.config.condition_average)
+                    config.condition_average)
             return xdata, ydata
         raise RuntimeError('No condition data found for %s'
                            % (self.parent.data.data_files[i].name))

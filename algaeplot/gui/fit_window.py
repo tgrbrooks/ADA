@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.label import Label
 from algaeplot.gui.type_functions import isfloat
+import algaeplot.configuration as config
 
 
 # Class for a table constructor window
@@ -55,9 +56,7 @@ class FitWindow(QMainWindow):
         # Button to add a new row
         fit_button = QPushButton("Fit", self)
         fit_button.clicked.connect(self.fit)
-        fit_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        fit_button.setStyleSheet(config.default_font_bold)
         fit_layout.addWidget(fit_button, 4, 0, 1, 2)
 
         widget = QWidget()
@@ -67,16 +66,16 @@ class FitWindow(QMainWindow):
 
     # Add the fit info to the configuration
     def fit(self):
-        self.parent.config.do_fit = True
-        self.parent.config.fit_curve = self.curve_option.currentText()
-        self.parent.config.fit_type = self.fit_option.currentText()
+        config.do_fit = True
+        config.fit_curve = self.curve_option.currentText()
+        config.fit_type = self.fit_option.currentText()
         if isfloat(self.fit_from.text()):
-            self.parent.config.fit_from = float(self.fit_from.text())
+            config.fit_from = float(self.fit_from.text())
         else:
-            self.parent.config.fit_from = 0
+            config.fit_from = 0
         if isfloat(self.fit_to.text()):
-            self.parent.config.fit_to = float(self.fit_to.text())
+            config.fit_to = float(self.fit_to.text())
         else:
-            self.parent.config.fit_to = 0
+            config.fit_to = 0
         self.parent.update_plot()
         self.close()

@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_save_directory_name
 
+import algaeplot.configuration as config
+
 
 class ExportWindow(QMainWindow):
 
@@ -29,26 +31,20 @@ class ExportWindow(QMainWindow):
         layout.setSpacing(5)
 
         rename_text = QLabel('Rename with profile:')
-        rename_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        rename_text.setStyleSheet(config.default_font_bold)
         layout.addWidget(rename_text, 0, 0)
         self.rename = QCheckBox(self)
         layout.addWidget(self.rename, 0, 1)
 
         conditions_text = QLabel('Include conditions:')
-        conditions_text.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        conditions_text.setStyleSheet(config.default_font_bold)
         layout.addWidget(conditions_text, 1, 0)
         self.conditions = QCheckBox(self)
         layout.addWidget(self.conditions, 1, 1)
 
         export_button = QPushButton("Export", self)
         export_button.clicked.connect(self.export)
-        export_button.setStyleSheet(
-            'font-size: 14pt; font-weight: bold; font-family: Courier;'
-        )
+        export_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(export_button, 2, 0, 1, 2)
 
         widget = QWidget()

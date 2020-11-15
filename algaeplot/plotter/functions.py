@@ -2,9 +2,11 @@ import numpy as np
 import random
 from math import factorial
 
+import algaeplot.configuration as config
+
 
 # Function to apply alignment, outlier removal and smoothing
-def process_data(xdata, ydata, config):
+def process_data(xdata, ydata):
     # Remove any values <= 0
     xdata, ydata = remove_zeros(xdata, ydata)
 
@@ -39,7 +41,7 @@ def remove_zeros(xdata, ydata):
     return xdata, ydata
 
 # Function to align all plots to the same y value
-def align_to_y(xdata, ydata, config):
+def align_to_y(xdata, ydata):
     # Find the first y index greater than the alignment point
     index = 0
     for i, y in enumerate(ydata):
@@ -51,7 +53,7 @@ def align_to_y(xdata, ydata, config):
 
 
 # Function to remove outliers in the data
-def remove_outliers(xdata, ydata, config):
+def remove_outliers(xdata, ydata):
     data_index = 0
     while data_index < len(ydata):
         if (config.remove_above >= 0 and
