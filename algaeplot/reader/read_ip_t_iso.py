@@ -98,15 +98,15 @@ def read_ip_t_iso(file_name):
                     cond_i += 1
 
             
-        # Check data has been read in
-        if(ip_data.xaxis.data.size == 0):
+    # Check data has been read in
+    if(ip_data.xaxis.data.size == 0):
+        raise RuntimeError('Issue processing data:\n'
+                           'Did not read in any data')
+    for sig in ip_data.signals:
+        if(sig.data.size != ip_data.xaxis.data.size):
             raise RuntimeError('Issue processing data:\n'
-                               'Did not read in any data')
-        for sig in ip_data.signals:
-            if(sig.data.size != ip_data.xaxis.data.size):
-                raise RuntimeError('Issue processing data:\n'
-                                   'Different number of %s entries'
-                                   % (sig.name))
+                               'Different number of %s entries'
+                               % (sig.name))
 
-        # If everything is successful return the IP data product
-        return ip_data, condition_data
+    # If everything is successful return the IP data product
+    return ip_data, condition_data

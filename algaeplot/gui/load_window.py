@@ -1,7 +1,7 @@
 import csv
 
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
-from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
+from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox, QListWidget
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_file_names
@@ -10,6 +10,7 @@ from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
 from algaeplot.reader.read_algem_pro import read_algem_pro
 from algaeplot.reader.read_ip_t_iso import read_ip_t_iso
 from algaeplot.reader.read_psi import read_psi
+from algaeplot.reader.read_csv import read_csv
 
 
 class LoadWindow(QMainWindow):
@@ -34,6 +35,7 @@ class LoadWindow(QMainWindow):
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
+        # Dropdown list of available file types
         file_text = QLabel('File type:')
         file_text.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
@@ -47,6 +49,7 @@ class LoadWindow(QMainWindow):
         self.file_type.addItem('AlgaePlotter')
         layout.addWidget(self.file_type, 0, 1)
 
+        # Button for selecting files to import
         select_file_button = QPushButton("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
         select_file_button.clicked.connect(self.update_options)
@@ -55,12 +58,14 @@ class LoadWindow(QMainWindow):
         )
         layout.addWidget(select_file_button, 1, 0)
 
-        self.file_name_text = QLabel('')
-        self.file_name_text.setStyleSheet(
+        # List of files to import
+        self.file_list = QListWidget(self)
+        self.file_list.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
         )
-        layout.addWidget(self.file_name_text, 1, 1)
+        layout.addWidget(self.file_list, 1, 1)
 
+        # Button and list for HT24 details file
         self.select_details_button = QPushButton("Select details file", self)
         self.select_details_button.clicked.connect(self.select_details)
         self.select_details_button.setStyleSheet(
@@ -69,19 +74,32 @@ class LoadWindow(QMainWindow):
         layout.addWidget(self.select_details_button, 2, 0)
         self.select_details_button.hide()
 
-        self.details_name_text = QLabel('')
-        self.details_name_text.setStyleSheet(
+        self.details_file_list = QListWidget(self)
+        self.details_file_list.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
         )
-        layout.addWidget(self.details_name_text, 2, 1)
-        self.details_name_text.hide()
+        layout.addWidget(self.details_file_list, 2, 1)
+        self.details_file_list.hide()
 
+        # Checkbox for merging replicates in HT24 data
+        self.merge_replicates_text = QLabel('Merge replicates')
+        self.merge_replicates_text.setStyleSheet(
+            'font-size: 14pt; font-weight: bold; font-family: Courier;'
+        )
+        layout.addWidget(self.merge_replicates_text, 3, 0)
+        self.merge_replicates_text.hide()
+
+        self.merge_replicates = QCheckBox(self)
+        layout.addWidget(self.merge_replicates, 3, 1)
+        self.merge_replicates.hide()
+
+        # Button to load the data
         load_button = QPushButton("Load", self)
         load_button.clicked.connect(self.load)
         load_button.setStyleSheet(
             'font-size: 14pt; font-weight: bold; font-family: Courier;'
         )
-        layout.addWidget(load_button, 3, 0, 1, 2)
+        layout.addWidget(load_button, 4, 0, 1, 2)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -90,19 +108,20 @@ class LoadWindow(QMainWindow):
     def update_options(self):
         if self.file_type.currentText() == 'Algem HT24':
             self.select_details_button.show()
-            self.details_name_text.show()
+            self.details_file_list.show()
+            self.merge_replicates_text.show()
+            self.merge_replicates.show()
         else:
             self.select_details_button.hide()
-            self.details_name_text.hide()
+            self.details_file_list.hide()
+            self.merge_replicates_text.hide()
+            self.merge_replicates.hide()
 
     def select_data(self):
         try:
             self.files = get_file_names()
-            file_name_text = ''
             for file_name in self.files:
-                file_name_text += file_name.split('/')[-1]
-            self.file_name_text.setText(file_name_text)
-            self.show()
+                self.file_list.addItem(file_name.split('/')[-1])
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -111,10 +130,8 @@ class LoadWindow(QMainWindow):
     def select_details(self):
         try:
             self.details = get_file_names()
-            details_name_text = ''
             for file_name in self.details:
-                details_name_text += file_name.split('/')[-1]
-            self.details_name_text.setText(details_name_text)
+                self.details_file_list.addItem(file_name.split('/')[-1])
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -150,7 +167,10 @@ class LoadWindow(QMainWindow):
                 for algem_data in algem_data_list:
                     self.data.add_data(algem_data)
                 for replicate in replicate_data_list:
-                    self.data.add_replicate(replicate[0], replicate[1])
+                    if self.merge_replicates.isChecked():
+                        self.data.add_replicate(replicate[0], replicate[1])
+                    else:
+                        self.data.add_data(replicate[0])
 
             # Read in files from Industrial Plankton T-Iso
             elif file_type == 'IP T-Iso':
@@ -168,6 +188,11 @@ class LoadWindow(QMainWindow):
                 except Exception as e:
                     raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
                 self.data.add_data(psi_data)
+                self.condition.add_data(condition_data)
+
+            elif file_type == 'AlgaePlotter':
+                csv_data, condition_data = read_csv(file_name)
+                self.data.add_data(csv_data)
                 self.condition.add_data(condition_data)
 
         # Update the data lists in the main window
