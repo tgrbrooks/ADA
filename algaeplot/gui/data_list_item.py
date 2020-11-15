@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout
 from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
 
+import algaeplot.configuration as config
+
 
 class DataListItem():
 
@@ -8,14 +10,10 @@ class DataListItem():
         self.item = QListWidgetItem()
         self.widget = QWidget()
         del_button = QPushButton('del')
-        del_button.setStyleSheet(
-            "background-color: #eb5a46; border-radius: 5px; padding: 2px"
-        )
+        del_button.setStyleSheet(config.delete_button_style)
         del_button.clicked.connect(parent.remove_item)
         add_button = QPushButton('add')
-        add_button.setStyleSheet(
-            "background-color: #90ee90; border-radius: 5px; padding: 2px"
-        )
+        add_button.setStyleSheet(config.add_button_style)
         add_button.clicked.connect(parent.add_to_item)
         add_button.clicked.connect(parent.update_data_list)
         label = QLabel(text)
@@ -35,9 +33,7 @@ class DataListItem():
                 hlayout = QHBoxLayout()
                 hlayout.addWidget(QLabel('-'))
                 sub_del_button = QPushButton('del')
-                sub_del_button.setStyleSheet(
-                  "background-color: #eb5a46; border-radius: 5px; padding: 2px"
-                )
+                sub_del_button.setStyleSheet(config.delete_button_style)
                 hlayout.addWidget(sub_del_button)
                 sub_del_button.clicked.connect(
                     lambda: parent.remove_replicate(j)
