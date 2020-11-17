@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_save_directory_name
+from algaeplot.components.button import Button
 
 import algaeplot.configuration as config
 
@@ -42,9 +43,8 @@ class ExportWindow(QMainWindow):
         self.conditions = QCheckBox(self)
         layout.addWidget(self.conditions, 1, 1)
 
-        export_button = QPushButton("Export", self)
+        export_button = Button("Export", self)
         export_button.clicked.connect(self.export)
-        export_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(export_button, 2, 0, 1, 2)
 
         widget = QWidget()

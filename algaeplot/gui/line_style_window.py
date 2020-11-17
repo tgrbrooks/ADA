@@ -3,6 +3,7 @@ from matplotlib.colors import is_color_like
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QComboBox
 
+from algaeplot.components.button import Button
 import algaeplot.configuration as config
 
 
@@ -43,9 +44,8 @@ class LineStyleWindow(QMainWindow):
         self.line_colour = QLineEdit(self)
         layout.addWidget(self.line_colour, 1, 1)
 
-        apply_button = QPushButton("Apply", self)
+        apply_button = Button("Apply", self)
         apply_button.clicked.connect(self.apply_changes)
-        apply_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(apply_button, 2, 0, 1, 2)
 
         widget = QWidget()

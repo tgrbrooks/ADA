@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QLineEdit)
 
 from algaeplot.gui.error_window import ErrorWindow
-from algaeplot.gui.label import Label
-from algaeplot.gui.type_functions import isfloat
+from algaeplot.components.label import Label
+from algaeplot.components.button import Button
+from algaeplot.type_functions import isfloat
 import algaeplot.configuration as config
 
 
@@ -54,9 +55,8 @@ class FitWindow(QMainWindow):
         fit_layout.addWidget(self.fit_to, 3, 1)
 
         # Button to add a new row
-        fit_button = QPushButton("Fit", self)
+        fit_button = Button("Fit", self)
         fit_button.clicked.connect(self.fit)
-        fit_button.setStyleSheet(config.default_font_bold)
         fit_layout.addWidget(fit_button, 4, 0, 1, 2)
 
         widget = QWidget()

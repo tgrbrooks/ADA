@@ -2,13 +2,59 @@
 
 # App style/options
 
-default_font = 'font-size: 14pt; font-family: Courier;'
-default_font_bold = 'font-size: 14pt; font-weight: bold; font-family: Courier;'
-small_font = 'font-size: 14pt; font-family: Courier;'
-big_font = 'font-size: 28pt; font-family: Courier;'
+main_background = 'background-color: #6c757d;'
 
-delete_button_style = 'background-color: #eb5a46; border-radius: 5px; padding: 2px'
-add_button_style = "background-color: #90ee90; border-radius: 5px; padding: 2px"
+default_font = 'font-size: 14pt;\
+                font-family: SansSerif;'
+default_font_bold = 'font-size: 14pt;\
+                     font-weight: bold;\
+                     font-family: SansSerif;'
+small_font = 'font-size: 12pt;\
+              font-family: SansSerif;'
+big_font = 'font-size: 28pt;\
+            font-family: SansSerif;'
+default_button_font = default_font +\
+                       'color: white;'
+default_button_font_bold = default_font +\
+                       'color: white;\
+                        font-weight: bold;'
+big_button_font = big_font +\
+                  'color: white;'
+
+main_button_style = 'QPushButton {' +\
+                    default_button_font + \
+                    'background-color: #007bff;\
+                     border-radius: 5px;\
+                     padding: 2px;\
+                     } QPushButton:pressed {' +\
+                    default_button_font + \
+                    'background-color: #003cff;\
+                     border-radius: 5px;\
+                     padding: 2px;}'
+
+big_button_style = 'QPushButton {' +\
+                    big_button_font + \
+                    'background-color: #007bff;\
+                     border-radius: 5px;\
+                     padding: 2px;\
+                     } QPushButton:pressed {' +\
+                    big_button_font + \
+                    'background-color: #003cff;\
+                     border-radius: 5px;\
+                     padding: 2px;}'
+                    
+delete_button_style = default_button_font_bold +\
+                      'background-color: #dc3545;\
+                       border-radius: 8px;\
+                       text-align: center;\
+                       vertical-align: middle;\
+                       padding: 2px;'
+add_button_style = default_button_font_bold +\
+                   'background-color: #28a745;\
+                    border-radius: 8px;\
+                    text-align: right;\
+                    vertical-align: middle;\
+                    padding: 2px;'
 
 xaxis_units = ["seconds", "minutes", "hours", "days"]
 info_options = ["none", "reactor", "profile", "title", "date", "time",

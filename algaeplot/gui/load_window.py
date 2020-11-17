@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_file_names
-from algaeplot.gui.type_functions import isint
-from algaeplot.gui.label import Label
+from algaeplot.type_functions import isint
+from algaeplot.components.label import Label
+from algaeplot.components.button import Button
 
 from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
     read_algem_ht24_details)
@@ -22,7 +23,7 @@ class LoadWindow(QMainWindow):
     def __init__(self, parent, data, condition, row=-1):
         super(LoadWindow, self).__init__(parent)
         self.title = 'Load Files'
-        self.width = 250
+        self.width = 400
         self.height = 150
         self.parent = parent
         self.data = data
@@ -43,7 +44,7 @@ class LoadWindow(QMainWindow):
 
         # Dropdown list of available file types
         file_text = Label('File type:', True)
-        layout.addWidget(file_text, 0, 0)
+        layout.addWidget(file_text, 0, 0, 1, 1)
         self.file_type = QComboBox(self)
         self.file_type.addItem('Algem Pro')
         # Can't add HT24 data as replicate
@@ -52,68 +53,64 @@ class LoadWindow(QMainWindow):
         self.file_type.addItem('IP T-Iso')
         self.file_type.addItem('PSI')
         self.file_type.addItem('AlgaePlotter')
-        layout.addWidget(self.file_type, 0, 1)
+        layout.addWidget(self.file_type, 0, 1, 1, 1)
 
         # Button for selecting files to import
-        select_file_button = QPushButton("Select data file(s)", self)
+        select_file_button = Button("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
         select_file_button.clicked.connect(self.update_options)
-        select_file_button.setStyleSheet(config.default_font_bold)
-        layout.addWidget(select_file_button, 1, 0)
+        layout.addWidget(select_file_button, 1, 0, 1, 1)
 
         # List of files to import
         self.file_list = QListWidget(self)
         self.file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.file_list, 1, 1)
+        layout.addWidget(self.file_list, 1, 1, 1, 1)
 
         # Button and list for Algem conditions files
-        self.select_conditions_button = QPushButton(
-            "Select conditions file(s)", self)
+        self.select_conditions_button = Button("Select conditions file(s)",
+                                               self)
         self.select_conditions_button.clicked.connect(self.select_conditions)
-        self.select_conditions_button.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.select_conditions_button, 2, 0)
+        layout.addWidget(self.select_conditions_button, 2, 0, 1, 1)
         self.select_conditions_button.hide()
 
         self.conditions_file_list = QListWidget(self)
         self.conditions_file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.conditions_file_list, 2, 1)
+        layout.addWidget(self.conditions_file_list, 2, 1, 1, 1)
         self.conditions_file_list.hide()
 
         # Option to downsample conditions data
         self.downsample_text = Label('Downsample conditions:', True)
-        layout.addWidget(self.downsample_text, 3, 0)
+        layout.addWidget(self.downsample_text, 3, 0, 1, 1)
         self.downsample_text.hide()
 
         self.downsample = QLineEdit(self)
         self.downsample.setToolTip('Only read in every X data points')
-        layout.addWidget(self.downsample, 3, 1)
+        layout.addWidget(self.downsample, 3, 1, 1, 1)
         self.downsample.hide()
 
         # Button and list for HT24 details file
-        self.select_details_button = QPushButton("Select details file", self)
+        self.select_details_button = Button("Select details file", self)
         self.select_details_button.clicked.connect(self.select_details)
-        self.select_details_button.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.select_details_button, 4, 0)
+        layout.addWidget(self.select_details_button, 4, 0, 1, 1)
         self.select_details_button.hide()
 
         self.details_file_list = QListWidget(self)
         self.details_file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.details_file_list, 4, 1)
+        layout.addWidget(self.details_file_list, 4, 1, 1, 1)
         self.details_file_list.hide()
 
         # Checkbox for merging replicates in HT24 data
         self.merge_replicates_text = Label('Merge replicates')
-        layout.addWidget(self.merge_replicates_text, 5, 0)
+        layout.addWidget(self.merge_replicates_text, 5, 0, 1, 1)
         self.merge_replicates_text.hide()
 
         self.merge_replicates = QCheckBox(self)
-        layout.addWidget(self.merge_replicates, 5, 1)
+        layout.addWidget(self.merge_replicates, 5, 1, 1, 1)
         self.merge_replicates.hide()
 
         # Button to load the data
-        load_button = QPushButton("Load", self)
+        load_button = Button("Load", self)
         load_button.clicked.connect(self.load)
-        load_button.setStyleSheet(config.default_font_bold)
         layout.addWidget(load_button, 6, 0, 1, 2)
 
         widget = QWidget()
