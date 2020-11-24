@@ -21,6 +21,37 @@ default_button_font_bold = default_font +\
 big_button_font = big_font +\
                   'color: white;'
 
+label_style = default_button_font_bold +\
+              'background-color: #6c757d;\
+               padding: 5px;'
+              
+top_label_style = label_style +\
+                  'border-top-left-radius: 5px; \
+                   border-top-right-radius: 5px;'
+
+left_label_style = label_style +\
+                  'border-top-left-radius: 5px; \
+                   border-bottom-left-radius: 5px;'
+
+round_label_style = label_style +\
+                  'border-top-left-radius: 5px; \
+                   border-top-right-radius: 5px;\
+                   border-bottom-left-radius: 5px; \
+                   border-bottom-right-radius: 5px;'
+
+right_line_edit_style = default_font_bold +\
+                  'border-top-right-radius: 5px; \
+                   border-bottom-right-radius: 5px;\
+                   border: 2px solid #6c757d;\
+                   padding: 3px;'
+
+spin_box_style = default_font_bold +\
+                 'border: 2px solid #6c757d;\
+                  padding: 3px;'
+
+drop_down_style = default_font +\
+                  'border: 1px solid #6c757d;'
+
 main_button_style = 'QPushButton {' +\
                     default_button_font + \
                     'background-color: #007bff;\
@@ -55,6 +86,8 @@ add_button_style = default_button_font_bold +\
                     text-align: right;\
                     vertical-align: middle;\
                     padding: 2px;'
+
+list_item_style = 'border-bottom: 2px black;'
 
 xaxis_units = ["seconds", "minutes", "hours", "days"]
 info_options = ["none", "reactor", "profile", "title", "date", "time",

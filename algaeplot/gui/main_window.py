@@ -3,17 +3,20 @@
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
     QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
-    QCheckBox, QLabel, QLineEdit)
-from PyQt5.QtCore import QPoint
+    QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
+    QFormLayout, QHBoxLayout)
+from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from algaeplot.plotter.main_plot import PlotCanvas
 from algaeplot.reader.data_holder import DataHolder
-from algaeplot.components.label import Label
+from algaeplot.components.label import Label, TopLabel, LeftLabel
+from algaeplot.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
+from algaeplot.components.list import List
 from algaeplot.components.spacer import Spacer
 from algaeplot.components.button import Button, BigButton
 from algaeplot.components.collapsible_box import CollapsibleBox
-from algaeplot.components.data_list_item import DataListItem
+from algaeplot.components.data_list_item import DataListItem, ConditionListItem
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.export_window import ExportWindow
 from algaeplot.gui.table_window import TableWindow
@@ -31,8 +34,8 @@ class App(QMainWindow):
         # Default dimensions
         self.left = 10
         self.top = 10
-        self.width = 960
-        self.height = 600
+        self.width = 1120
+        self.height = 630
         # Container for data
         self.data = DataHolder()
         # Container for condition data
@@ -53,64 +56,37 @@ class App(QMainWindow):
 
         # Main plotting window
         plot_layout = QGridLayout()
-        plot_layout.setContentsMargins(0, 0, 0, 0)
-        plot_layout.setSpacing(20)
+        plot_layout.setContentsMargins(5, 5, 5, 5)
+        plot_layout.setSpacing(10)
 
         # Main plot window (row, column, row extent, column extent)
         self.plot = PlotCanvas(self, width=10, height=4)
-        plot_layout.addWidget(self.plot, 0, 0, 6, 5)
-
-        # Add data button
-        data_button = Button('Add Data', self,
-                             'Import data for plotting')
-        data_button.clicked.connect(self.update_config)
-        data_button.clicked.connect(self.open_data_files)
-        data_button.clicked.connect(self.update_data_list)
-        plot_layout.addWidget(data_button, 0, 5)
-
-        # List of data in a scrollable area
-        self.data_list = QListWidget(self)
-        self.data_list.clicked.connect(self.remove_item)
-        self.data_list.setToolTip('Click to remove')
-        plot_layout.addWidget(self.data_list, 1, 5)
-
-        # Add condition data text
-        condition_data_text = Label('Condition Data:', True)
-        plot_layout.addWidget(condition_data_text, 3, 5)
-        # List of condition data
-        self.condition_data_list = QListWidget(self)
-        self.condition_data_list.clicked.connect(self.remove_condition_item)
-        self.condition_data_list.setToolTip('Click to remove')
-        plot_layout.addWidget(self.condition_data_list, 4, 5)
-
-        # Plot button
-        plot_button = BigButton('Plot!', self, 'Plot the data!')
-        plot_button.clicked.connect(self.update_config)
-        plot_button.clicked.connect(self.update_plot)
-        plot_layout.addWidget(plot_button, 5, 5, 2, 1)
+        shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
+        self.plot.setGraphicsEffect(shadow)
+        plot_layout.addWidget(self.plot, 0, 0, 16, 25)
 
         # Saving options
         save_button = Button('Save', self, 'Save the figure')
         save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
-        plot_layout.addWidget(save_button, 6, 0)
+        plot_layout.addWidget(save_button, 16, 0, 2, 5)
 
         # Export options
         export_button = Button('Export', self,
                                'Export the data to CSV')
         export_button.clicked.connect(self.export_files)
-        plot_layout.addWidget(export_button, 6, 1)
+        plot_layout.addWidget(export_button, 16, 5, 2, 5)
 
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
         measure_button.clicked.connect(self.update_plot)
-        plot_layout.addWidget(measure_button, 6, 2)
+        plot_layout.addWidget(measure_button, 16, 10, 2, 5)
 
         # Fit curves
         fit_button = Button('Fit', self, 'Fit the growth curves')
         fit_button.clicked.connect(self.fit_curve)
-        plot_layout.addWidget(fit_button, 6, 3)
+        plot_layout.addWidget(fit_button, 16, 15, 2, 5)
 
         # Table output button
         table_button = Button('To Table', self, 
@@ -118,7 +94,32 @@ class App(QMainWindow):
                               '\nConfigure in options tab')
         table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
-        plot_layout.addWidget(table_button, 6, 4)
+        plot_layout.addWidget(table_button, 16, 20, 2, 5)
+
+        # Add data button
+        data_button = Button('Add Data', self,
+                             'Import data for plotting')
+        data_button.clicked.connect(self.update_config)
+        data_button.clicked.connect(self.open_data_files)
+        data_button.clicked.connect(self.update_data_list)
+        plot_layout.addWidget(data_button, 0, 25, 2, 7)
+
+        # List of data in a scrollable area
+        self.data_list = List(self)
+        plot_layout.addWidget(self.data_list, 2, 25, 6, 7)
+
+        # Add condition data text
+        condition_data_text = TopLabel('Condition Data:', True)
+        plot_layout.addWidget(condition_data_text, 8, 25, 1, 7)
+        # List of condition data
+        self.condition_data_list = List(self)
+        plot_layout.addWidget(self.condition_data_list, 9, 25, 6, 7)
+
+        # Plot button
+        plot_button = BigButton('Plot!', self, 'Plot the data!')
+        plot_button.clicked.connect(self.update_config)
+        plot_button.clicked.connect(self.update_plot)
+        plot_layout.addWidget(plot_button, 15, 25, 3, 7)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -135,17 +136,18 @@ class App(QMainWindow):
         axis_box_layout.setContentsMargins(5, 5, 5, 5)
         axis_box_layout.setSpacing(5)
 
-        axis_box_layout.addWidget(Label('Figure title:', True), 0, 0)
+        axis_box_layout.addWidget(LeftLabel('Figure title:', True), 0, 0)
         self.figure_title = QLineEdit(self)
-        axis_box_layout.addWidget(self.figure_title, 0, 1, 1, 2)
-        axis_box_layout.addWidget(Label('Variable'), 1, 1)
-        axis_box_layout.addWidget(Label('Label name'), 1, 2)
-        axis_box_layout.addWidget(Label('Unit name'), 1, 3)
-        axis_box_layout.addWidget(Label('Range min'), 1, 4)
-        axis_box_layout.addWidget(Label('Range max'), 1, 5)
-        axis_box_layout.addWidget(Label('X:'), 2, 0)
-        axis_box_layout.addWidget(Label('Y:'), 3, 0)
-        axis_box_layout.addWidget(Label('Y2 (conditions):'), 4, 0)
+        axis_box_layout.addWidget(self.figure_title, 0, 1, 1, 1)
+
+        axis_box_layout.addWidget(TopLabel('Variable'), 1, 1)
+        axis_box_layout.addWidget(TopLabel('Label name'), 1, 2)
+        axis_box_layout.addWidget(TopLabel('Unit name'), 1, 3)
+        axis_box_layout.addWidget(TopLabel('Range min'), 1, 4)
+        axis_box_layout.addWidget(TopLabel('Range max'), 1, 5)
+        axis_box_layout.addWidget(LeftLabel('X:'), 2, 0)
+        axis_box_layout.addWidget(LeftLabel('Y:'), 3, 0)
+        axis_box_layout.addWidget(LeftLabel('Y2 (conditions):'), 4, 0)
 
         # X axis drop down menu
         self.xaxis_dropdown = QComboBox(self)
@@ -208,55 +210,58 @@ class App(QMainWindow):
         # --------------- DATA CONFIGURATION
 
         # Data configuration options
-        data_box_layout = QGridLayout()
-        data_box_layout.setContentsMargins(5, 5, 5, 5)
-        data_box_layout.setSpacing(5)
+        data_h_layout = QHBoxLayout()
+        data_box_layout = QFormLayout()
 
         # Smooth noisy data button
-        data_box_layout.addWidget(Label('Smooth data:'), 0, 0)
-        self.smooth_data = QCheckBox(self)
+        self.smooth_data = CheckBox('Data smoothing off/on', self)
         self.smooth_data.setToolTip('Apply Savitzky-Golay to noisy data')
-        data_box_layout.addWidget(self.smooth_data, 0, 1)
+        data_box_layout.addRow(' ', self.smooth_data)
 
         # Align all data with 0 checkbox
-        data_box_layout.addWidget(Label('Align at time = 0:'), 1, 0)
-        self.align_data = QCheckBox(self)
+        self.align_data = CheckBox('Alignment at time = 0 on/off', self)
         self.align_data.setToolTip('Start growth curves at 0 time')
-        data_box_layout.addWidget(self.align_data, 1, 1)
+        data_box_layout.addRow(' ', self.align_data)
 
         # Align all data at Y position
-        data_box_layout.addWidget(Label('Align at Y ='), 1, 2)
-        self.y_alignment = QLineEdit(self)
+        self.y_alignment = TextEntry('Align at Y:', self)
         self.y_alignment.setToolTip('Align all growth curves at given Y value')
-        data_box_layout.addWidget(self.y_alignment, 1, 3)
-
-        # Remove any obvious outliers from the growth data
-        data_box_layout.addWidget(Label('Data outliers:'), 2, 0)
-        data_box_layout.addWidget(Label('Auto remove:'), 3, 0)
-        self.auto_remove = QCheckBox(self)
-        data_box_layout.addWidget(self.auto_remove, 3, 1)
-        data_box_layout.addWidget(Label('Remove above:'), 3, 2)
-        self.remove_above = QLineEdit(self)
-        data_box_layout.addWidget(self.remove_above, 3, 3)
-        data_box_layout.addWidget(Label('Remove below:'), 3, 4)
-        self.remove_below = QLineEdit(self)
-        data_box_layout.addWidget(self.remove_below, 3, 5)
+        data_box_layout.addRow(self.y_alignment)
 
         # Condition data downsampling and averaging
-        data_box_layout.addWidget(Label('Condition data:'), 4, 0)
-        data_box_layout.addWidget(Label('Time average:'), 4, 1)
-        self.condition_average = QLineEdit(self)
-        self.condition_average.setToolTip('Average over time window')
-        data_box_layout.addWidget(self.condition_average, 4, 2)
+        self.condition_average = TextEntry('Condition data time average:', self)
+        self.condition_average.setToolTip('Average over a given time window')
+        data_box_layout.addRow(self.condition_average)
 
-        data_box_layout.addWidget(Label('Show Events:'), 5, 0)
-        self.show_events = QCheckBox(self)
-        data_box_layout.addWidget(self.show_events, 5, 1)
+        self.show_events = CheckBox('Show events off/on', self)
+        data_box_layout.addRow(' ', self.show_events)
 
-        data_box_layout.addWidget(Spacer(), 6, 5)
+        data_form_widget = QWidget()
+        data_form_widget.setLayout(data_box_layout)
+        data_h_layout.addWidget(data_form_widget)
+
+        data_v_layout = QVBoxLayout()
+        # Remove any obvious outliers from the growth data
+        data_v_layout.addWidget(TopLabel('Data outliers:'))
+        data_v_form_layout = QFormLayout()
+        self.auto_remove = CheckBox('Auto-remove outliers off/on', self)
+        data_v_form_layout.addRow(' ', self.auto_remove)
+        self.remove_above = TextEntry('Remove above:', self)
+        data_v_form_layout.addRow(self.remove_above)
+        self.remove_below = TextEntry('Remove below:', self)
+        data_v_form_layout.addRow(self.remove_below)
+        data_v_form_widget = QWidget()
+        data_v_form_widget.setLayout(data_v_form_layout)
+        data_v_layout.addWidget(data_v_form_widget)
+        data_v_layout.addWidget(Spacer())
+
+        data_v_widget = QWidget()
+        data_v_widget.setLayout(data_v_layout)
+        data_h_layout.addWidget(data_v_widget)
+        data_h_layout.addWidget(Spacer())
 
         data_box_widget = QWidget()
-        data_box_widget.setLayout(data_box_layout)
+        data_box_widget.setLayout(data_h_layout)
         tabs.addTab(data_box_widget, 'Data')
 
         # --------------- LEGEND CONFIGURATION
@@ -335,50 +340,39 @@ class App(QMainWindow):
         # --------------- STYLE CONFIGURATION
 
         # Style configuration
-        style_box_layout = QGridLayout()
-        style_box_layout.setContentsMargins(5, 5, 5, 5)
-        style_box_layout.setSpacing(5)
+        style_box_layout = QFormLayout()
 
         # Plot style dropdown menu
-        style_box_layout.addWidget(Label('Style:'), 0, 0)
-        self.style_dropdown = QComboBox(self)
-        self.style_dropdown.addItems(config.style_options)
-        style_box_layout.addWidget(self.style_dropdown, 0, 1)
+        self.style_dropdown = DropDown('Style:', config.style_options, self)
+        style_box_layout.addRow(self.style_dropdown)
 
         # Font style dropdown menu
-        style_box_layout.addWidget(Label('Font style:'), 1, 0)
-        self.font_dropdown = QComboBox(self)
-        self.font_dropdown.addItems(config.font_options)
-        style_box_layout.addWidget(self.font_dropdown, 1, 1)
+        self.font_dropdown = DropDown('Font style:', config.font_options, self)
+        style_box_layout.addRow(self.font_dropdown)
 
         # Font size textbox
-        style_box_layout.addWidget(Label('Title font size:'), 2, 0)
-        self.title_size = QLineEdit(self)
-        style_box_layout.addWidget(self.title_size, 2, 1)
+        self.title_size = SpinBox('Title font size:', 14, 0, 100, self)
+        style_box_layout.addRow(self.title_size)
 
-        style_box_layout.addWidget(Label('Legend font size:'), 3, 0)
-        self.legend_size = QLineEdit(self)
-        style_box_layout.addWidget(self.legend_size, 3, 1)
+        self.legend_size = SpinBox('Legend font size:', 12, 0, 100, self)
+        style_box_layout.addRow(self.legend_size)
 
-        style_box_layout.addWidget(Label('Label font size:'), 4, 0)
-        self.label_size = QLineEdit(self)
-        style_box_layout.addWidget(self.label_size, 4, 1)
+        self.label_size = SpinBox('Label font size:', 12, 0, 100, self)
+        style_box_layout.addRow(self.label_size)
 
         # Line width textbox
-        style_box_layout.addWidget(Label('Line width:'), 5, 0)
-        self.line_width = QLineEdit(self)
-        style_box_layout.addWidget(self.line_width, 5, 1)
+        self.line_width = SpinBox('Line width:', 2, 0, 20, self)
+        style_box_layout.addRow(self.line_width)
 
         # Condition axis colour
-        style_box_layout.addWidget(Label('Condition axis colour:'), 6, 0)
-        self.axis_colour = QLineEdit(self)
-        style_box_layout.addWidget(self.axis_colour, 6, 1)
+        self.axis_colour = TextEntry('Condition axis color:', self)
+        style_box_layout.addRow(self.axis_colour)
 
-        style_box_layout.addWidget(Label('Grid:'), 7, 0)
-        self.grid_toggle = QCheckBox(self)
-        style_box_layout.addWidget(self.grid_toggle, 7, 1)
+        self.grid_toggle = CheckBox('Grid on/off', self)
+        style_box_layout.addRow(' ',self.grid_toggle)
 
-        style_box_layout.addWidget(Spacer(), 8, 2)
+        style_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        style_box_layout.setLabelAlignment(Qt.AlignCenter)
 
         style_box_widget = QWidget()
         style_box_widget.setLayout(style_box_layout)
@@ -387,17 +381,15 @@ class App(QMainWindow):
         # --------------- STATS CONFIGURATION
 
         # Stats configuration
-        stats_box_layout = QGridLayout()
-        stats_box_layout.setContentsMargins(5, 5, 5, 5)
-        stats_box_layout.setSpacing(5)
+        stats_box_layout = QFormLayout()
 
-        stats_box_layout.addWidget(Label('Standard error:'), 0, 0)
-        self.std_err = QCheckBox(self)
+        self.std_err = CheckBox('Standard error/deviation', self)
         self.std_err.setToolTip('Checked = show standard error on mean\n'
                                 'Unchecked = show standard deviation')
-        stats_box_layout.addWidget(self.std_err, 0, 1)
+        stats_box_layout.addRow(' ', self.std_err)
 
-        stats_box_layout.addWidget(Spacer(), 1, 2)
+        stats_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
         stats_box_widget = QWidget()
         stats_box_widget.setLayout(stats_box_layout)
@@ -463,20 +455,35 @@ class App(QMainWindow):
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
         for i, data in enumerate(self.condition_data.data_files):
-            self.condition_data_list.addItem(data.name.split('/')[-1])
+            data_list_item = ConditionListItem(data.name.split('/')[-1], self)
+            self.condition_data_list.addItem(data_list_item.item)
+            self.condition_data_list.setItemWidget(data_list_item.item,
+                                         data_list_item.widget)
             self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
             for sig in data.signals:
                 self.condition_yaxis_dropdown.addItem(sig.name)
 
-    # Function: Remove file from list of data
-    def remove_item(self):
+    def get_data_row(self):
         # Horrible stuff to get list item
         widget = self.sender()
         gp = widget.mapToGlobal(QPoint())
         lp = self.data_list.viewport().mapFromGlobal(gp)
         row = self.data_list.row(self.data_list.itemAt(lp))
+        return row
+
+    def get_condition_row(self):
+        # Horrible stuff to get list item
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = self.condition_data_list.viewport().mapFromGlobal(gp)
+        row = self.condition_data_list.row(self.condition_data_list.itemAt(lp))
+        return row
+
+    # Function: Remove file from list of data
+    def remove_item(self):
+        row = self.get_data_row()
         for i, data in enumerate(self.data.data_files):
             if i != row:
                 continue
@@ -485,11 +492,7 @@ class App(QMainWindow):
 
     # Function: Remove file from list of data
     def remove_replicate(self, index):
-        # Horrible stuff to get list item
-        widget = self.sender()
-        gp = widget.mapToGlobal(QPoint())
-        lp = self.data_list.viewport().mapFromGlobal(gp)
-        row = self.data_list.row(self.data_list.itemAt(lp))
+        row = self.get_data_row()
         for i, data in enumerate(self.data.data_files):
             if i != row:
                 continue
@@ -497,19 +500,16 @@ class App(QMainWindow):
         self.update_data_list()
 
     # Function: Remove file from list of condition data
-    def remove_condition_item(self, index):
+    def remove_condition_item(self):
+        row = self.get_condition_row()
         for i, data in enumerate(self.condition_data.data_files):
-            if i != index.row():
+            if i != row:
                 continue
             self.condition_data.delete_data(i)
         self.update_condition_data_list()
 
     def add_to_item(self):
-        # Horrible stuff to get list item
-        widget = self.sender()
-        gp = widget.mapToGlobal(QPoint())
-        lp = self.data_list.viewport().mapFromGlobal(gp)
-        row = self.data_list.row(self.data_list.itemAt(lp))
+        row = self.get_data_row()
         # Open file with file handler
         self.load = LoadWindow(self, self.data, self.condition_data, row)
         self.load.show()

@@ -19,7 +19,9 @@ class BigButton(QPushButton):
         self.setStyleSheet(config.big_button_style)
         shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setFixedHeight(60)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        #self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         if tooltip is not None:
             self.setToolTip(tooltip)
 
