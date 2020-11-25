@@ -132,79 +132,101 @@ class App(QMainWindow):
         # --------------- AXIS CONFIGURATION
 
         # Axis configuration
-        axis_box_layout = QGridLayout()
-        axis_box_layout.setContentsMargins(5, 5, 5, 5)
-        axis_box_layout.setSpacing(5)
+        axis_v_layout = QVBoxLayout()
+        axis_h_layout = QHBoxLayout()
+        x_v_layout = QVBoxLayout()
+        x_form_layout = QFormLayout()
+        y_v_layout = QVBoxLayout()
+        y_form_layout = QFormLayout()
+        z_v_layout = QVBoxLayout()
+        z_form_layout = QFormLayout()
 
-        axis_box_layout.addWidget(LeftLabel('Figure title:', True), 0, 0)
-        self.figure_title = QLineEdit(self)
-        axis_box_layout.addWidget(self.figure_title, 0, 1, 1, 1)
+        self.figure_title = TextEntry('Figure title:', self)
+        axis_v_layout.addWidget(self.figure_title)
 
-        axis_box_layout.addWidget(TopLabel('Variable'), 1, 1)
-        axis_box_layout.addWidget(TopLabel('Label name'), 1, 2)
-        axis_box_layout.addWidget(TopLabel('Unit name'), 1, 3)
-        axis_box_layout.addWidget(TopLabel('Range min'), 1, 4)
-        axis_box_layout.addWidget(TopLabel('Range max'), 1, 5)
-        axis_box_layout.addWidget(LeftLabel('X:'), 2, 0)
-        axis_box_layout.addWidget(LeftLabel('Y:'), 3, 0)
-        axis_box_layout.addWidget(LeftLabel('Y2 (conditions):'), 4, 0)
-
+        x_v_layout.addWidget(TopLabel('X:'))
         # X axis drop down menu
-        self.xaxis_dropdown = QComboBox(self)
-        self.xaxis_dropdown.addItems(config.xaxis_units)
-        axis_box_layout.addWidget(self.xaxis_dropdown, 2, 1)
+        self.xaxis_dropdown = DropDown('Variable:', config.xaxis_units, self)
+        x_form_layout.addRow(self.xaxis_dropdown)
 
         # X axis titles
-        self.xaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_name, 2, 2)
-        self.xaxis_unit = QLineEdit(self)
+        self.xaxis_name = TextEntry('Label:', self)
+        x_form_layout.addRow(self.xaxis_name)
+        self.xaxis_unit = TextEntry('Unit name:', self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.xaxis_unit, 2, 3)
+        x_form_layout.addRow(self.xaxis_unit)
 
         # X axis range
-        self.xaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_min, 2, 4)
-        self.xaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_max, 2, 5)
+        self.xaxis_min = TextEntry('Range min:', self)
+        x_form_layout.addRow(self.xaxis_min)
+        self.xaxis_max = TextEntry('Range max:', self)
+        x_form_layout.addRow(self.xaxis_max)
 
+        x_form_widget = QWidget()
+        x_form_widget.setLayout(x_form_layout)
+        x_v_layout.addWidget(x_form_widget)
+        x_v_widget = QWidget()
+        x_v_widget.setLayout(x_v_layout)
+        axis_h_layout.addWidget(x_v_widget)
+
+        y_v_layout.addWidget(TopLabel('Y:'))
         # Y axis drop down menu
-        self.yaxis_dropdown = QComboBox(self)
-        axis_box_layout.addWidget(self.yaxis_dropdown, 3, 1)
+        self.yaxis_dropdown = DropDown('Variable:', [], self)
+        y_form_layout.addRow(self.yaxis_dropdown)
 
         # Y axis titles
-        self.yaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_name, 3, 2)
-        self.yaxis_unit = QLineEdit(self)
+        self.yaxis_name = TextEntry('Label:', self)
+        y_form_layout.addRow(self.yaxis_name)
+        self.yaxis_unit = TextEntry('Unit name:', self)
         self.yaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.yaxis_unit, 3, 3)
+        y_form_layout.addRow(self.yaxis_unit)
 
         # Y axis range
-        self.yaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_min, 3, 4)
-        self.yaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_max, 3, 5)
+        self.yaxis_min = TextEntry('Range min:', self)
+        y_form_layout.addRow(self.yaxis_min)
+        self.yaxis_max = TextEntry('Range max:', self)
+        y_form_layout.addRow(self.yaxis_max)
 
+        y_form_widget = QWidget()
+        y_form_widget.setLayout(y_form_layout)
+        y_v_layout.addWidget(y_form_widget)
+        y_v_widget = QWidget()
+        y_v_widget.setLayout(y_v_layout)
+        axis_h_layout.addWidget(Spacer())
+        axis_h_layout.addWidget(y_v_widget)
+
+        z_v_layout.addWidget(TopLabel('Y2 (conditions):'))
         # Condition Y axis drop down menu
-        self.condition_yaxis_dropdown = QComboBox(self)
-        axis_box_layout.addWidget(self.condition_yaxis_dropdown, 4, 1)
+        self.condition_yaxis_dropdown = DropDown('Variable:', [], self)
+        z_form_layout.addRow(self.condition_yaxis_dropdown)
 
         # Condition Y axis titles
-        self.condition_yaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_name, 4, 2)
-        self.condition_yaxis_unit = QLineEdit(self)
+        self.condition_yaxis_name = TextEntry('Label:', self)
+        z_form_layout.addRow(self.condition_yaxis_name)
+        self.condition_yaxis_unit = TextEntry('Unit name:', self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.condition_yaxis_unit, 4, 3)
+        z_form_layout.addRow(self.condition_yaxis_unit)
 
         # Condition Y axis range
-        self.condition_yaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_min, 4, 4)
-        self.condition_yaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_max, 4, 5)
+        self.condition_yaxis_min = TextEntry('Range min:', self)
+        z_form_layout.addRow(self.condition_yaxis_min)
+        self.condition_yaxis_max = TextEntry('Range max:', self)
+        z_form_layout.addRow(self.condition_yaxis_max)
 
-        axis_box_layout.addWidget(Spacer(), 5, 6)
+        z_form_widget = QWidget()
+        z_form_widget.setLayout(z_form_layout)
+        z_v_layout.addWidget(z_form_widget)
+        z_v_widget = QWidget()
+        z_v_widget.setLayout(z_v_layout)
+        axis_h_layout.addWidget(Spacer())
+        axis_h_layout.addWidget(z_v_widget)
+        axis_h_widget = QWidget()
+        axis_h_widget.setLayout(axis_h_layout)
+        axis_v_layout.addWidget(axis_h_widget)
+        axis_v_layout.addWidget(Spacer())
 
         axis_box_widget = QWidget()
-        axis_box_widget.setLayout(axis_box_layout)
+        axis_box_widget.setLayout(axis_v_layout)
         tabs.addTab(axis_box_widget, 'Axes')
 
         # --------------- DATA CONFIGURATION
@@ -255,10 +277,10 @@ class App(QMainWindow):
         data_v_layout.addWidget(data_v_form_widget)
         data_v_layout.addWidget(Spacer())
 
+        data_h_layout.addWidget(Spacer())
         data_v_widget = QWidget()
         data_v_widget.setLayout(data_v_layout)
         data_h_layout.addWidget(data_v_widget)
-        data_h_layout.addWidget(Spacer())
 
         data_box_widget = QWidget()
         data_box_widget.setLayout(data_h_layout)
@@ -267,74 +289,85 @@ class App(QMainWindow):
         # --------------- LEGEND CONFIGURATION
 
         # Legend configuration options
-        legend_box_layout = QGridLayout()
-        legend_box_layout.setContentsMargins(5, 5, 5, 5)
-        legend_box_layout.setSpacing(5)
+        legend_h_layout = QHBoxLayout()
+        growth_form_layout = QFormLayout()
+        growth_v_layout = QVBoxLayout()
+        condition_form_layout = QFormLayout()
+        condition_v_layout = QVBoxLayout()
 
         # Legend on/off checkbox
-        legend_box_layout.addWidget(Label('Growth Legend:'), 1, 0)
-        legend_box_layout.addWidget(Label('On:'), 0, 1)
-        self.legend_toggle = QCheckBox(self)
-        legend_box_layout.addWidget(self.legend_toggle, 1, 1)
+        growth_v_layout.addWidget(TopLabel('Growth Legend:'))
+        self.legend_toggle = CheckBox('Legend on', self)
+        growth_form_layout.addRow(' ', self.legend_toggle)
 
         # Legend options dropdown menu (editable)
-        legend_box_layout.addWidget(Label('Titles:'), 0, 2)
-        self.legend_names = QComboBox(self)
-        self.legend_names.setEditable(True)
-        self.legend_names.setInsertPolicy(2)
+        self.legend_names = DropDown('Labels:', [], self)
+        self.legend_names.entry.setEditable(True)
+        self.legend_names.entry.setInsertPolicy(2)
         self.legend_names.setToolTip('Edit names by changing text '
                                      'and pressing return')
-        legend_box_layout.addWidget(self.legend_names, 1, 2, 1, 2)
+        growth_form_layout.addRow(self.legend_names)
 
         # Heading for legend
-        legend_box_layout.addWidget(Label('Header:'), 0, 4)
-        self.legend_title = QLineEdit(self)
-        legend_box_layout.addWidget(self.legend_title, 1, 4)
+        self.legend_title = TextEntry('Heading:', self)
+        growth_form_layout.addRow(self.legend_title)
 
         # Extra information from header dropdown
-        legend_box_layout.addWidget(Label('Extra info:'), 0, 5)
-        self.extra_info = QComboBox(self)
-        self.extra_info.addItems(config.info_options)
+        self.extra_info = DropDown('Extra text:', config.info_options, self)
         self.extra_info.setToolTip('Show extra information from '
                                    'the file in the legend')
-        legend_box_layout.addWidget(self.extra_info, 1, 5)
+        growth_form_layout.addRow(self.extra_info)
 
         # Checkbox to only show extra info
-        legend_box_layout.addWidget(Label('Only extra info:'), 0, 6)
-        self.only_extra = QCheckBox(self)
-        legend_box_layout.addWidget(self.only_extra, 1, 6)
+        self.only_extra = CheckBox('Remove labels', self)
+        growth_form_layout.addRow(' ', self.only_extra)
+
+        growth_form_widget = QWidget()
+        growth_form_widget.setLayout(growth_form_layout)
+        growth_v_layout.addWidget(growth_form_widget)
+        growth_v_layout.addWidget(Spacer())
+        growth_v_widget = QWidget()
+        growth_v_widget.setLayout(growth_v_layout)
+        legend_h_layout.addWidget(growth_v_widget)
 
         # Condition legend configuration
-        legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
-        self.condition_legend_toggle = QCheckBox(self)
-        legend_box_layout.addWidget(self.condition_legend_toggle, 2, 1)
+        condition_v_layout.addWidget(TopLabel('Condition legend:'))
+        self.condition_legend_toggle = CheckBox('Legend on', self)
+        condition_form_layout.addRow(' ', self.condition_legend_toggle)
 
         # Condition legend options dropdown menu
-        self.condition_legend_names = QComboBox(self)
-        self.condition_legend_names.setEditable(True)
-        self.condition_legend_names.setInsertPolicy(2)
+        self.condition_legend_names = DropDown('Labels:', [], self)
+        self.condition_legend_names.entry.setEditable(True)
+        self.condition_legend_names.entry.setInsertPolicy(2)
         self.condition_legend_names.setToolTip('Edit names by changing text '
                                                'and pressing return')
-        legend_box_layout.addWidget(self.condition_legend_names, 2, 2, 1, 2)
+        condition_form_layout.addRow(self.condition_legend_names)
 
         # Heading for condition legend
-        self.condition_legend_title = QLineEdit(self)
-        legend_box_layout.addWidget(self.condition_legend_title, 2, 4)
+        self.condition_legend_title = TextEntry('Heading:', self)
+        condition_form_layout.addRow(self.condition_legend_title)
 
-        self.condition_extra_info = QComboBox(self)
-        self.condition_extra_info.addItems(config.info_options)
+        self.condition_extra_info = DropDown('Extra text:', config.info_options, self)
         self.condition_extra_info.setToolTip('Show extra information from '
                                              'the file in the legend')
-        legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
+        condition_form_layout.addRow(self.condition_extra_info)
 
         # Checkbox to only show extra info
-        self.condition_only_extra = QCheckBox(self)
-        legend_box_layout.addWidget(self.condition_only_extra, 2, 6)
+        self.condition_only_extra = CheckBox('Remove labels', self)
+        condition_form_layout.addRow(' ', self.condition_only_extra)
 
-        legend_box_layout.addWidget(Spacer(), 3, 7)
+        legend_h_layout.addWidget(Spacer())
+
+        condition_form_widget = QWidget()
+        condition_form_widget.setLayout(condition_form_layout)
+        condition_v_layout.addWidget(condition_form_widget)
+        condition_v_layout.addWidget(Spacer())
+        condition_v_widget = QWidget()
+        condition_v_widget.setLayout(condition_v_layout)
+        legend_h_layout.addWidget(condition_v_widget)
 
         legend_box_widget = QWidget()
-        legend_box_widget.setLayout(legend_box_layout)
+        legend_box_widget.setLayout(legend_h_layout)
         tabs.addTab(legend_box_widget, 'Legend')
 
         # --------------- STYLE CONFIGURATION

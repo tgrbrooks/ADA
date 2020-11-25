@@ -72,7 +72,7 @@ class DropDown(QWidget):
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
         self.entry.setStyleSheet(config.spin_box_style)
-        self.entry.setFixedWidth(200)
+        self.entry.setFixedWidth(170)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -82,6 +82,18 @@ class DropDown(QWidget):
 
     def currentText(self):
         return self.entry.currentText()
+
+    def clear(self):
+        return self.entry.clear()
+
+    def addItem(self, item):
+        return self.entry.addItem(item)
+
+    def itemText(self, index):
+        return self.entry.itemText(index)
+
+    def count(self):
+        return self.entry.count()
 
 class CheckBox(QWidget):
     def __init__(self, text, parent=None, *args, **kwargs):
