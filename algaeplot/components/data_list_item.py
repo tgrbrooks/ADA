@@ -69,3 +69,20 @@ class ConditionListItem():
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
+
+class DelListItem():
+
+    def __init__(self, text):
+        self.item = QListWidgetItem()
+        self.widget = QWidget()
+        self.button = DeleteButton()
+        label = QLabel(text)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.button)
+        layout.addWidget(label)
+        layout.addStretch()
+        layout.setSizeConstraint(QLayout.SetFixedSize)
+
+        self.widget.setLayout(layout)
+        self.item.setSizeHint(self.widget.sizeHint())

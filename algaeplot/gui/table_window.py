@@ -11,6 +11,8 @@ from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_save_file_name
 from algaeplot.components.table_list_item import TableListItem
 from algaeplot.components.button import Button
+from algaeplot.components.list import List
+from algaeplot.components.user_input import DropDown
 from algaeplot.plotter.functions import (process_data, average_data,
     time_average)
 
@@ -23,7 +25,7 @@ class TableWindow(QMainWindow):
     def __init__(self, parent=None):
         super(TableWindow, self).__init__(parent)
         self.title = 'Create Table'
-        self.width = 600
+        self.width = 500
         self.height = 330
         self.parent = parent
         self.rows = []
@@ -41,8 +43,7 @@ class TableWindow(QMainWindow):
         create_layout.setSpacing(5)
 
         # List of row options
-        self.row_option = QComboBox(self)
-        self.row_option.addItems(config.table_row_options)
+        self.row_option = DropDown('Row:', config.table_row_options, self)
         create_layout.addWidget(self.row_option, 0, 0)
 
         # Button to add a new row
@@ -51,15 +52,8 @@ class TableWindow(QMainWindow):
         create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
-        row_layout = QVBoxLayout()
         self.row_list = QListWidget(self)
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        row_widget = QWidget()
-        row_widget.setLayout(row_layout)
-        row_layout.addWidget(self.row_list)
-        scroll_area.setWidget(row_widget)
-        create_layout.addWidget(scroll_area, 1, 0, 2, 2)
+        create_layout.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table
         make_button = Button("Create Table", self)

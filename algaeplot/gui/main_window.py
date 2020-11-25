@@ -63,6 +63,7 @@ class App(QMainWindow):
         self.plot = PlotCanvas(self, width=10, height=4)
         shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
         self.plot.setGraphicsEffect(shadow)
+        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_layout.addWidget(self.plot, 0, 0, 16, 25)
 
         # Saving options
@@ -105,14 +106,14 @@ class App(QMainWindow):
         plot_layout.addWidget(data_button, 0, 25, 2, 7)
 
         # List of data in a scrollable area
-        self.data_list = List(self)
+        self.data_list = QListWidget(self)
         plot_layout.addWidget(self.data_list, 2, 25, 6, 7)
 
         # Add condition data text
         condition_data_text = TopLabel('Condition Data:', True)
         plot_layout.addWidget(condition_data_text, 8, 25, 1, 7)
         # List of condition data
-        self.condition_data_list = List(self)
+        self.condition_data_list = QListWidget(self)
         plot_layout.addWidget(self.condition_data_list, 9, 25, 6, 7)
 
         # Plot button

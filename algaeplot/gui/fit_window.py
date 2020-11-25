@@ -1,12 +1,13 @@
 import csv
 import numpy as np
 
-from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
+from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QLineEdit)
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.components.label import Label
 from algaeplot.components.button import Button
+from algaeplot.components.user_input import DropDown, TextEntry
 from algaeplot.type_functions import isfloat
 import algaeplot.configuration as config
 
@@ -28,36 +29,29 @@ class FitWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        fit_layout = QGridLayout()
+        fit_layout = QVBoxLayout()
         fit_layout.setContentsMargins(5, 5, 5, 5)
         fit_layout.setSpacing(5)
 
         # List of row options
-        self.curve_option = QComboBox(self)
+        self.curve_option = DropDown('Data:', [], self)
         for data in self.parent.data.data_files:
             self.curve_option.addItem(data.label)
-        fit_layout.addWidget(self.curve_option, 0, 0, 1, 2)
+        fit_layout.addWidget(self.curve_option)
 
-        self.fit_option = QComboBox(self)
-        self.fit_option.addItem("Flat line")
-        self.fit_option.addItem("Linear")
-        self.fit_option.addItem("Quadratic")
-        self.fit_option.addItem("Exponential")
-        fit_layout.addWidget(self.fit_option, 1, 0, 1, 2)
+        self.fit_option = DropDown('Fit:', config.fit_options, self)
+        fit_layout.addWidget(self.fit_option)
 
-        fit_layout.addWidget(Label('From:'), 2, 0)
-        fit_layout.addWidget(Label('To:'), 2, 1)
+        self.fit_from = TextEntry('From:', self)
+        fit_layout.addWidget(self.fit_from)
 
-        self.fit_from = QLineEdit(self)
-        fit_layout.addWidget(self.fit_from, 3, 0)
-
-        self.fit_to = QLineEdit(self)
-        fit_layout.addWidget(self.fit_to, 3, 1)
+        self.fit_to = TextEntry('To:', self)
+        fit_layout.addWidget(self.fit_to)
 
         # Button to add a new row
         fit_button = Button("Fit", self)
         fit_button.clicked.connect(self.fit)
-        fit_layout.addWidget(fit_button, 4, 0, 1, 2)
+        fit_layout.addWidget(fit_button)
 
         widget = QWidget()
         widget.setLayout(fit_layout)

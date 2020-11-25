@@ -1,12 +1,13 @@
 import csv
 import numpy as np
 
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_save_directory_name
 from algaeplot.components.button import Button
+from algaeplot.components.user_input import CheckBox
 
 import algaeplot.configuration as config
 
@@ -27,25 +28,19 @@ class ExportWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
-        rename_text = QLabel('Rename with profile:')
-        rename_text.setStyleSheet(config.default_font_bold)
-        layout.addWidget(rename_text, 0, 0)
-        self.rename = QCheckBox(self)
-        layout.addWidget(self.rename, 0, 1)
+        self.rename = CheckBox('Rename with profile', self)
+        layout.addWidget(self.rename)
 
-        conditions_text = QLabel('Include conditions:')
-        conditions_text.setStyleSheet(config.default_font_bold)
-        layout.addWidget(conditions_text, 1, 0)
-        self.conditions = QCheckBox(self)
-        layout.addWidget(self.conditions, 1, 1)
+        self.conditions = CheckBox('Include conditions', self)
+        layout.addWidget(self.conditions)
 
         export_button = Button("Export", self)
         export_button.clicked.connect(self.export)
-        layout.addWidget(export_button, 2, 0, 1, 2)
+        layout.addWidget(export_button)
 
         widget = QWidget()
         widget.setLayout(layout)

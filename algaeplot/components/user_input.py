@@ -72,7 +72,7 @@ class DropDown(QWidget):
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
         self.entry.setStyleSheet(config.spin_box_style)
-        self.entry.setFixedWidth(170)
+        self.entry.setFixedWidth(190)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -88,6 +88,9 @@ class DropDown(QWidget):
 
     def addItem(self, item):
         return self.entry.addItem(item)
+
+    def addItems(self, items):
+        return self.entry.addItem(items)
 
     def itemText(self, index):
         return self.entry.itemText(index)

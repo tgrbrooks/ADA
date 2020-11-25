@@ -1,13 +1,18 @@
 import csv
 
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
-    QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit)
+    QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit, QVBoxLayout)
+from PyQt5.QtCore import QPoint, Qt
 
 from algaeplot.gui.error_window import ErrorWindow
 from algaeplot.gui.file_handler import get_file_names
 from algaeplot.type_functions import isint
 from algaeplot.components.label import Label
-from algaeplot.components.button import Button
+from algaeplot.components.list import List
+from algaeplot.components.button import Button, BigButton
+from algaeplot.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
+from algaeplot.components.spacer import Spacer
+from algaeplot.components.data_list_item import DelListItem
 
 from algaeplot.reader.read_algem_ht24 import (read_algem_ht24,
     read_algem_ht24_details)
@@ -23,13 +28,14 @@ class LoadWindow(QMainWindow):
     def __init__(self, parent, data, condition, row=-1):
         super(LoadWindow, self).__init__(parent)
         self.title = 'Load Files'
-        self.width = 400
+        self.width = 350
         self.height = 150
         self.parent = parent
         self.data = data
         self.condition = condition
-        self.details = None
-        self.condition_files = None
+        self.details = []
+        self.condition_files = []
+        self.files = []
         self.row = row
         self.initUI()
 
@@ -38,14 +44,12 @@ class LoadWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
         # Dropdown list of available file types
-        file_text = Label('File type:', True)
-        layout.addWidget(file_text, 0, 0, 1, 1)
-        self.file_type = QComboBox(self)
+        self.file_type = DropDown('File type:', [], self)
         self.file_type.addItem('Algem Pro')
         # Can't add HT24 data as replicate
         if self.row == -1:
@@ -53,65 +57,57 @@ class LoadWindow(QMainWindow):
         self.file_type.addItem('IP T-Iso')
         self.file_type.addItem('PSI')
         self.file_type.addItem('AlgaePlotter')
-        layout.addWidget(self.file_type, 0, 1, 1, 1)
+        layout.addWidget(self.file_type)
 
         # Button for selecting files to import
         select_file_button = Button("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
         select_file_button.clicked.connect(self.update_options)
-        layout.addWidget(select_file_button, 1, 0, 1, 1)
+        layout.addWidget(select_file_button)
 
         # List of files to import
         self.file_list = QListWidget(self)
         self.file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.file_list, 1, 1, 1, 1)
+        layout.addWidget(self.file_list)
 
         # Button and list for Algem conditions files
         self.select_conditions_button = Button("Select conditions file(s)",
                                                self)
         self.select_conditions_button.clicked.connect(self.select_conditions)
-        layout.addWidget(self.select_conditions_button, 2, 0, 1, 1)
+        layout.addWidget(self.select_conditions_button)
         self.select_conditions_button.hide()
 
         self.conditions_file_list = QListWidget(self)
         self.conditions_file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.conditions_file_list, 2, 1, 1, 1)
+        layout.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
-
-        # Option to downsample conditions data
-        self.downsample_text = Label('Downsample conditions:', True)
-        layout.addWidget(self.downsample_text, 3, 0, 1, 1)
-        self.downsample_text.hide()
-
-        self.downsample = QLineEdit(self)
-        self.downsample.setToolTip('Only read in every X data points')
-        layout.addWidget(self.downsample, 3, 1, 1, 1)
-        self.downsample.hide()
 
         # Button and list for HT24 details file
         self.select_details_button = Button("Select details file", self)
         self.select_details_button.clicked.connect(self.select_details)
-        layout.addWidget(self.select_details_button, 4, 0, 1, 1)
+        layout.addWidget(self.select_details_button)
         self.select_details_button.hide()
 
         self.details_file_list = QListWidget(self)
         self.details_file_list.setStyleSheet(config.default_font_bold)
-        layout.addWidget(self.details_file_list, 4, 1, 1, 1)
+        layout.addWidget(self.details_file_list)
         self.details_file_list.hide()
 
-        # Checkbox for merging replicates in HT24 data
-        self.merge_replicates_text = Label('Merge replicates')
-        layout.addWidget(self.merge_replicates_text, 5, 0, 1, 1)
-        self.merge_replicates_text.hide()
+        # Option to downsample conditions data
+        self.downsample = TextEntry('Downsample conditions:', self)
+        self.downsample.setToolTip('Only read in every X data points')
+        layout.addWidget(self.downsample)
+        self.downsample.hide()
 
-        self.merge_replicates = QCheckBox(self)
-        layout.addWidget(self.merge_replicates, 5, 1, 1, 1)
+        # Checkbox for merging replicates in HT24 data
+        self.merge_replicates = CheckBox('Merge replicates', self)
+        layout.addWidget(self.merge_replicates)
         self.merge_replicates.hide()
 
         # Button to load the data
         load_button = Button("Load", self)
         load_button.clicked.connect(self.load)
-        layout.addWidget(load_button, 6, 0, 1, 2)
+        layout.addWidget(load_button)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -121,30 +117,47 @@ class LoadWindow(QMainWindow):
         file_type = self.file_type.currentText()
         self.select_conditions_button.hide()
         self.conditions_file_list.hide()
-        self.downsample_text.hide()
         self.downsample.hide()
         self.select_details_button.hide()
         self.details_file_list.hide()
-        self.merge_replicates_text.hide()
         self.merge_replicates.hide()
         # Show details file options for the Algem HT24
         if file_type == 'Algem HT24':
             self.select_details_button.show()
             self.details_file_list.show()
-            self.merge_replicates_text.show()
             self.merge_replicates.show()
         # Allow condition files to be added if not dealing with replicates
         if (file_type == 'Algem HT24' or file_type == 'Algem Pro') and self.row == -1:
             self.select_conditions_button.show()
             self.conditions_file_list.show()
-            self.downsample_text.show()
             self.downsample.show()
+
+    # Function: Remove file from list of data
+    def remove_item(self, file_list, display_list):
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = display_list.viewport().mapFromGlobal(gp)
+        row = display_list.row(display_list.itemAt(lp))
+        for i, file_name in enumerate(file_list):
+            if i != row:
+                continue
+            del file_list[i]
+        self.fill_list(file_list, display_list)
+
+    def fill_list(self, file_list, display_list):
+        display_list.clear()
+        for i, file_name in enumerate(file_list):
+            list_item = DelListItem(file_name.split('/')[-1])
+            list_item.button.clicked.connect(
+                lambda: self.remove_item(file_list, display_list)
+            )
+            display_list.addItem(list_item.item)
+            display_list.setItemWidget(list_item.item, list_item.widget)
 
     def select_data(self):
         try:
-            self.files = get_file_names()
-            for file_name in self.files:
-                self.file_list.addItem(file_name.split('/')[-1])
+            self.files = self.files + get_file_names()
+            self.fill_list(self.files, self.file_list)
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -153,8 +166,7 @@ class LoadWindow(QMainWindow):
     def select_details(self):
         try:
             self.details = get_file_names()
-            for file_name in self.details:
-                self.details_file_list.addItem(file_name.split('/')[-1])
+            self.fill_list(self.details, self.details_file_list)
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -163,8 +175,7 @@ class LoadWindow(QMainWindow):
     def select_conditions(self):
         try:
             self.condition_files = get_file_names()
-            for file_name in self.condition_files:
-                self.conditions_file_list.addItem(file_name.split('/')[-1])
+            self.fill_list(self.condition_files, self.conditions_file_list)
         except Exception as e:
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
@@ -192,7 +203,7 @@ class LoadWindow(QMainWindow):
                     self.data.add_replicate(algem_data, self.row)
 
             # Read in files from Algem HT24 if details file is provided
-            elif file_type == 'Algem HT24' and not self.details:
+            elif file_type == 'Algem HT24' and len(self.details) == 0:
                 algem_data_list = read_algem_ht24(file_name)
                 for algem_data in algem_data_list:
                     if self.row == -1:
@@ -244,7 +255,7 @@ class LoadWindow(QMainWindow):
                 else:
                     self.data.add_replicate(csv_data, self.row)
         
-        if self.condition_files is not None:
+        if len(self.condition_files) > 0:
             # Set downsampling if option selected
             downsample = -1
             if isint(self.downsample.text()):
@@ -262,7 +273,7 @@ class LoadWindow(QMainWindow):
                     self.condition.add_data(algem_conditions)
 
                 # Read in files from Algem HT24 if details file is provided
-                elif file_type == 'Algem HT24' and not self.details:
+                elif file_type == 'Algem HT24' and len(self.details) == 0:
                     algem_conditions_list = read_algem_ht24(file_name,
                                                             downsample)
                     for algem_conditions in algem_conditions_list:

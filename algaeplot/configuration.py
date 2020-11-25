@@ -97,6 +97,7 @@ font_options = ["sans-serif", "serif", "cursive", "fantasy", "monospace"]
 table_row_options = ["profile", "reactor", "gradient", "time to",
                      "average of condition", "condition at time",
                      "fit parameter"]
+fit_options = ["flat line", "linear", "quadratic", "exponential"]
 
 # Plotting default values
 
