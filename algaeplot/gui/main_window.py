@@ -34,13 +34,13 @@ class App(QMainWindow):
         # Default dimensions
         self.left = 10
         self.top = 10
-        self.width = 1120
-        self.height = 630
+        self.width = 960
+        self.height = 600
         # Container for data
         self.data = DataHolder()
         # Container for condition data
         self.condition_data = DataHolder()
-        #self.setStyleSheet(config.main_background)
+        self.setStyleSheet(config.main_background)
         self.initUI()
 
     def initUI(self):
@@ -49,6 +49,7 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         tabs = QTabWidget()
+        tabs.setStyleSheet(config.tab_style)
 
         # ---------------------------------------------------------------------
         #                           PLOTTING TAB
@@ -64,30 +65,30 @@ class App(QMainWindow):
         shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_layout.addWidget(self.plot, 0, 0, 16, 25)
+        plot_layout.addWidget(self.plot, 0, 0, 5, 5)
 
         # Saving options
         save_button = Button('Save', self, 'Save the figure')
         save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
-        plot_layout.addWidget(save_button, 16, 0, 2, 5)
+        plot_layout.addWidget(save_button, 5, 0)
 
         # Export options
         export_button = Button('Export', self,
                                'Export the data to CSV')
         export_button.clicked.connect(self.export_files)
-        plot_layout.addWidget(export_button, 16, 5, 2, 5)
+        plot_layout.addWidget(export_button, 5, 1)
 
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
         measure_button.clicked.connect(self.update_plot)
-        plot_layout.addWidget(measure_button, 16, 10, 2, 5)
+        plot_layout.addWidget(measure_button, 5, 2)
 
         # Fit curves
         fit_button = Button('Fit', self, 'Fit the growth curves')
         fit_button.clicked.connect(self.fit_curve)
-        plot_layout.addWidget(fit_button, 16, 15, 2, 5)
+        plot_layout.addWidget(fit_button, 5, 3)
 
         # Table output button
         table_button = Button('To Table', self, 
@@ -95,34 +96,44 @@ class App(QMainWindow):
                               '\nConfigure in options tab')
         table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
-        plot_layout.addWidget(table_button, 16, 20, 2, 5)
+        plot_layout.addWidget(table_button, 5, 4)
 
+        data_entry_layout = QVBoxLayout()
         # Add data button
         data_button = Button('Add Data', self,
                              'Import data for plotting')
         data_button.clicked.connect(self.update_config)
         data_button.clicked.connect(self.open_data_files)
         data_button.clicked.connect(self.update_data_list)
-        plot_layout.addWidget(data_button, 0, 25, 2, 7)
+        data_entry_layout.addWidget(data_button)
 
         # List of data in a scrollable area
-        self.data_list = QListWidget(self)
-        plot_layout.addWidget(self.data_list, 2, 25, 6, 7)
+        self.data_list = List(self)
+        self.data_list.setSizePolicy(QSizePolicy.Expanding,
+                                     QSizePolicy.Expanding)
+        data_entry_layout.addWidget(self.data_list)
 
         # Add condition data text
         condition_data_text = TopLabel('Condition Data:', True)
-        plot_layout.addWidget(condition_data_text, 8, 25, 1, 7)
+        data_entry_layout.addWidget(condition_data_text)
         # List of condition data
-        self.condition_data_list = QListWidget(self)
-        plot_layout.addWidget(self.condition_data_list, 9, 25, 6, 7)
+        self.condition_data_list = List(self)
+        self.condition_data_list.setSizePolicy(QSizePolicy.Expanding,
+                                               QSizePolicy.Expanding)
+        data_entry_layout.addWidget(self.condition_data_list)
 
         # Plot button
         plot_button = BigButton('Plot!', self, 'Plot the data!')
         plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
-        plot_layout.addWidget(plot_button, 15, 25, 3, 7)
+        data_entry_layout.addWidget(plot_button)
+
+        data_entry_widget = QWidget()
+        data_entry_widget.setLayout(data_entry_layout)
+        plot_layout.addWidget(data_entry_widget, 0, 5, 6, 1)
 
         plot_widget = QWidget()
+        plot_widget.setStyleSheet(config.white_background)
         plot_widget.setLayout(plot_layout)
         tabs.addTab(plot_widget, 'Plotting')
 
@@ -227,6 +238,7 @@ class App(QMainWindow):
         axis_v_layout.addWidget(Spacer())
 
         axis_box_widget = QWidget()
+        axis_box_widget.setStyleSheet(config.white_background)
         axis_box_widget.setLayout(axis_v_layout)
         tabs.addTab(axis_box_widget, 'Axes')
 
@@ -284,6 +296,7 @@ class App(QMainWindow):
         data_h_layout.addWidget(data_v_widget)
 
         data_box_widget = QWidget()
+        data_box_widget.setStyleSheet(config.white_background)
         data_box_widget.setLayout(data_h_layout)
         tabs.addTab(data_box_widget, 'Data')
 
@@ -357,8 +370,6 @@ class App(QMainWindow):
         self.condition_only_extra = CheckBox('Remove labels', self)
         condition_form_layout.addRow(' ', self.condition_only_extra)
 
-        legend_h_layout.addWidget(Spacer())
-
         condition_form_widget = QWidget()
         condition_form_widget.setLayout(condition_form_layout)
         condition_v_layout.addWidget(condition_form_widget)
@@ -366,14 +377,17 @@ class App(QMainWindow):
         condition_v_widget = QWidget()
         condition_v_widget.setLayout(condition_v_layout)
         legend_h_layout.addWidget(condition_v_widget)
+        legend_h_layout.addWidget(Spacer())
 
         legend_box_widget = QWidget()
+        legend_box_widget.setStyleSheet(config.white_background)
         legend_box_widget.setLayout(legend_h_layout)
         tabs.addTab(legend_box_widget, 'Legend')
 
         # --------------- STYLE CONFIGURATION
 
         # Style configuration
+        style_h_layout = QHBoxLayout()
         style_box_layout = QFormLayout()
 
         # Plot style dropdown menu
@@ -410,7 +424,13 @@ class App(QMainWindow):
 
         style_box_widget = QWidget()
         style_box_widget.setLayout(style_box_layout)
-        tabs.addTab(style_box_widget, 'Style')
+
+        style_h_layout.addWidget(style_box_widget)
+        style_h_layout.addWidget(Spacer())
+        style_h_widget = QWidget()
+        style_h_widget.setLayout(style_h_layout)
+        style_h_widget.setStyleSheet(config.white_background)
+        tabs.addTab(style_h_widget, 'Style')
 
         # --------------- STATS CONFIGURATION
 
@@ -426,6 +446,7 @@ class App(QMainWindow):
         stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
         stats_box_widget = QWidget()
+        stats_box_widget.setStyleSheet(config.white_background)
         stats_box_widget.setLayout(stats_box_layout)
         tabs.addTab(stats_box_widget, 'Stats')
 

@@ -16,6 +16,7 @@ class DataListItem():
         add_button.clicked.connect(parent.add_to_item)
         add_button.clicked.connect(parent.update_data_list)
         label = QLabel(text)
+        label.setStyleSheet(config.default_font_bold)
 
         hwidget = QWidget()
         layout = QHBoxLayout()
@@ -36,9 +37,11 @@ class DataListItem():
                 sub_del_button.clicked.connect(
                     lambda: parent.remove_replicate(j)
                 )
-                hlayout.addWidget(QLabel(
+                inner_label = QLabel(
                     parent.data.replicate_files[index][j].name.split('/')[-1]
-                ))
+                )
+                inner_label.setStyleSheet(config.small_font)
+                hlayout.addWidget(inner_label)
                 hlayout.addStretch()
                 hlayout.setSizeConstraint(QLayout.SetFixedSize)
                 subwidget = QWidget()

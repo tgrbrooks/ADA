@@ -31,8 +31,8 @@ class AddButton(QPushButton):
         self.setStyleSheet(config.add_button_style)
         shadow = QGraphicsDropShadowEffect(blurRadius=3, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
-        self.setFixedHeight(18)
-        self.setFixedWidth(18)
+        self.setFixedHeight(16)
+        self.setFixedWidth(16)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
 class DeleteButton(QPushButton):
@@ -41,6 +41,6 @@ class DeleteButton(QPushButton):
         self.setStyleSheet(config.delete_button_style)
         shadow = QGraphicsDropShadowEffect(blurRadius=3, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
-        self.setFixedHeight(18)
-        self.setFixedWidth(18)
+        self.setFixedHeight(16)
+        self.setFixedWidth(16)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)

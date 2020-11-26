@@ -1,9 +1,10 @@
 from matplotlib.colors import is_color_like
 
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QComboBox
 
 from algaeplot.components.button import Button
+from algaeplot.components.user_input import DropDown, TextEntry
 import algaeplot.configuration as config
 
 
@@ -24,29 +25,23 @@ class LineStyleWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
-        style_text = QLabel('Line style:')
-        style_text.setStyleSheet(config.default_font_bold)
-        layout.addWidget(style_text, 0, 0)
-        self.line_style = QComboBox(self)
+        self.line_style = DropDown('Line style:', [], self)
         self.line_style.addItem('solid')
         self.line_style.addItem('dashed')
         self.line_style.addItem('dashdot')
         self.line_style.addItem('dotted')
-        layout.addWidget(self.line_style, 0, 1)
+        layout.addWidget(self.line_style)
 
-        colour_text = QLabel('Line colour:')
-        colour_text.setStyleSheet(config.default_font_bold)
-        layout.addWidget(colour_text, 1, 0)
-        self.line_colour = QLineEdit(self)
-        layout.addWidget(self.line_colour, 1, 1)
+        self.line_colour = TextEntry('Line colour:', self)
+        layout.addWidget(self.line_colour)
 
         apply_button = Button("Apply", self)
         apply_button.clicked.connect(self.apply_changes)
-        layout.addWidget(apply_button, 2, 0, 1, 2)
+        layout.addWidget(apply_button)
 
         widget = QWidget()
         widget.setLayout(layout)

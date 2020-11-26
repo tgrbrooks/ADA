@@ -52,7 +52,7 @@ class TableWindow(QMainWindow):
         create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
-        self.row_list = QListWidget(self)
+        self.row_list = List(self)
         create_layout.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table

@@ -66,7 +66,7 @@ class LoadWindow(QMainWindow):
         layout.addWidget(select_file_button)
 
         # List of files to import
-        self.file_list = QListWidget(self)
+        self.file_list = List(self)
         self.file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.file_list)
 
@@ -77,7 +77,7 @@ class LoadWindow(QMainWindow):
         layout.addWidget(self.select_conditions_button)
         self.select_conditions_button.hide()
 
-        self.conditions_file_list = QListWidget(self)
+        self.conditions_file_list = List(self)
         self.conditions_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
@@ -88,7 +88,7 @@ class LoadWindow(QMainWindow):
         layout.addWidget(self.select_details_button)
         self.select_details_button.hide()
 
-        self.details_file_list = QListWidget(self)
+        self.details_file_list = List(self)
         self.details_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.details_file_list)
         self.details_file_list.hide()

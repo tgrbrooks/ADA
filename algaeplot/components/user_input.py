@@ -20,7 +20,6 @@ class TextEntry(QWidget):
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
 
@@ -45,7 +44,7 @@ class SpinBox(QWidget):
         self.entry.setMinimum(min_val)
         self.entry.setMaximum(max_val)
         self.entry.setSingleStep(1)
-        self.entry.setStyleSheet(config.spin_box_style)
+        self.entry.setStyleSheet(config.spinbox_style)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -71,12 +70,10 @@ class DropDown(QWidget):
 
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
-        self.entry.setStyleSheet(config.spin_box_style)
-        self.entry.setFixedWidth(190)
+        self.entry.setStyleSheet(config.dropdown_style)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
 
@@ -111,7 +108,6 @@ class CheckBox(QWidget):
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
         self.setGraphicsEffect(shadow)
 
