@@ -3,6 +3,7 @@
 # App style/options
 
 main_background = 'QMainWindow {background-color: white;}'
+error_background = 'QMainWindow {background-color: #f8d7da;}'
 white_background = 'background-color: white;'
 
 tab_style = """
@@ -150,6 +151,10 @@ big_button_font = big_font +\
                   'color: white;'
 
 
+error_font = 'font-size: 14pt;\
+              font-weight: bold;\
+              font-family: SansSerif;\
+              color: #721c25;'
 default_label_font_bold = default_font +\
                        'color: #1e8235;\
                         font-weight: bold;'

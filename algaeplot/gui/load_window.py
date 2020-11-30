@@ -106,7 +106,7 @@ class LoadWindow(QMainWindow):
 
         # Button to load the data
         load_button = Button("Load", self)
-        load_button.clicked.connect(self.load)
+        load_button.clicked.connect(self.load_handler)
         layout.addWidget(load_button)
 
         widget = QWidget()
@@ -181,6 +181,13 @@ class LoadWindow(QMainWindow):
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
+    def load_handler(self):
+        try:
+            self.load()
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
 
     def load(self):
         file_type = self.file_type.currentText()
