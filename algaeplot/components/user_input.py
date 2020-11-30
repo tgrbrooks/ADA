@@ -71,6 +71,7 @@ class DropDown(QWidget):
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
         self.entry.setStyleSheet(config.dropdown_style)
+        self.entry.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)

@@ -32,3 +32,12 @@ class LeftLabel(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(text)
         self.setLayout(layout)
+
+class RoundLabel(QWidget):
+    def __init__(self, text, bold=False, *args, **kwargs):
+        super(RoundLabel, self).__init__(*args, **kwargs)
+        text = QLabel(text)
+        text.setStyleSheet(config.round_label_style)
+        layout = QVBoxLayout()
+        layout.addWidget(text)
+        self.setLayout(layout)

@@ -290,10 +290,10 @@ class App(QMainWindow):
         data_v_layout.addWidget(data_v_form_widget)
         data_v_layout.addWidget(Spacer())
 
-        data_h_layout.addWidget(Spacer())
         data_v_widget = QWidget()
         data_v_widget.setLayout(data_v_layout)
         data_h_layout.addWidget(data_v_widget)
+        data_h_layout.addWidget(Spacer())
 
         data_box_widget = QWidget()
         data_box_widget.setStyleSheet(config.white_background)

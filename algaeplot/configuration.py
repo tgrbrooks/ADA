@@ -13,7 +13,7 @@ QTabWidget::pane {
 
 QTabBar::tab {
   background: #28a745; 
-  padding: 8px;
+  padding: 4px 8px 4px 8px;
   color: white;
 } 
 
@@ -64,6 +64,20 @@ QComboBox::drop-down {
     border-left-style: solid;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
+}
+QComboBox:!editable, QComboBox::drop-down:editable {
+    color: #1e8235;
+    background: white;
+    selection-background-color: #1e8235;
+    selection-color: white;
+}
+
+/* QComboBox gets the "on" state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    color: #1e8235;
+    background: white;
+    selection-background-color: #1e8235;
+    selection-color: white;
 }
 QComboBox::down-arrow {
     width: 5px;

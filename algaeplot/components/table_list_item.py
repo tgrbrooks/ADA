@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QLayout
-from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QLineEdit, QComboBox
+from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
+    QPushButton, QLabel, QWidget, QLineEdit, QComboBox, QSizePolicy)
 
 from algaeplot.components.button import DeleteButton
-from algaeplot.components.label import Label
+from algaeplot.components.label import Label, RoundLabel
 from algaeplot.components.user_input import DropDown, TextEntry
 import algaeplot.configuration as config
 
@@ -17,6 +17,10 @@ class TableListItem():
         # Horizontal box layout
         layout = QHBoxLayout()
 
+        spacer = QWidget()
+        spacer.setFixedWidth(10)
+        layout.addWidget(spacer)
+
         # Add a delete button
         del_button = DeleteButton()
         del_button.clicked.connect(parent.remove_item)
@@ -24,10 +28,10 @@ class TableListItem():
 
         # Add a label with row type
         if(text == 'profile'):
-            layout.addWidget(Label('Profile'))
+            layout.addWidget(RoundLabel('Profile'))
 
         if(text == 'reactor'):
-            layout.addWidget(Label('Reactor'))
+            layout.addWidget(RoundLabel('Reactor'))
 
         # Add other options based on type
         # Gradient needs a start and end measurement point in Y
@@ -81,6 +85,8 @@ class TableListItem():
             self.fit.addItem('y = p1*x + p0')
             self.fit.addItem('y = p2*x^2 + p1*x + p0')
             self.fit.addItem('y = p0*exp(p1*x)')
+            self.fit.entry.setFixedWidth(220)
+            self.fit.entry.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             layout.addWidget(self.fit)
             self.data = DropDown('Data:', [], self.widget)
             if len(parent.parent.data.data_files) > 0:
@@ -91,6 +97,8 @@ class TableListItem():
             self.param.addItem('p0')
             self.param.addItem('p1')
             self.param.addItem('p2')
+            self.param.entry.setFixedWidth(75)
+            self.param.entry.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             layout.addWidget(self.param)
             self.fit_from = TextEntry('From:', self.widget)
             layout.addWidget(self.fit_from)

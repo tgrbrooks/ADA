@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QScrollArea, QListWidget,
                              QVBoxLayout, QTabWidget, QTableWidget,
-                             QTableWidgetItem)
+                             QTableWidgetItem, QSizePolicy)
 from PyQt5.QtCore import QPoint
 
 from algaeplot.gui.error_window import ErrorWindow
@@ -49,10 +49,14 @@ class TableWindow(QMainWindow):
         # Button to add a new row
         add_button = Button("Add Row", self)
         add_button.clicked.connect(self.add_row)
+        add_button.setFixedWidth(100)
+        add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
         self.row_list = List(self)
+        #self.row_list.setStyleSheet(config.scroll_style)
+        self.row_list.setSpacing(-15)
         create_layout.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table
@@ -77,6 +81,7 @@ class TableWindow(QMainWindow):
         table_widget.setLayout(table_layout)
 
         tabs.addTab(table_widget, "Table")
+        tabs.setStyleSheet(config.tab_style)
 
         self.setCentralWidget(tabs)
 
