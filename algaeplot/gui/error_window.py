@@ -8,7 +8,7 @@ class ErrorWindow(QMainWindow):
     def __init__(self, message, parent=None):
         super(ErrorWindow, self).__init__(parent)
         self.title = 'Error'
-        self.width = 150
+        self.width = 250
         self.height = 100
         self.message = message
         self.initUI()
@@ -17,13 +17,15 @@ class ErrorWindow(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
+        self.setStyleSheet(config.error_background)
 
         layout = QGridLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
         text = QLabel(self.message)
-        text.setStyleSheet(config.default_font_bold)
+        text.setStyleSheet(config.error_font)
+        text.setWordWrap(True)
 
         layout.addWidget(text, 0, 0)
 

@@ -3,21 +3,26 @@
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
     QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
-    QCheckBox, QLabel, QLineEdit)
-from PyQt5.QtCore import QPoint
+    QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
+    QFormLayout, QHBoxLayout)
+from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from algaeplot.plotter.main_plot import PlotCanvas
 from algaeplot.reader.data_holder import DataHolder
+from algaeplot.components.label import Label, TopLabel, LeftLabel
+from algaeplot.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
+from algaeplot.components.list import List
+from algaeplot.components.spacer import Spacer
+from algaeplot.components.button import Button, BigButton
+from algaeplot.components.collapsible_box import CollapsibleBox
+from algaeplot.components.data_list_item import DataListItem, ConditionListItem
 from algaeplot.gui.error_window import ErrorWindow
-from algaeplot.gui.label import Label
-from algaeplot.gui.type_functions import isfloat, isint
-from algaeplot.gui.collapsible_box import CollapsibleBox
-from algaeplot.gui.data_list_item import DataListItem
 from algaeplot.gui.export_window import ExportWindow
 from algaeplot.gui.table_window import TableWindow
 from algaeplot.gui.fit_window import FitWindow
 from algaeplot.gui.load_window import LoadWindow
+from algaeplot.type_functions import isfloat, isint
 import algaeplot.configuration as config
 
 
@@ -33,10 +38,9 @@ class App(QMainWindow):
         self.height = 600
         # Container for data
         self.data = DataHolder()
-        self.data_list = QListWidget(self)
         # Container for condition data
         self.condition_data = DataHolder()
-        self.condition_data_list = QListWidget(self)
+        self.setStyleSheet(config.main_background)
         self.initUI()
 
     def initUI(self):
@@ -45,6 +49,7 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         tabs = QTabWidget()
+        tabs.setStyleSheet(config.tab_style)
 
         # ---------------------------------------------------------------------
         #                           PLOTTING TAB
@@ -52,378 +57,400 @@ class App(QMainWindow):
 
         # Main plotting window
         plot_layout = QGridLayout()
-        plot_layout.setContentsMargins(0, 0, 0, 0)
-        plot_layout.setSpacing(20)
+        plot_layout.setContentsMargins(5, 5, 5, 5)
+        plot_layout.setSpacing(10)
 
         # Main plot window (row, column, row extent, column extent)
         self.plot = PlotCanvas(self, width=10, height=4)
-        plot_layout.addWidget(self.plot, 0, 0, 6, 5)
+        shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
+        self.plot.setGraphicsEffect(shadow)
+        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        plot_layout.addWidget(self.plot, 0, 0, 5, 5)
 
+        # Saving options
+        save_button = Button('Save', self, 'Save the figure')
+        save_button.clicked.connect(self.update_config)
+        save_button.clicked.connect(self.save_plot)
+        plot_layout.addWidget(save_button, 5, 0)
+
+        # Export options
+        export_button = Button('Export', self,
+                               'Export the data to CSV')
+        export_button.clicked.connect(self.export_files)
+        plot_layout.addWidget(export_button, 5, 1)
+
+        # Measure gradient
+        measure_button = Button('Measure', self, 'Measure the growth rate')
+        measure_button.clicked.connect(self.toggle_cursor)
+        measure_button.clicked.connect(self.update_plot)
+        plot_layout.addWidget(measure_button, 5, 2)
+
+        # Fit curves
+        fit_button = Button('Fit', self, 'Fit the growth curves')
+        fit_button.clicked.connect(self.fit_curve)
+        plot_layout.addWidget(fit_button, 5, 3)
+
+        # Table output button
+        table_button = Button('To Table', self, 
+                              'Create a table of growth rates for all curves'
+                              '\nConfigure in options tab')
+        table_button.clicked.connect(self.update_config)
+        table_button.clicked.connect(self.create_table)
+        plot_layout.addWidget(table_button, 5, 4)
+
+        data_entry_layout = QVBoxLayout()
         # Add data button
-        data_button = QPushButton('Add Data', self)
+        data_button = Button('Add Data', self,
+                             'Import data for plotting')
         data_button.clicked.connect(self.update_config)
         data_button.clicked.connect(self.open_data_files)
         data_button.clicked.connect(self.update_data_list)
-        data_button.setToolTip('Import data for plotting')
-        data_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(data_button, 0, 5)
-
-        # Configure list behaviour
-        self.data_list.clicked.connect(self.remove_item)
+        data_entry_layout.addWidget(data_button)
 
         # List of data in a scrollable area
-        list_scroll = QScrollArea(self)
-        list_scroll.setWidgetResizable(True)
-        scroll_content = QWidget(list_scroll)
-        scroll_layout = QVBoxLayout(scroll_content)
-        scroll_content.setLayout(scroll_layout)
-        scroll_layout.addWidget(self.data_list)
-        list_scroll.setWidget(scroll_content)
-        list_scroll.setToolTip('Click to remove')
-        plot_layout.addWidget(list_scroll, 1, 5)
+        self.data_list = List(self)
+        self.data_list.setSizePolicy(QSizePolicy.Expanding,
+                                     QSizePolicy.Expanding)
+        data_entry_layout.addWidget(self.data_list)
 
         # Add condition data text
-        condition_data_text = Label('Condition Data:', True)
-        plot_layout.addWidget(condition_data_text, 3, 5)
-        # Configure list behaviour
-        self.condition_data_list.clicked.connect(self.remove_condition_item)
-
+        condition_data_text = TopLabel('Condition Data:', True)
+        data_entry_layout.addWidget(condition_data_text)
         # List of condition data
-        condition_list_scroll = QScrollArea(self)
-        condition_list_scroll.setWidgetResizable(True)
-        condition_scroll_content = QWidget(condition_list_scroll)
-        condition_scroll_layout = QVBoxLayout(condition_scroll_content)
-        condition_scroll_content.setLayout(condition_scroll_layout)
-        condition_scroll_layout.addWidget(self.condition_data_list)
-        condition_list_scroll.setWidget(condition_scroll_content)
-        condition_list_scroll.setToolTip('Click to remove')
-        plot_layout.addWidget(condition_list_scroll, 4, 5)
+        self.condition_data_list = List(self)
+        self.condition_data_list.setSizePolicy(QSizePolicy.Expanding,
+                                               QSizePolicy.Expanding)
+        data_entry_layout.addWidget(self.condition_data_list)
 
         # Plot button
-        plot_button = QPushButton('Plot!', self)
+        plot_button = BigButton('Plot!', self, 'Plot the data!')
         plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
-        plot_button.setToolTip('Plot the data!')
-        plot_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_button.setStyleSheet(config.big_font)
-        plot_layout.addWidget(plot_button, 5, 5, 2, 1)
+        data_entry_layout.addWidget(plot_button)
 
-        # Saving options
-        save_button = QPushButton('Save', self)
-        save_button.clicked.connect(self.update_config)
-        save_button.clicked.connect(self.save_plot)
-        save_button.setToolTip('Save the figure')
-        save_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(save_button, 6, 0)
+        data_entry_widget = QWidget()
+        data_entry_widget.setLayout(data_entry_layout)
+        plot_layout.addWidget(data_entry_widget, 0, 5, 6, 1)
 
-        # Export options
-        export_button = QPushButton('Export', self)
-        export_button.clicked.connect(self.export_files)
-        export_button.setToolTip('Export the data to another file type')
-        export_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(export_button, 6, 1)
-
-        # Measure gradient
-        measure_button = QPushButton('Measure', self)
-        measure_button.clicked.connect(self.toggle_cursor)
-        measure_button.clicked.connect(self.update_plot)
-        measure_button.setToolTip('Measure the growth rate')
-        measure_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(measure_button, 6, 2)
-
-        # Fit curves
-        fit_button = QPushButton('Fit', self)
-        fit_button.clicked.connect(self.fit_curve)
-        fit_button.setToolTip('Fit the growth curves')
-        fit_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(fit_button, 6, 3)
-
-        # Table output button
-        table_button = QPushButton('To Table', self)
-        table_button.clicked.connect(self.update_config)
-        table_button.clicked.connect(self.create_table)
-        table_button.setToolTip('Create a table of growth rates for all curves'
-                                '\nConfigure in options tab')
-        table_button.setStyleSheet(config.default_font)
-        plot_layout.addWidget(table_button, 6, 4)
+        plot_widget = QWidget()
+        plot_widget.setStyleSheet(config.white_background)
+        plot_widget.setLayout(plot_layout)
+        tabs.addTab(plot_widget, 'Plotting')
 
         # ---------------------------------------------------------------------
-        #                           OPTIONS TAB
+        #                           OPTIONS TABS
         # ---------------------------------------------------------------------
-
-        # Plotting options window
-        options_layout = QGridLayout()
-        options_layout.setContentsMargins(5, 5, 5, 5)
-        options_layout.setSpacing(5)
-
-        options_scroll = QScrollArea(self)
-        options_scroll.setWidgetResizable(True)
-
-        # Figure title
-        options_layout.addWidget(Label('Figure title:', True), 0, 0)
-        self.figure_title = QLineEdit(self)
-        options_layout.addWidget(self.figure_title, 0, 1, 1, 2)
-
+        
         # --------------- AXIS CONFIGURATION
 
         # Axis configuration
-        axis_box = CollapsibleBox('Axis configuration:')
-        options_layout.addWidget(axis_box, 1, 0, 1, 6)
-        axis_box_layout = QGridLayout()
-        axis_box_layout.addWidget(Label('Variable'), 0, 1)
-        axis_box_layout.addWidget(Label('Label name'), 0, 2)
-        axis_box_layout.addWidget(Label('Unit name'), 0, 3)
-        axis_box_layout.addWidget(Label('Range min'), 0, 4)
-        axis_box_layout.addWidget(Label('Range max'), 0, 5)
-        axis_box_layout.addWidget(Label('X:'), 1, 0)
-        axis_box_layout.addWidget(Label('Y:'), 2, 0)
-        axis_box_layout.addWidget(Label('Y2 (conditions):'), 3, 0)
+        axis_v_layout = QVBoxLayout()
+        axis_h_layout = QHBoxLayout()
+        x_v_layout = QVBoxLayout()
+        x_form_layout = QFormLayout()
+        y_v_layout = QVBoxLayout()
+        y_form_layout = QFormLayout()
+        z_v_layout = QVBoxLayout()
+        z_form_layout = QFormLayout()
 
+        self.figure_title = TextEntry('Figure title:', self)
+        axis_v_layout.addWidget(self.figure_title)
+
+        x_v_layout.addWidget(TopLabel('X:'))
         # X axis drop down menu
-        self.xaxis_dropdown = QComboBox(self)
-        self.xaxis_dropdown.addItems(config.xaxis_units)
-        axis_box_layout.addWidget(self.xaxis_dropdown, 1, 1)
+        self.xaxis_dropdown = DropDown('Variable:', config.xaxis_units, self)
+        x_form_layout.addRow(self.xaxis_dropdown)
 
         # X axis titles
-        self.xaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_name, 1, 2)
-        self.xaxis_unit = QLineEdit(self)
+        self.xaxis_name = TextEntry('Label:', self)
+        x_form_layout.addRow(self.xaxis_name)
+        self.xaxis_unit = TextEntry('Unit name:', self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.xaxis_unit, 1, 3)
+        x_form_layout.addRow(self.xaxis_unit)
 
         # X axis range
-        self.xaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_min, 1, 4)
-        self.xaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.xaxis_max, 1, 5)
+        self.xaxis_min = TextEntry('Range min:', self)
+        x_form_layout.addRow(self.xaxis_min)
+        self.xaxis_max = TextEntry('Range max:', self)
+        x_form_layout.addRow(self.xaxis_max)
 
+        x_form_widget = QWidget()
+        x_form_widget.setLayout(x_form_layout)
+        x_v_layout.addWidget(x_form_widget)
+        x_v_widget = QWidget()
+        x_v_widget.setLayout(x_v_layout)
+        axis_h_layout.addWidget(x_v_widget)
+
+        y_v_layout.addWidget(TopLabel('Y:'))
         # Y axis drop down menu
-        self.yaxis_dropdown = QComboBox(self)
-        axis_box_layout.addWidget(self.yaxis_dropdown, 2, 1)
+        self.yaxis_dropdown = DropDown('Variable:', [], self)
+        y_form_layout.addRow(self.yaxis_dropdown)
 
         # Y axis titles
-        self.yaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_name, 2, 2)
-        self.yaxis_unit = QLineEdit(self)
+        self.yaxis_name = TextEntry('Label:', self)
+        y_form_layout.addRow(self.yaxis_name)
+        self.yaxis_unit = TextEntry('Unit name:', self)
         self.yaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.yaxis_unit, 2, 3)
+        y_form_layout.addRow(self.yaxis_unit)
 
         # Y axis range
-        self.yaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_min, 2, 4)
-        self.yaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.yaxis_max, 2, 5)
+        self.yaxis_min = TextEntry('Range min:', self)
+        y_form_layout.addRow(self.yaxis_min)
+        self.yaxis_max = TextEntry('Range max:', self)
+        y_form_layout.addRow(self.yaxis_max)
 
+        y_form_widget = QWidget()
+        y_form_widget.setLayout(y_form_layout)
+        y_v_layout.addWidget(y_form_widget)
+        y_v_widget = QWidget()
+        y_v_widget.setLayout(y_v_layout)
+        axis_h_layout.addWidget(Spacer())
+        axis_h_layout.addWidget(y_v_widget)
+
+        z_v_layout.addWidget(TopLabel('Y2 (conditions):'))
         # Condition Y axis drop down menu
-        self.condition_yaxis_dropdown = QComboBox(self)
-        axis_box_layout.addWidget(self.condition_yaxis_dropdown, 3, 1)
+        self.condition_yaxis_dropdown = DropDown('Variable:', [], self)
+        z_form_layout.addRow(self.condition_yaxis_dropdown)
 
         # Condition Y axis titles
-        self.condition_yaxis_name = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_name, 3, 2)
-        self.condition_yaxis_unit = QLineEdit(self)
+        self.condition_yaxis_name = TextEntry('Label:', self)
+        z_form_layout.addRow(self.condition_yaxis_name)
+        self.condition_yaxis_unit = TextEntry('Unit name:', self)
         self.xaxis_unit.setToolTip('Enter "none" for no units')
-        axis_box_layout.addWidget(self.condition_yaxis_unit, 3, 3)
+        z_form_layout.addRow(self.condition_yaxis_unit)
 
         # Condition Y axis range
-        self.condition_yaxis_min = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_min, 3, 4)
-        self.condition_yaxis_max = QLineEdit(self)
-        axis_box_layout.addWidget(self.condition_yaxis_max, 3, 5)
+        self.condition_yaxis_min = TextEntry('Range min:', self)
+        z_form_layout.addRow(self.condition_yaxis_min)
+        self.condition_yaxis_max = TextEntry('Range max:', self)
+        z_form_layout.addRow(self.condition_yaxis_max)
 
-        axis_box.setContentLayout(axis_box_layout)
+        z_form_widget = QWidget()
+        z_form_widget.setLayout(z_form_layout)
+        z_v_layout.addWidget(z_form_widget)
+        z_v_widget = QWidget()
+        z_v_widget.setLayout(z_v_layout)
+        axis_h_layout.addWidget(Spacer())
+        axis_h_layout.addWidget(z_v_widget)
+        axis_h_widget = QWidget()
+        axis_h_widget.setLayout(axis_h_layout)
+        axis_v_layout.addWidget(axis_h_widget)
+        axis_v_layout.addWidget(Spacer())
+
+        axis_box_widget = QWidget()
+        axis_box_widget.setStyleSheet(config.white_background)
+        axis_box_widget.setLayout(axis_v_layout)
+        tabs.addTab(axis_box_widget, 'Axes')
 
         # --------------- DATA CONFIGURATION
 
         # Data configuration options
-        data_box = CollapsibleBox('Data configuration:')
-        options_layout.addWidget(data_box, 2, 0, 1, 6)
-        data_box_layout = QGridLayout()
+        data_h_layout = QHBoxLayout()
+        data_box_layout = QFormLayout()
 
         # Smooth noisy data button
-        data_box_layout.addWidget(Label('Smooth data:'), 0, 0)
-        self.smooth_data = QCheckBox(self)
+        self.smooth_data = CheckBox('Data smoothing off/on', self)
         self.smooth_data.setToolTip('Apply Savitzky-Golay to noisy data')
-        data_box_layout.addWidget(self.smooth_data, 0, 1)
+        data_box_layout.addRow(' ', self.smooth_data)
 
         # Align all data with 0 checkbox
-        data_box_layout.addWidget(Label('Align at time = 0:'), 0, 2)
-        self.align_data = QCheckBox(self)
+        self.align_data = CheckBox('Alignment at time = 0 on/off', self)
         self.align_data.setToolTip('Start growth curves at 0 time')
-        data_box_layout.addWidget(self.align_data, 0, 3)
+        data_box_layout.addRow(' ', self.align_data)
 
         # Align all data at Y position
-        data_box_layout.addWidget(Label('Align at Y ='), 0, 4)
-        self.y_alignment = QLineEdit(self)
+        self.y_alignment = TextEntry('Align at Y:', self)
         self.y_alignment.setToolTip('Align all growth curves at given Y value')
-        data_box_layout.addWidget(self.y_alignment, 0, 5)
-
-        # Remove any obvious outliers from the growth data
-        data_box_layout.addWidget(Label('Data outliers:'), 1, 0)
-        data_box_layout.addWidget(Label('Auto remove:'), 1, 1)
-        self.auto_remove = QCheckBox(self)
-        data_box_layout.addWidget(self.auto_remove, 1, 2)
-        data_box_layout.addWidget(Label('Remove above:'), 1, 3)
-        self.remove_above = QLineEdit(self)
-        data_box_layout.addWidget(self.remove_above, 1, 4)
-        data_box_layout.addWidget(Label('Remove below:'), 1, 5)
-        self.remove_below = QLineEdit(self)
-        data_box_layout.addWidget(self.remove_below, 1, 6)
+        data_box_layout.addRow(self.y_alignment)
 
         # Condition data downsampling and averaging
-        data_box_layout.addWidget(Label('Condition data:'), 2, 0)
-        data_box_layout.addWidget(Label('Time average:'), 2, 1)
-        self.condition_average = QLineEdit(self)
-        self.condition_average.setToolTip('Average over time window')
-        data_box_layout.addWidget(self.condition_average, 2, 2)
+        self.condition_average = TextEntry('Condition data time average:', self)
+        self.condition_average.setToolTip('Average over a given time window')
+        data_box_layout.addRow(self.condition_average)
 
-        data_box_layout.addWidget(Label('Show Events:'), 3, 0)
-        self.show_events = QCheckBox(self)
-        data_box_layout.addWidget(self.show_events, 3, 1)
+        self.show_events = CheckBox('Show events off/on', self)
+        data_box_layout.addRow(' ', self.show_events)
 
-        data_box.setContentLayout(data_box_layout)
+        data_form_widget = QWidget()
+        data_form_widget.setLayout(data_box_layout)
+        data_h_layout.addWidget(data_form_widget)
+
+        data_v_layout = QVBoxLayout()
+        # Remove any obvious outliers from the growth data
+        data_v_layout.addWidget(TopLabel('Data outliers:'))
+        data_v_form_layout = QFormLayout()
+        self.auto_remove = CheckBox('Auto-remove outliers off/on', self)
+        data_v_form_layout.addRow(' ', self.auto_remove)
+        self.remove_above = TextEntry('Remove above:', self)
+        data_v_form_layout.addRow(self.remove_above)
+        self.remove_below = TextEntry('Remove below:', self)
+        data_v_form_layout.addRow(self.remove_below)
+        data_v_form_widget = QWidget()
+        data_v_form_widget.setLayout(data_v_form_layout)
+        data_v_layout.addWidget(data_v_form_widget)
+        data_v_layout.addWidget(Spacer())
+
+        data_v_widget = QWidget()
+        data_v_widget.setLayout(data_v_layout)
+        data_h_layout.addWidget(data_v_widget)
+        data_h_layout.addWidget(Spacer())
+
+        data_box_widget = QWidget()
+        data_box_widget.setStyleSheet(config.white_background)
+        data_box_widget.setLayout(data_h_layout)
+        tabs.addTab(data_box_widget, 'Data')
 
         # --------------- LEGEND CONFIGURATION
 
         # Legend configuration options
-        legend_box = CollapsibleBox('Legend configuration:')
-        options_layout.addWidget(legend_box, 3, 0, 1, 6)
-        legend_box_layout = QGridLayout()
+        legend_h_layout = QHBoxLayout()
+        growth_form_layout = QFormLayout()
+        growth_v_layout = QVBoxLayout()
+        condition_form_layout = QFormLayout()
+        condition_v_layout = QVBoxLayout()
 
         # Legend on/off checkbox
-        legend_box_layout.addWidget(Label('Growth Legend:'), 1, 0)
-        legend_box_layout.addWidget(Label('On:'), 0, 1)
-        self.legend_toggle = QCheckBox(self)
-        legend_box_layout.addWidget(self.legend_toggle, 1, 1)
+        growth_v_layout.addWidget(TopLabel('Growth Legend:'))
+        self.legend_toggle = CheckBox('Legend on', self)
+        growth_form_layout.addRow(' ', self.legend_toggle)
 
         # Legend options dropdown menu (editable)
-        legend_box_layout.addWidget(Label('Titles:'), 0, 2)
-        self.legend_names = QComboBox(self)
-        self.legend_names.setEditable(True)
-        self.legend_names.setInsertPolicy(2)
+        self.legend_names = DropDown('Labels:', [], self)
+        self.legend_names.entry.setEditable(True)
+        self.legend_names.entry.setInsertPolicy(2)
         self.legend_names.setToolTip('Edit names by changing text '
                                      'and pressing return')
-        legend_box_layout.addWidget(self.legend_names, 1, 2, 1, 2)
+        growth_form_layout.addRow(self.legend_names)
 
         # Heading for legend
-        legend_box_layout.addWidget(Label('Header:'), 0, 4)
-        self.legend_title = QLineEdit(self)
-        legend_box_layout.addWidget(self.legend_title, 1, 4)
+        self.legend_title = TextEntry('Heading:', self)
+        growth_form_layout.addRow(self.legend_title)
 
         # Extra information from header dropdown
-        legend_box_layout.addWidget(Label('Extra info:'), 0, 5)
-        self.extra_info = QComboBox(self)
-        self.extra_info.addItems(config.info_options)
+        self.extra_info = DropDown('Extra text:', config.info_options, self)
         self.extra_info.setToolTip('Show extra information from '
                                    'the file in the legend')
-        legend_box_layout.addWidget(self.extra_info, 1, 5)
+        growth_form_layout.addRow(self.extra_info)
 
         # Checkbox to only show extra info
-        legend_box_layout.addWidget(Label('Only extra info:'), 0, 6)
-        self.only_extra = QCheckBox(self)
-        legend_box_layout.addWidget(self.only_extra, 1, 6)
+        self.only_extra = CheckBox('Remove labels', self)
+        growth_form_layout.addRow(' ', self.only_extra)
+
+        growth_form_widget = QWidget()
+        growth_form_widget.setLayout(growth_form_layout)
+        growth_v_layout.addWidget(growth_form_widget)
+        growth_v_layout.addWidget(Spacer())
+        growth_v_widget = QWidget()
+        growth_v_widget.setLayout(growth_v_layout)
+        legend_h_layout.addWidget(growth_v_widget)
 
         # Condition legend configuration
-        legend_box_layout.addWidget(Label('Condition legend:'), 2, 0)
-        self.condition_legend_toggle = QCheckBox(self)
-        legend_box_layout.addWidget(self.condition_legend_toggle, 2, 1)
+        condition_v_layout.addWidget(TopLabel('Condition legend:'))
+        self.condition_legend_toggle = CheckBox('Legend on', self)
+        condition_form_layout.addRow(' ', self.condition_legend_toggle)
 
         # Condition legend options dropdown menu
-        self.condition_legend_names = QComboBox(self)
-        self.condition_legend_names.setEditable(True)
-        self.condition_legend_names.setInsertPolicy(2)
+        self.condition_legend_names = DropDown('Labels:', [], self)
+        self.condition_legend_names.entry.setEditable(True)
+        self.condition_legend_names.entry.setInsertPolicy(2)
         self.condition_legend_names.setToolTip('Edit names by changing text '
                                                'and pressing return')
-        legend_box_layout.addWidget(self.condition_legend_names, 2, 2, 1, 2)
+        condition_form_layout.addRow(self.condition_legend_names)
 
         # Heading for condition legend
-        self.condition_legend_title = QLineEdit(self)
-        legend_box_layout.addWidget(self.condition_legend_title, 2, 4)
+        self.condition_legend_title = TextEntry('Heading:', self)
+        condition_form_layout.addRow(self.condition_legend_title)
 
-        self.condition_extra_info = QComboBox(self)
-        self.condition_extra_info.addItems(config.info_options)
+        self.condition_extra_info = DropDown('Extra text:', config.info_options, self)
         self.condition_extra_info.setToolTip('Show extra information from '
                                              'the file in the legend')
-        legend_box_layout.addWidget(self.condition_extra_info, 2, 5)
+        condition_form_layout.addRow(self.condition_extra_info)
 
         # Checkbox to only show extra info
-        self.condition_only_extra = QCheckBox(self)
-        legend_box_layout.addWidget(self.condition_only_extra, 2, 6)
+        self.condition_only_extra = CheckBox('Remove labels', self)
+        condition_form_layout.addRow(' ', self.condition_only_extra)
 
-        legend_box.setContentLayout(legend_box_layout)
+        condition_form_widget = QWidget()
+        condition_form_widget.setLayout(condition_form_layout)
+        condition_v_layout.addWidget(condition_form_widget)
+        condition_v_layout.addWidget(Spacer())
+        condition_v_widget = QWidget()
+        condition_v_widget.setLayout(condition_v_layout)
+        legend_h_layout.addWidget(condition_v_widget)
+        legend_h_layout.addWidget(Spacer())
+
+        legend_box_widget = QWidget()
+        legend_box_widget.setStyleSheet(config.white_background)
+        legend_box_widget.setLayout(legend_h_layout)
+        tabs.addTab(legend_box_widget, 'Legend')
 
         # --------------- STYLE CONFIGURATION
 
         # Style configuration
-        style_box = CollapsibleBox('Style configuration:')
-        options_layout.addWidget(style_box, 4, 0, 1, 6)
-        style_box_layout = QGridLayout()
+        style_h_layout = QHBoxLayout()
+        style_box_layout = QFormLayout()
 
         # Plot style dropdown menu
-        style_box_layout.addWidget(Label('Style:'), 0, 0)
-        self.style_dropdown = QComboBox(self)
-        self.style_dropdown.addItems(config.style_options)
-        style_box_layout.addWidget(self.style_dropdown, 0, 1)
+        self.style_dropdown = DropDown('Style:', config.style_options, self)
+        style_box_layout.addRow(self.style_dropdown)
 
         # Font style dropdown menu
-        style_box_layout.addWidget(Label('Font style:'), 0, 2)
-        self.font_dropdown = QComboBox(self)
-        self.font_dropdown.addItems(config.font_options)
-        style_box_layout.addWidget(self.font_dropdown, 0, 3)
+        self.font_dropdown = DropDown('Font style:', config.font_options, self)
+        style_box_layout.addRow(self.font_dropdown)
 
         # Font size textbox
-        style_box_layout.addWidget(Label('Title font size:'), 1, 0)
-        self.title_size = QLineEdit(self)
-        style_box_layout.addWidget(self.title_size, 1, 1)
+        self.title_size = SpinBox('Title font size:', 14, 0, 100, self)
+        style_box_layout.addRow(self.title_size)
 
-        style_box_layout.addWidget(Label('Legend font size:'), 1, 2)
-        self.legend_size = QLineEdit(self)
-        style_box_layout.addWidget(self.legend_size, 1, 3)
+        self.legend_size = SpinBox('Legend font size:', 12, 0, 100, self)
+        style_box_layout.addRow(self.legend_size)
 
-        style_box_layout.addWidget(Label('Label font size:'), 1, 4)
-        self.label_size = QLineEdit(self)
-        style_box_layout.addWidget(self.label_size, 1, 5)
+        self.label_size = SpinBox('Label font size:', 12, 0, 100, self)
+        style_box_layout.addRow(self.label_size)
 
         # Line width textbox
-        style_box_layout.addWidget(Label('Line width:'), 2, 0)
-        self.line_width = QLineEdit(self)
-        style_box_layout.addWidget(self.line_width, 2, 1)
+        self.line_width = SpinBox('Line width:', 2, 0, 20, self)
+        style_box_layout.addRow(self.line_width)
 
         # Condition axis colour
-        style_box_layout.addWidget(Label('Condition axis colour:'), 2, 2)
-        self.axis_colour = QLineEdit(self)
-        style_box_layout.addWidget(self.axis_colour, 2, 3)
+        self.axis_colour = TextEntry('Condition axis color:', self)
+        style_box_layout.addRow(self.axis_colour)
 
-        style_box_layout.addWidget(Label('Grid:'), 2, 4)
-        self.grid_toggle = QCheckBox(self)
-        style_box_layout.addWidget(self.grid_toggle, 2, 5)
+        self.grid_toggle = CheckBox('Grid on/off', self)
+        style_box_layout.addRow(' ',self.grid_toggle)
 
-        style_box.setContentLayout(style_box_layout)
+        style_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        style_box_layout.setLabelAlignment(Qt.AlignCenter)
+
+        style_box_widget = QWidget()
+        style_box_widget.setLayout(style_box_layout)
+
+        style_h_layout.addWidget(style_box_widget)
+        style_h_layout.addWidget(Spacer())
+        style_h_widget = QWidget()
+        style_h_widget.setLayout(style_h_layout)
+        style_h_widget.setStyleSheet(config.white_background)
+        tabs.addTab(style_h_widget, 'Style')
 
         # --------------- STATS CONFIGURATION
 
         # Stats configuration
-        stats_box = CollapsibleBox('Stats configuration:')
-        options_layout.addWidget(stats_box, 5, 0, 1, 6)
-        stats_box_layout = QGridLayout()
+        stats_box_layout = QFormLayout()
 
-        stats_box_layout.addWidget(Label('Standard error:'), 0, 0)
-        self.std_err = QCheckBox(self)
+        self.std_err = CheckBox('Standard error/deviation', self)
         self.std_err.setToolTip('Checked = show standard error on mean\n'
                                 'Unchecked = show standard deviation')
-        stats_box_layout.addWidget(self.std_err, 0, 1)
+        stats_box_layout.addRow(' ', self.std_err)
 
-        stats_box.setContentLayout(stats_box_layout)
+        stats_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
-        # Add layouts to tabs via widgets
-        plot_widget = QWidget()
-        plot_widget.setLayout(plot_layout)
-        tabs.addTab(plot_widget, 'Plotting')
-        options_widget = QWidget()
-        options_widget.setLayout(options_layout)
-        options_scroll.setWidget(options_widget)
-        tabs.addTab(options_scroll, 'Options')
+        stats_box_widget = QWidget()
+        stats_box_widget.setStyleSheet(config.white_background)
+        stats_box_widget.setLayout(stats_box_layout)
+        tabs.addTab(stats_box_widget, 'Stats')
 
+        # ----------------------------------
         self.setCentralWidget(tabs)
         self.show()
 
@@ -483,20 +510,35 @@ class App(QMainWindow):
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
         for i, data in enumerate(self.condition_data.data_files):
-            self.condition_data_list.addItem(data.name.split('/')[-1])
+            data_list_item = ConditionListItem(data.name.split('/')[-1], self)
+            self.condition_data_list.addItem(data_list_item.item)
+            self.condition_data_list.setItemWidget(data_list_item.item,
+                                         data_list_item.widget)
             self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
             for sig in data.signals:
                 self.condition_yaxis_dropdown.addItem(sig.name)
 
-    # Function: Remove file from list of data
-    def remove_item(self):
+    def get_data_row(self):
         # Horrible stuff to get list item
         widget = self.sender()
         gp = widget.mapToGlobal(QPoint())
         lp = self.data_list.viewport().mapFromGlobal(gp)
         row = self.data_list.row(self.data_list.itemAt(lp))
+        return row
+
+    def get_condition_row(self):
+        # Horrible stuff to get list item
+        widget = self.sender()
+        gp = widget.mapToGlobal(QPoint())
+        lp = self.condition_data_list.viewport().mapFromGlobal(gp)
+        row = self.condition_data_list.row(self.condition_data_list.itemAt(lp))
+        return row
+
+    # Function: Remove file from list of data
+    def remove_item(self):
+        row = self.get_data_row()
         for i, data in enumerate(self.data.data_files):
             if i != row:
                 continue
@@ -505,11 +547,7 @@ class App(QMainWindow):
 
     # Function: Remove file from list of data
     def remove_replicate(self, index):
-        # Horrible stuff to get list item
-        widget = self.sender()
-        gp = widget.mapToGlobal(QPoint())
-        lp = self.data_list.viewport().mapFromGlobal(gp)
-        row = self.data_list.row(self.data_list.itemAt(lp))
+        row = self.get_data_row()
         for i, data in enumerate(self.data.data_files):
             if i != row:
                 continue
@@ -517,19 +555,16 @@ class App(QMainWindow):
         self.update_data_list()
 
     # Function: Remove file from list of condition data
-    def remove_condition_item(self, index):
+    def remove_condition_item(self):
+        row = self.get_condition_row()
         for i, data in enumerate(self.condition_data.data_files):
-            if i != index.row():
+            if i != row:
                 continue
             self.condition_data.delete_data(i)
         self.update_condition_data_list()
 
     def add_to_item(self):
-        # Horrible stuff to get list item
-        widget = self.sender()
-        gp = widget.mapToGlobal(QPoint())
-        lp = self.data_list.viewport().mapFromGlobal(gp)
-        row = self.data_list.row(self.data_list.itemAt(lp))
+        row = self.get_data_row()
         # Open file with file handler
         self.load = LoadWindow(self, self.data, self.condition_data, row)
         self.load.show()

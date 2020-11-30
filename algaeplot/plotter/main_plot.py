@@ -277,10 +277,10 @@ class PlotCanvas(FigureCanvasQTAgg):
             if fit_index != -1:
                 # Set the polynomial degree for the fit
                 fit_degree = 0
-                if (config.fit_type == 'Linear' or 
-                    config.fit_type == 'Exponential'):
+                if (config.fit_type == 'linear' or 
+                    config.fit_type == 'exponential'):
                     fit_degree = 1
-                elif config.fit_type == 'Quadratic':
+                elif config.fit_type == 'quadratic':
                     fit_degree = 2
 
                 # Only fit the data in the given range
@@ -291,7 +291,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
                 # Need to manipulate the y data and weights if fitting an exp
                 weights = None
-                if config.fit_type == 'Exponential':
+                if config.fit_type == 'exponential':
                     weights = np.sqrt(fit_y)
                     fit_y = np.log(fit_y)
 
@@ -314,7 +314,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                               y_unit)
 
                 # Linear fit result
-                if config.fit_type == 'Linear':
+                if config.fit_type == 'linear':
                     plot_y = fit_result[0] * plot_x + fit_result[1]
                     fit_func_text = '$y = p_1 \cdot x + p_0$'
                     param_text = ('$p_0$ = ' + exponent_text(fit_result[1]) +
@@ -323,7 +323,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                   ' ' + y_unit + '/' + x_unit)
 
                 # Quadratic fit result
-                elif config.fit_type == 'Quadratic':
+                elif config.fit_type == 'quadratic':
                     plot_y = (fit_result[0] * np.power(plot_x,2) +
                              fit_result[1] * plot_x + fit_result[2])
                     fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
@@ -334,8 +334,8 @@ class PlotCanvas(FigureCanvasQTAgg):
                                   '$p_2$ = ' + exponent_text(fit_result[0]) +
                                   ' ' + y_unit + '/' + x_unit + '$^2$')
 
-                # Exponential fit result
-                elif config.fit_type == 'Exponential':
+                #qExponential fit result
+                elif config.fit_type == 'exponential':
                     plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
                     fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
                     param_text = ('$p_0$ = ' +
