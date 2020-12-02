@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout
 from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
 
 from algaeplot.components.button import AddButton, DeleteButton
+from algaeplot.components.spacer import Spacer
 import algaeplot.configuration as config
 
 
@@ -82,6 +83,9 @@ class DelListItem():
         label = QLabel(text)
 
         layout = QHBoxLayout()
+        spacer = Spacer()
+        spacer.setFixedWidth(5)
+        layout.addWidget(spacer)
         layout.addWidget(self.button)
         layout.addWidget(label)
         layout.addStretch()

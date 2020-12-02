@@ -85,6 +85,14 @@ QComboBox::down-arrow {
     height: 5px;
     background: #1e8235;
 }
+QComboBox::item:selected {
+    font-size: 14pt;
+    font-weight: bold;
+    font-family: SansSerif;
+    padding: 4px;
+    background-color: #1e8235;
+    color: white;
+}
 """
 
 spinbox_style = """
