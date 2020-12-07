@@ -2,13 +2,13 @@ import unittest, sys, os
 import tempfile, shutil
 from datetime import datetime, date, time
 
-from algaeplot.reader.read_algem_pro import read_algem_pro
-from algaeplot.gui.main_window import App
-from algaeplot.gui.export_window import ExportWindow
+from ada.reader.read_algem_pro import read_algem_pro
+from ada.gui.main_window import App
+from ada.gui.export_window import ExportWindow
 
 from PyQt5.QtWidgets import QApplication
 
-class AlgaePlotterTestCase(unittest.TestCase):
+class ADATestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
         app = QApplication(sys.argv)

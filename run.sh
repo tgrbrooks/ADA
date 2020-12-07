@@ -5,6 +5,6 @@ pushd $DIR
 git pull
 source venv/bin/activate
 pip install --upgrade .
-python3 src/main.py
+python3 ada/main.py
 deactivate
 popd

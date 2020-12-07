@@ -17,7 +17,7 @@ Drag the icon into your applications folder.
 When you open it for the first time you will get a warning telling you it's from an unidentified developer, go to System Preferences -> Security & Privacy
 and there should be a message at the bottom of the general tab that will let you open the app.
 
-The installer was made with MacOS Mojave, earlier or later versions may or may not work. If you find any issues please open up an `issue <https://github.com/tgrbrooks/AlgaePlotter/issues>`_.
+The installer was made with MacOS Mojave, earlier or later versions may or may not work. If you find any issues please open up an `issue <https://github.com/tgrbrooks/ADA/issues>`_.
 
 Windows 10
 ''''''''''
@@ -57,7 +57,7 @@ Clone the repository from GitHub
 
 .. code-block:: bash
 
-  git clone https://github.com/tgrbrooks/AlgaePlotter.git
+  git clone https://github.com/tgrbrooks/ADA.git
 
 Quick Set-Up
 ''''''''''''
@@ -66,7 +66,7 @@ After downloading the source code you can install it with
 
 .. code-block:: bash
 
-   cd AlgaePlotter
+   cd ADA
    source setup.sh
 
 You only need to install it once, now you can run it with

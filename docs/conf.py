@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Algae Plotter'
+project = 'ADA'
 copyright = '2020, Tom Brooks'
 author = 'Tom Brooks'
 
