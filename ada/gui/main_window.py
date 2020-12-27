@@ -33,7 +33,7 @@ class App(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.title = 'Algae Plotter'
+        self.title = 'Algal Data Analyser'
         # Default dimensions
         self.left = 10
         self.top = 10
@@ -285,6 +285,9 @@ class App(QMainWindow):
 
         self.show_events = CheckBox('Show events off/on', self)
         data_box_layout.addRow(' ', self.show_events)
+
+        self.download_template = Button(' Download ADA data template ', self)
+        data_box_layout.addRow(' ', self.download_template)
 
         data_form_widget = QWidget()
         data_form_widget.setLayout(data_box_layout)
