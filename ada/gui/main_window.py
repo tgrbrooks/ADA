@@ -633,6 +633,7 @@ class App(QMainWindow):
                     'Date,2020-01-15,Time,18:18:18\n',
                     'Time [s],OD [Numeric]\n']
         file_name = get_save_file_name()
+        file_name = file_name.split('.')[0] + '.csv'
         with open(file_name, 'w', newline='') as csvfile:
             for row in template:
                 csvfile.write(row)
