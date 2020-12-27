@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tgrbrooks/AlgaePlotter.svg?branch=master)](https://travis-ci.org/tgrbrooks/AlgaePlotter)
+[![Build Status](https://travis-ci.org/tgrbrooks/ADA.svg?branch=master)](https://travis-ci.org/tgrbrooks/ADA)
 
 [![Documentation Status](https://readthedocs.org/projects/algaeplotter/badge/?version=latest)](https://algaeplotter.readthedocs.io/en/latest/?badge=latest)
 
