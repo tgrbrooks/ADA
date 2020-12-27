@@ -10,18 +10,21 @@ from PyQt5.QtCore import QPoint, Qt
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
 from ada.reader.data_holder import DataHolder
-from ada.components.label import Label, TopLabel, LeftLabel
+from ada.reader.read_calibration import read_calibration
+from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
 from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
 from ada.components.list import List
 from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
 from ada.components.collapsible_box import CollapsibleBox
-from ada.components.data_list_item import DataListItem, ConditionListItem
+from ada.components.data_list_item import (DataListItem, ConditionListItem,
+    DelListItem)
 from ada.gui.error_window import ErrorWindow
 from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
+from ada.gui.file_handler import get_file_names
 from ada.type_functions import isfloat, isint
 import ada.configuration as config
 
@@ -40,6 +43,7 @@ class App(QMainWindow):
         self.data = DataHolder()
         # Container for condition data
         self.condition_data = DataHolder()
+        self.calibration = None
         self.setStyleSheet(config.main_background)
         self.initUI()
 
@@ -99,6 +103,8 @@ class App(QMainWindow):
         plot_layout.addWidget(table_button, 5, 4)
 
         data_entry_layout = QVBoxLayout()
+        data_entry_layout.setSpacing(5)
+        data_entry_layout.setContentsMargins(5,0,5,0)
         # Add data button
         data_button = Button('Add Data', self,
                              'Import data for plotting')
@@ -121,6 +127,15 @@ class App(QMainWindow):
         self.condition_data_list.setSizePolicy(QSizePolicy.Expanding,
                                                QSizePolicy.Expanding)
         data_entry_layout.addWidget(self.condition_data_list)
+
+        calibration_button = Button('Add Calibration Curve', self,
+                                    'Set OD to CD conversion from file')
+        calibration_button.clicked.connect(self.open_calibration_file)
+        data_entry_layout.addWidget(calibration_button)
+        self.calibration_file = DelLabel(self)
+        self.calibration_file.button.clicked.connect(self.remove_calibration_file)
+        self.calibration_file.setFixedHeight(40)
+        data_entry_layout.addWidget(self.calibration_file)
 
         # Plot button
         plot_button = BigButton('Plot!', self, 'Plot the data!')
@@ -468,6 +483,23 @@ class App(QMainWindow):
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
+    # Function: Open and read in calibration
+    def open_calibration_file(self):
+        try:
+            self.calibration_file.clear()
+            calib_file_name = get_file_names()
+            self.calibration_file.setText(calib_file_name[0])
+            self.calibration = read_calibration(calib_file_name[0])
+            self.update_data_list()
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
+
+    def remove_calibration_file(self):
+        self.calibration_file.clear()
+        self.calibration = None
+
     # Function: Update the main plot
     def update_plot(self):
         try:
@@ -499,10 +531,17 @@ class App(QMainWindow):
             self.legend_names.addItem(data.label)
             if i > 0:
                 continue
+            contains_od = False
+            contains_cd = False
             for sig in reversed(data.signals):
                 self.yaxis_dropdown.addItem(sig.name)
                 if sig.name == 'OD':
                     self.yaxis_dropdown.addItem('ln(OD/OD0)')
+                    contains_od = True
+                if sig.name == 'CD':
+                    contains_cd = True
+            if contains_od and not contains_cd and self.calibration is not None:
+                self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options
     def update_condition_data_list(self):

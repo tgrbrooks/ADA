@@ -38,6 +38,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         FigureCanvasQTAgg.__init__(self, self.fig)
         self.setParent(parent)
+        self.parent = parent
 
         self.legend_on = False
         self.condition_legend_on = False
@@ -524,6 +525,9 @@ class PlotCanvas(FigureCanvasQTAgg):
             unit = config.condition_yunit
         for sig in signals:
             if sig.name == yvar:
+                # Loaded calibration curve takes precedence
+                if yvar == 'CD' and self.parent.calibration is not None:
+                    continue
                 found_ydata = True
                 ydata = sig.data
                 y_title = sig.title()
@@ -537,6 +541,10 @@ class PlotCanvas(FigureCanvasQTAgg):
                 found_ydata = True
                 ydata = sig.data
                 y_title = 'ln(OD/OD$_{0}$)'
+            elif yvar == 'CD' and self.parent.calibration is not None and sig.name == 'OD':
+                found_ydata = True
+                ydata = self.parent.calibration.calibrate_od(sig.data)
+                y_title = 'CD'
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title

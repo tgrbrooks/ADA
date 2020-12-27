@@ -9,7 +9,7 @@ build
 dist
 app
 AlgaePlotter*
-ADA*
+ADA.egg*
 .DS_Store
 _build
 *.pyc
