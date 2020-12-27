@@ -10,6 +10,11 @@ class DataHolder():
         self.data_files = []
         self.replicate_files = []
 
+    def clear(self):
+        self.empty = True
+        self.data_files = []
+        self.replicate_files = []
+
     def delete_data(self, i):
         if i >= 0 and i < len(self.data_files):
             self.data_files.pop(i)

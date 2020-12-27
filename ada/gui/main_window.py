@@ -5,7 +5,7 @@ import csv
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
     QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
     QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
-    QFormLayout, QHBoxLayout)
+    QFormLayout, QHBoxLayout, QMenu, QAction)
 from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
@@ -107,12 +107,18 @@ class App(QMainWindow):
         data_entry_layout.setSpacing(5)
         data_entry_layout.setContentsMargins(5,0,5,0)
         # Add data button
-        data_button = Button('Add Data', self,
+        self.data_button = Button('Add Data', self,
                              'Import data for plotting')
-        data_button.clicked.connect(self.update_config)
-        data_button.clicked.connect(self.open_data_files)
-        data_button.clicked.connect(self.update_data_list)
-        data_entry_layout.addWidget(data_button)
+        self.data_button.clicked.connect(self.update_config)
+        self.data_button.clicked.connect(self.open_data_files)
+        self.data_button.clicked.connect(self.update_data_list)
+        data_entry_layout.addWidget(self.data_button)
+        self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.data_button.customContextMenuRequested.connect(self.on_context_menu)
+
+        self.clear_menu = QMenu(self)
+        self.clear_action = QAction('Clear all', self)
+        self.clear_menu.addAction(self.clear_action)
 
         # List of data in a scrollable area
         self.data_list = List(self)
@@ -504,6 +510,15 @@ class App(QMainWindow):
     def remove_calibration_file(self):
         self.calibration_file.clear()
         self.calibration = None
+
+    def on_context_menu(self, point):
+        # show context menu
+        action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
+        if action == self.clear_action:
+            self.data.clear()
+            self.update_data_list()
+            self.condition_data.clear()
+            self.update_condition_data_list()
 
     # Function: Update the main plot
     def update_plot(self):
