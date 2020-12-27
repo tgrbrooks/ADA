@@ -1,4 +1,5 @@
 # Standard library imports
+import csv
 
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
@@ -24,7 +25,7 @@ from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
-from ada.gui.file_handler import get_file_names
+from ada.gui.file_handler import get_file_names, get_save_file_name
 from ada.type_functions import isfloat, isint
 import ada.configuration as config
 
@@ -286,8 +287,9 @@ class App(QMainWindow):
         self.show_events = CheckBox('Show events off/on', self)
         data_box_layout.addRow(' ', self.show_events)
 
-        self.download_template = Button(' Download ADA data template ', self)
-        data_box_layout.addRow(' ', self.download_template)
+        download_button = Button(' Download ADA data template ', self)
+        download_button.clicked.connect(self.download_template)
+        data_box_layout.addRow(' ', download_button)
 
         data_form_widget = QWidget()
         data_form_widget.setLayout(data_box_layout)
@@ -610,6 +612,15 @@ class App(QMainWindow):
         # Open file with file handler
         self.load = LoadWindow(self, self.data, self.condition_data, row)
         self.load.show()
+
+    def download_template(self):
+        template = ['Name,,Title,,Reactor,,Profile,\n',
+                    'Date,2020-01-15,Time,18:18:18\n',
+                    'Time [s],OD [Numeric]\n']
+        file_name = get_save_file_name()
+        with open(file_name, 'w', newline='') as csvfile:
+            for row in template:
+                csvfile.write(row)
 
     # Function: Toggle cursor on and off
     def toggle_cursor(self):
