@@ -63,14 +63,6 @@ There are several options for removing erroneous points (points where there is a
 * ``Remove above/below``: remove any points above or below a certain Y value.
 * ``Auto remove``: Attempt to automatically remove any points where there seems to be an obvious jump from the points before and after.
 
-``Downsample readings``
-'''''''''''''''''''''''
-If the condition data file is very large, you have the option to downsample when reading in the file to reduce loading times.
-
-The downsampling factor can be entered in to the box.
-
-e.g. A factor of 10 means that only 1 in 10 data points will be read in.
-
 ``Time average``
 ''''''''''''''''
 For noisy condition data you can also average over a time window entered into the text box.
@@ -78,6 +70,25 @@ For noisy condition data you can also average over a time window entered into th
 This will calculate the mean and standard deviation over a given time window.
 
 The standard deviation will be shown on the plot as an error bar, this can be changed to the standard error on the mean in the ``Stats`` configuration menu.
+
+``Show events``
+'''''''''''''''
+Some file types include events with the data, these can be shown as annotations on the plot by toggling this button.
+
+``Download ADA data template``
+''''''''''''''''''''''''''''''
+Downloads a csv file template that can be opened in any spreadsheet software.
+
+Header information can be filled in the empty cells next to the titles.
+
+.. note::
+   Ensure the date is in the YYYY-MM-DD format, otherwise ADA won't be able to read the file
+
+More measures of growth (e.g. CD) can be added by inserting a column left of the ``Conditions`` column. (This might shift the header info, so make sure to shift them back)
+
+Conditions measurements (temperature, pH, etc) can be added as columns to the right of the ``Conditions`` column.
+
+Add measurement rows to the corresponding measurement columns, making sure to keep the ``Conditions`` column blank.
 
 Legend
 ------
@@ -97,7 +108,7 @@ A title for each legend, so you could label one 'Growth' and one 'pH' for exampl
 ''''''''''''''
 Show extra information retrieved from the header file in the legend.
 
-By default, this information will be shown in brackets after the label title, to only show the extra information without the brackets use the ``Only extra info`` checkbox.
+By default, this information will be shown in brackets after the label title, to only show the extra information without the brackets use the ``Remove labels`` checkbox.
 
 Style
 -----

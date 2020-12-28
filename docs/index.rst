@@ -6,7 +6,7 @@
 ADA Documentation
 ===========================
 
-This manual covers the features of the Algal Data Analyser software for both users and developers
+This manual covers the features of the Algal Data Analyser (ADA) software for both users and developers
 
 User Guide
 ----------

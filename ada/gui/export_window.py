@@ -39,12 +39,20 @@ class ExportWindow(QMainWindow):
         layout.addWidget(self.conditions)
 
         export_button = Button("Export", self)
-        export_button.clicked.connect(self.export)
+        export_button.clicked.connect(self.export_handler)
         layout.addWidget(export_button)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def export_handler(self):
+        try:
+            self.export()
+        except Exception as e:
+            print('Error: ' + str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
 
     def export(self):
         for data in self.parent.data.data_files:
@@ -53,9 +61,9 @@ class ExportWindow(QMainWindow):
             if self.test_path == 'none':
                 path = get_save_directory_name()
             if self.rename.isChecked():
-                filename = path + '/' + data.profile + extension
+                filename = path + '/' + data.profile + '.csv'
             else:
-                filename = path + '/' + filename.split('/')[-1]
+                filename = path + '/' + filename.split('/')[-1].split('.')[0] + '.csv'
 
             # Get the condition data if that option is checked
             conditions = None

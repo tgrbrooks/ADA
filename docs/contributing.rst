@@ -20,8 +20,8 @@ Clone your fork, and set it to track the original repository
 .. code:: bash
 
    git clone https://github.com/< username >/ADA.git
-   cd AlgaePlotter
-   git remote add upstream https://github.com/tgrbrooks/ADAr.git
+   cd ADA
+   git remote add upstream https://github.com/tgrbrooks/ADA.git
 
 Create a new branch to work on your feature
 

@@ -67,18 +67,12 @@ After downloading the source code you can install it with
 .. code-block:: bash
 
    cd ADA
-   source setup.sh
-
-You only need to install it once, now you can run it with
-
-.. code-block:: bash
-
    source run.sh
 
 Detailed Instructions
 '''''''''''''''''''''
 
-Create a virtual environment in the AlgaePlotter directory for installing the dependencies
+Create a virtual environment in the ADA directory for installing the dependencies
 
 .. code-block:: bash
 
@@ -89,19 +83,19 @@ Install the dependencies
 
 .. code-block:: bash
 
-  pip install matplotlib PyQt5==5.9.2
+  pip3 install -r requirements.txt
 
 Install the Algae Plotter app
 
 .. code-block:: bash
 
-   pip install .
+   pip3 install --upgrade -e .
 
 Run the program
 
 .. code-block:: bash
 
-  python3 src/main.py
+  python3 ada/main.py
 
 When you open a new terminal you will need to activate the virtual environment again
 
@@ -111,7 +105,7 @@ When you open a new terminal you will need to activate the virtual environment a
 
 You can check for, download and install updates from GitHub with
 
-.. code-bloack:: bash
+.. code-block:: bash
 
    git pull
-   pip install .
+   pip3 install --upgrade -e .

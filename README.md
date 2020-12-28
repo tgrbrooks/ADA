@@ -87,7 +87,9 @@ The currently supported bioreactor data types are:
 * Industrial Plankton (IP) T-Iso CSV files
 * Photon Systems Instruments (PSI) photobioreactor ODS files
 * ADA export format/user input format CSV files
+
 It should be possible to export files of this format from the software that is supplied with each of these bioreactors.
+
 If you have a different bioreactor that is not currently supported please feel free to contact me and I'll try my best to add it.
 
 The imported files will be displayed in the box below the `Add Data` button, files can be removed by clicking the red X and replicates can be added by clicking the green +.
@@ -95,6 +97,7 @@ The imported files will be displayed in the box below the `Add Data` button, fil
 ### Growth condition data
 
 It is possible to display growth condition data (temperature, pH, light, etc) on the right hand y axis.
+
 Some bioreactors (IP and PSI) include the condition data in their files, others come as separate files that can be uploaded at the same time as the growth data files.
 
 Condition data can be removed by clicking the red X next to the name.
@@ -102,6 +105,7 @@ Condition data can be removed by clicking the red X next to the name.
 ### Plot
 
 Hit the `Plot!` button to display the currently loaded growth and condition data.
+
 The curves can be clicked on to chage their style.
 
 ### Calibration curve
