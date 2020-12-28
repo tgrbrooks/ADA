@@ -117,6 +117,7 @@ Modify the cosmetics of the plot.
 ``Style``
 '''''''''
 Change the default colour scheme of the plot. The available options are:
+
 * ``default``: the default matplotlib style.
 * ``grayscale``: a colour scheme appropriate for black and white printing
 * ``colour blind``: a scheme easily differentiated by people with colour blindness
@@ -143,6 +144,7 @@ Change the width of the curves.
 Change the colour of the condition Y axis.
 
 ``Grid``
+''''''''
 Toggle a grid on/off on the plot.
 
 Stats

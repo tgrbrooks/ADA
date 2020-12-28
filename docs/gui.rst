@@ -9,11 +9,12 @@ Importing Data
 Allowed Formats
 '''''''''''''''
 Currently the accepted input formats are:
-- Algem Pro text files
-- Algem HT-24 CSV (comma separated variable) files
-- Industrial Plankton (IP) T-Iso CSV files
-- Photon Systems Instruments (PSI) photobioreactor ODS files
-- ADA export format/user input format CSV files
+
+ * Algem Pro text files
+ * Algem HT-24 CSV (comma separated variable) files
+ * Industrial Plankton (IP) T-Iso CSV files
+ * Photon Systems Instruments (PSI) photobioreactor ODS files
+ * ADA export format/user input format CSV files
 
 It should be possible to export files of this format from the software that is supplied with each of these bioreactors.
 
@@ -34,12 +35,16 @@ After selecting the files, more options will appear depending on the file type:
 
 Algem Pro
     Growth condition files are stored separately and can be added.
+
     There is also an option to downsample the condition data, this will read in every X measurements. If the frequency of the condition measurements is much greater than the frequency of growth measurements it can take a long time to load the file without downsampling.
 
 Algem HT-24
     A growth conditions file can be added.
+
     Condition downsampling can be specified.
+
     A details file can be added, this contains replicate and other information.
+
     The ``Merge details`` button will use the replicate information from the details file to average replicate measurements together.
 
 Industrial Plankton (IP T-Iso)
@@ -50,6 +55,7 @@ Photon Systems Instruments (PSI)
 
 ADA
     Other file types can be exported to this type which contains both growth and conditions data.
+
     It is also possible to download a template file from the ``Data`` tab to upload custom data. Just open up the template file in your favourite spreadsheet software and add the information to the indicated locations and then load in the data with the ``ADA`` option.
 
 Hit the ``Load`` button to upload the files, they should appear in the box below the ``Add Data`` button and the condition data will appear in the box below that.
@@ -97,10 +103,11 @@ Fitting
 You can fit curves to the growth data with the ``Fit`` button.
 
 The available fits are (:math:`y` = growth data, :math:`x` = time data):
-- Flat line :math:`y = p_{0}`
-- Linear :math:`y = p_{1}x + p_{0}`
-- Quadratic :math:`y = p_{2}x^2 + p_{1}x + p_{0}`
-- Exponential :math:`y = p_{0}e^{p_{1}x}`
+
+* Flat line :math:`y = p_{0}`
+* Linear :math:`y = p_{1}x + p_{0}`
+* Quadratic :math:`y = p_{2}x^2 + p_{1}x + p_{0}`
+* Exponential :math:`y = p_{0}e^{p_{1}x}`
 
 To a Table
 ''''''''''
