@@ -181,6 +181,7 @@ class App(QMainWindow):
         x_v_layout.addWidget(TopLabel('X:'))
         # X axis drop down menu
         self.xaxis_dropdown = DropDown('Variable:', config.xaxis_units, self)
+        self.xaxis_dropdown.setCurrentIndex(2)
         x_form_layout.addRow(self.xaxis_dropdown)
 
         # X axis titles
@@ -631,7 +632,7 @@ class App(QMainWindow):
     def download_template(self):
         template = ['Name,,Title,,Reactor,,Profile,\n',
                     'Date,2020-01-15,Time,18:18:18\n',
-                    'Time [s],OD [Numeric]\n']
+                    'Time [hr],OD [],Conditions\n']
         file_name = get_save_file_name()
         file_name = file_name.split('.')[0] + '.csv'
         with open(file_name, 'w', newline='') as csvfile:

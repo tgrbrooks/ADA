@@ -482,6 +482,8 @@ class PlotCanvas(FigureCanvasQTAgg):
         if(config.xname != ''):
             x_title = x_title.replace(xaxisdata.name, config.xname)
         x_unit = xaxisdata.unit
+        if(config.xvar == 'seconds'):
+            x_unit = 'sec'
         if(config.xvar == 'minutes'):
             xdata = xdata / 60.
             x_unit = 'min'

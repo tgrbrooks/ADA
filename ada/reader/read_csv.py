@@ -15,7 +15,7 @@ def read_csv(file_name):
     with open(file_name, 'r', errors='ignore') as f:
         reader = csv.reader(f, delimiter=',')
         for row in reader:
-            if row[0] == 'Name':
+            if row[0].lower() == 'name':
                 csv_data.reactor = row[1]
                 condition_data.reactor = row[1]
                 csv_data.title = row[3]
@@ -25,7 +25,7 @@ def read_csv(file_name):
                 csv_data.profile = row[7]
                 condition_data.profile = row[7]
 
-            elif row[0] == 'Date':
+            elif row[0].lower() == 'date':
                 date_str = row[1].split('-')
                 start_date = date(int(date_str[0]), int(date_str[1]),
                                   int(date_str[2]))
@@ -47,13 +47,18 @@ def read_csv(file_name):
                 for i, measurement_name in enumerate(row):
                     if i == 0:
                         continue
-                    if measurement_name == 'Conditions':
+                    if measurement_name.lower() in ['conditions', 'condition']:
                         is_conditions = True
                         cond_i = i
                         continue
+                    if measurement_name == '':
+                        continue
                     signal = csv_data.Signal()
                     signal.name = measurement_name.split(' [')[0]
-                    signal.unit = measurement_name.split(' [')[0].split(']')[0]
+                    if len(measurement_name.split(' [')) < 2:
+                        signal.unit = ''
+                    else:
+                        signal.unit = measurement_name.split(' [')[0].split(']')[0]
                     if not is_conditions:
                         csv_data.signals.append(signal)
                     else:
@@ -61,6 +66,8 @@ def read_csv(file_name):
 
             else:
                 for i, measurement in enumerate(row):
+                    if measurement == '':
+                        continue
                     if i == 0:
                         csv_data.xaxis.append(float(measurement))
                         condition_data.xaxis.append(float(measurement))

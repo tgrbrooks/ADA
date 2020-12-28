@@ -66,7 +66,14 @@ class AlgaeData():
                     self.unit = i.split('=')[1]
 
         def append(self, dat):
-            self.data = np.append(self.data, dat)
+            if self.unit.lower() in ['m', 'min', 'mins', 'minutes', 'minute']:
+                self.data = np.append(self.data, dat * 60.)
+            elif self.unit.lower() in ['h', 'hr', 'hrs', 'hour', 'hours']:
+                self.data = np.append(self.data, dat * 60. * 60.)
+            elif self.unit.lower() in ['d', 'day', 'days']:
+                self.data = np.append(self.data, dat * 60. * 60. * 24.)
+            else:
+                self.data = np.append(self.data, dat)
 
         def title(self):
             return self.name + " [" + self.unit + "]"

@@ -96,6 +96,9 @@ class DropDown(QWidget):
     def count(self):
         return self.entry.count()
 
+    def setCurrentIndex(self, index):
+        return self.entry.setCurrentIndex(index)
+
 class CheckBox(QWidget):
     def __init__(self, text, parent=None, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
