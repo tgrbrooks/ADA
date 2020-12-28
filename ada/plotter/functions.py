@@ -121,12 +121,8 @@ def average_data(xdatas, ydatas, show_err=False):
     for i, x_i in enumerate(xdatas[0]):
         ys = np.array([ydatas[0][i]])
         for j in range(1, len(xdatas), 1):
-            result = np.where(xdatas[j] == x_i)
-            if(len(result) == 1):
-                ys = np.append(ys, ydatas[j][result[0]])
-        # Only average time points shared by all curves
-        if(ys.size != len(xdatas)):
-            continue
+            # Interpolate between points to do average
+            ys = np.append(ys, np.interp(x_i, xdatas[j], ydatas[j]))
         mean = np.mean(ys)
         std_dev = np.std(ys, ddof=1)
         if(show_err):
