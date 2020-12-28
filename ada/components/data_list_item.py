@@ -64,6 +64,7 @@ class ConditionListItem():
         del_button = DeleteButton()
         del_button.clicked.connect(parent.remove_condition_item)
         label = QLabel(text)
+        label.setStyleSheet(config.default_font_bold)
 
         layout = QHBoxLayout()
         layout.addWidget(del_button)
@@ -81,6 +82,7 @@ class DelListItem():
         self.widget = QWidget()
         self.button = DeleteButton()
         label = QLabel(text)
+        label.setStyleSheet(config.default_font_bold)
 
         layout = QHBoxLayout()
         spacer = Spacer()

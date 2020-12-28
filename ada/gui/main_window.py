@@ -178,7 +178,7 @@ class App(QMainWindow):
         self.figure_title = TextEntry('Figure title:', self)
         axis_v_layout.addWidget(self.figure_title)
 
-        x_v_layout.addWidget(TopLabel('X:'))
+        x_v_layout.addWidget(TopLabel('X (time):'))
         # X axis drop down menu
         self.xaxis_dropdown = DropDown('Variable:', config.xaxis_units, self)
         self.xaxis_dropdown.setCurrentIndex(2)
@@ -204,7 +204,7 @@ class App(QMainWindow):
         x_v_widget.setLayout(x_v_layout)
         axis_h_layout.addWidget(x_v_widget)
 
-        y_v_layout.addWidget(TopLabel('Y:'))
+        y_v_layout.addWidget(TopLabel('Y (growth):'))
         # Y axis drop down menu
         self.yaxis_dropdown = DropDown('Variable:', [], self)
         y_form_layout.addRow(self.yaxis_dropdown)
