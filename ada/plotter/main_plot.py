@@ -558,7 +558,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 found_ydata = True
                 ydata = self.parent.calibration.calibrate_od(sig.data)
                 y_title = 'CD'
-        if config.ynormlog and name == '':
+        if config.ynormlog and name == '' and not condition:
             y_title = 'ln('+yvar+'/'+yvar+'$_{0}$)'
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
