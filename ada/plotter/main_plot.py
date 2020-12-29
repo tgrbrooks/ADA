@@ -215,7 +215,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 xdata, ydata, yerr = average_data(xdatas, ydatas,
                                                   config.std_err)
 
-                if config.yvar == 'ln(OD/OD0)':
+                if config.ynormlog:
                     yerr = yerr/ydata
                     ydata = np.log(ydata/ydata[0])
 
@@ -225,7 +225,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                    ydata+yerr, alpha=0.4)
                 plot_list.append([growth_plot[0], fill_area])
             else:
-                if config.yvar == 'ln(OD/OD0)':
+                if config.ynormlog:
                     ydata = np.log(ydata/ydata[0])
 
                 growth_plot = self.axes.plot(xdata, ydata, '-',
@@ -358,6 +358,21 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         # Switch grid on/off
         self.axes.grid(config.grid)
+
+        if(config.ylog):
+            self.axes.set_yscale('log')
+        else:
+            self.axes.set_yscale('linear')
+        if(config.xlog):
+            self.axes.set_xscale('log')
+            self.condition_axes.set_xscale('log')
+        else:
+            self.axes.set_xscale('linear')
+            self.condition_axes.set_xscale('linear')
+        if(config.condition_ylog):
+            self.condition_axes.set_yscale('log')
+        else:
+            self.condition_axes.set_yscale('linear')
 
         # Configure axis labels
         self.axes.set_title('')
@@ -539,14 +554,12 @@ class PlotCanvas(FigureCanvasQTAgg):
                     y_title = y_title.replace("["+sig.unit+"]", "")
                 elif(unit != ''):
                     y_title = y_title.replace("["+sig.unit+"]", "["+unit+"]")
-            elif yvar == 'ln(OD/OD0)' and sig.name == 'OD':
-                found_ydata = True
-                ydata = sig.data
-                y_title = 'ln(OD/OD$_{0}$)'
             elif yvar == 'CD' and self.parent.calibration is not None and sig.name == 'OD':
                 found_ydata = True
                 ydata = self.parent.calibration.calibrate_od(sig.data)
                 y_title = 'CD'
+        if config.ynormlog and name == '':
+            y_title = 'ln('+yvar+'/'+yvar+'$_{0}$)'
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title

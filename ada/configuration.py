@@ -257,6 +257,7 @@ xname = ''
 xunit = ''
 xmin = -1
 xmax = -1
+xlog = False
 
 # Y axis config
 yvar = ''
@@ -264,6 +265,8 @@ yname = ''
 yunit = ''
 ymin = -1
 ymax = -1
+ylog = False
+ynormlog = False
 
 # Condition y axis config
 condition_yvar = ''
@@ -271,6 +274,7 @@ condition_yname = ''
 condition_yunit = ''
 condition_ymin = -1
 condition_ymax = -1
+condition_ylog = False
 
 # Data config
 smooth = False

@@ -197,6 +197,10 @@ class App(QMainWindow):
         self.xaxis_max = TextEntry('Range max:', self)
         x_form_layout.addRow(self.xaxis_max)
 
+        # X axis log scale
+        self.xaxis_log = CheckBox('Log scale', self)
+        x_form_layout.addRow(' ', self.xaxis_log)
+
         x_form_widget = QWidget()
         x_form_widget.setLayout(x_form_layout)
         x_v_layout.addWidget(x_form_widget)
@@ -221,6 +225,18 @@ class App(QMainWindow):
         y_form_layout.addRow(self.yaxis_min)
         self.yaxis_max = TextEntry('Range max:', self)
         y_form_layout.addRow(self.yaxis_max)
+
+        # Y axis log scale
+        self.yaxis_log = CheckBox('Log scale', self)
+        self.yaxis_normlog = CheckBox('ln(Y/Y0)', self)
+        ylog_hbox = QHBoxLayout()
+        ylog_hbox.setSpacing(15)
+        ylog_hbox.setContentsMargins(0,0,1,1)
+        ylog_hbox.addWidget(self.yaxis_log)
+        ylog_hbox.addWidget(self.yaxis_normlog)
+        ylog_widget = QWidget()
+        ylog_widget.setLayout(ylog_hbox)
+        y_form_layout.addRow(' ', ylog_widget)
 
         y_form_widget = QWidget()
         y_form_widget.setLayout(y_form_layout)
@@ -247,6 +263,10 @@ class App(QMainWindow):
         z_form_layout.addRow(self.condition_yaxis_min)
         self.condition_yaxis_max = TextEntry('Range max:', self)
         z_form_layout.addRow(self.condition_yaxis_max)
+
+        # Condition Y axis log scale
+        self.condition_yaxis_log = CheckBox('Log scale', self)
+        z_form_layout.addRow(' ', self.condition_yaxis_log)
 
         z_form_widget = QWidget()
         z_form_widget.setLayout(z_form_layout)
@@ -557,7 +577,6 @@ class App(QMainWindow):
             for sig in reversed(data.signals):
                 self.yaxis_dropdown.addItem(sig.name)
                 if sig.name == 'OD':
-                    self.yaxis_dropdown.addItem('ln(OD/OD0)')
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
@@ -674,6 +693,7 @@ class App(QMainWindow):
             config.xmax = float(self.xaxis_max.text())
         else:
             config.xmax = -1
+        config.xlog = self.xaxis_log.isChecked()
 
         # y axis config
         config.yvar = self.yaxis_dropdown.currentText()
@@ -687,6 +707,8 @@ class App(QMainWindow):
             config.ymax = float(self.yaxis_max.text())
         else:
             config.ymax = -1
+        config.ylog = self.yaxis_log.isChecked()
+        config.ynormlog = self.yaxis_normlog.isChecked()
 
         # Condition y axis config
         config.condition_yvar = \
@@ -702,6 +724,7 @@ class App(QMainWindow):
             config.condition_ymax = float(self.condition_yaxis_max.text())
         else:
             config.condition_ymax = -1
+        config.condition_ylog = self.condition_yaxis_log.isChecked()
 
         # Data config
         config.smooth = self.smooth_data.isChecked()
