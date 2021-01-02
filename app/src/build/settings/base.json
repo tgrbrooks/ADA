@@ -1,6 +1,6 @@
 {
-    "app_name": "Algae Plotter",
+    "app_name": "ADA",
     "author": "Tom Brooks",
     "main_module": "src/main/python/main.py",
-    "version": "0.0.0"
+    "version": "1.0.0"
 }

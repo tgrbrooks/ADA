@@ -2,21 +2,26 @@ import numpy as np
 import random
 from math import factorial
 
+import configuration as config
+
 
 # Function to apply alignment, outlier removal and smoothing
-def process_data(xdata, ydata, config):
+def process_data(xdata, ydata):
+    # Remove any values <= 0
+    xdata, ydata = remove_zeros(xdata, ydata)
+
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:
         xdata = xdata - xdata[0]
 
     if config.y_alignment != -1:
-        xdata = align_to_y(xdata, ydata, config)
+        xdata = align_to_y(xdata, ydata)
 
     # remove outliers
     if (config.remove_above >= 0 or
             config.remove_below >= 0 or
             config.auto_remove):
-        xdata, ydata = remove_outliers(xdata, ydata, config)
+        xdata, ydata = remove_outliers(xdata, ydata)
 
     # Smooth the data
     if(config.smooth):
@@ -24,8 +29,19 @@ def process_data(xdata, ydata, config):
     return xdata, ydata
 
 
+# Function to remove any values <= 0
+def remove_zeros(xdata, ydata):
+    data_index = 0
+    while data_index < len(ydata):
+        if (ydata[data_index] <= 0):
+            ydata = np.delete(ydata, data_index)
+            xdata = np.delete(xdata, data_index)
+            data_index = data_index - 1
+        data_index = data_index + 1
+    return xdata, ydata
+
 # Function to align all plots to the same y value
-def align_to_y(xdata, ydata, config):
+def align_to_y(xdata, ydata):
     # Find the first y index greater than the alignment point
     index = 0
     for i, y in enumerate(ydata):
@@ -37,7 +53,7 @@ def align_to_y(xdata, ydata, config):
 
 
 # Function to remove outliers in the data
-def remove_outliers(xdata, ydata, config):
+def remove_outliers(xdata, ydata):
     data_index = 0
     while data_index < len(ydata):
         if (config.remove_above >= 0 and
@@ -105,12 +121,8 @@ def average_data(xdatas, ydatas, show_err=False):
     for i, x_i in enumerate(xdatas[0]):
         ys = np.array([ydatas[0][i]])
         for j in range(1, len(xdatas), 1):
-            result = np.where(xdatas[j] == x_i)
-            if(len(result) == 1):
-                ys = np.append(ys, ydatas[j][result[0]])
-        # Only average time points shared by all curves
-        if(ys.size != len(xdatas)):
-            continue
+            # Interpolate between points to do average
+            ys = np.append(ys, np.interp(x_i, xdatas[j], ydatas[j]))
         mean = np.mean(ys)
         std_dev = np.std(ys, ddof=1)
         if(show_err):
@@ -147,3 +159,14 @@ def time_average(xdata, ydata, window, show_err=False):
             new_yerr = np.append(new_yerr, std_dev)
         w_i = w_i + 1
     return new_xdata, new_ydata, new_yerr
+
+
+# Function to find nearest index in numpy array
+def exponent_text(value):
+    exponent = np.floor(np.log10(np.abs(value))).astype(int)
+    if exponent >= 0 and exponent <= 2:
+        text = '%1.2f' % (value)
+        return text
+    value = value/(1.*10.**exponent)
+    text = r'%1.2f$\times10^{%i}$' % (value, exponent)
+    return text

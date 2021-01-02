@@ -1,5 +1,5 @@
 # Local imports
-from gui.mainwindow import App
+from gui.main_window import App
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 # Standard imports

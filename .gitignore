@@ -7,7 +7,7 @@ __init__*
 venv
 build
 dist
-app
+app/target
 AlgaePlotter*
 ADA.egg*
 .DS_Store

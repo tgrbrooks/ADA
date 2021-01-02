@@ -1,6 +1,6 @@
 {
     "categories": "Utility;",
-    "description": "",
-    "author_email": "",
-    "url": ""
+    "description": "An PyQt5 based plotting and analysis package for algae growth curves.",
+    "author_email": "tom.g.r.brooks@gmail.com",
+    "url": "https://github.com/tgrbrooks/ADA"
 }
