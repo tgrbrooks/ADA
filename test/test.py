@@ -39,6 +39,7 @@ class ADATestCase(unittest.TestCase):
         self.assertEqual(self.data.xaxis.data.size, 426, 'Incorrect x data read')
         self.assertEqual(len(self.data.signals), 1, 'Incorrect y data read')
 
+    '''
     def test_algem_pro_read_downsample(self):
         algem_data = read_algem_pro('test/files/Algem-Pro/150.txt', 10)
         self.assertEqual(algem_data.xaxis.data.size, 42, 'Incorrect x data read')
@@ -50,14 +51,12 @@ class ADATestCase(unittest.TestCase):
         self.assertEqual(len(self.window.data.replicate_files), 1, 'Wrong number of replicate files')
         self.assertEqual(len(self.window.data.replicate_files[0]), 1, 'Wrong number of replicate files')
 
-    '''
     def test_add_delete_data(self):
         algem_data = read_algem_pro('test/files/Algem-Pro/150.txt')
         self.window.data.add_data(algem_data)
         self.assertEqual(len(self.window.data.data_files), 2, 'Wrong number of data files')
         self.window.data.delete_data(1)
         self.assertEqual(len(self.window.data.data_files), 1, 'Wrong number of data files')
-    '''
 
     def test_add_delete_replicate(self):
         algem_data = read_algem_pro('test/files/Algem-Pro/150.txt')
@@ -66,7 +65,6 @@ class ADATestCase(unittest.TestCase):
         self.window.data.delete_replicate(0, 1)
         self.assertEqual(len(self.window.data.replicate_files[0]), 1, 'Wrong number of replicate files')
 
-    '''
     # ====== gui/exportwindow.py ========
     
     def test_export_txt_to_csv(self):
