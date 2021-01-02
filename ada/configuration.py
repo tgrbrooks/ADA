@@ -247,6 +247,10 @@ table_row_options = ["profile", "reactor", "gradient", "time to",
                      "fit parameter"]
 fit_options = ["flat line", "linear", "quadratic", "exponential"]
 
+# Width and height ratio
+wr = 1.
+hr = 1.
+
 # Plotting default values
 
 title = ''
