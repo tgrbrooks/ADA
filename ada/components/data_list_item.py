@@ -86,7 +86,7 @@ class DelListItem():
 
         layout = QHBoxLayout()
         spacer = Spacer()
-        spacer.setFixedWidth(5)
+        spacer.setFixedWidth(5*config.wr)
         layout.addWidget(spacer)
         layout.addWidget(self.button)
         layout.addWidget(label)
