@@ -1,16 +1,18 @@
-[![Build Status](https://travis-ci.org/tgrbrooks/AlgaePlotter.svg?branch=master)](https://travis-ci.org/tgrbrooks/AlgaePlotter)
+[![Build Status](https://circleci.com/gh/tgrbrooks/ADA.svg?style=shield)](https://app.circleci.com/pipelines/github/tgrbrooks/ADA)
 
 [![Documentation Status](https://readthedocs.org/projects/algaeplotter/badge/?version=latest)](https://algaeplotter.readthedocs.io/en/latest/?badge=latest)
 
-![Logo](/images/logo.png)
+![Logo](/images/logo_v2.png)
 
-An interactive PyQt5 based plotting package for algae growth curves.
+An PyQt5 based plotting and analysis package for algae growth curves.
 
 # Installation
 
 ## Just the application
 
-Installers for MacOS are available on [Dropbox](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0).
+* MacOS [installer](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0&preview=Algae+Plotter.dmg) (via Dropbox)
+  * Tested on Mojave, should still work on Catalina.
+* Windows 10 [installer](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0&preview=Algae+PlotterSetup.exe) (via Dropbox)
 
 Other operating systems can be supported upon request.
 
@@ -19,14 +21,14 @@ Other operating systems can be supported upon request.
 Dependencies:
 * Python 3.6 (other version may have unexpected behaviour)
 * PyQt5
-* Matplotlib
+* Other required python libraries in the `requirements.txt`
 
 ### Detailed instructions for MacOS
 
 Clone the repository
 
 ```bash
-git clone https://github.com/tgrbrooks/AlgaePlotter.git
+git clone https://github.com/tgrbrooks/ADA.git
 ```
 
 Check your version of python
@@ -37,30 +39,39 @@ python3 --version
 
 If you don't have python 3.6 installed then [download it](https://docs.python-guide.org/starting/install3/osx/)
 
-Create a virtual environment in the AlgaePlotter directory for installing the dependencies
+The script `run.sh` can be used to finish the setup and run the program, the individual steps are:
+
+* Create a virtual environment in the AlgaePlotter directory for installing the dependencies
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-Install the dependencies
+* Install the dependencies
 
 ```bash
-pip install matplotlib PyQt5==5.9.2
+pip3 install -r requirements.txt
 ```
 
-Run the program
+* Install ADA in edit mode
 
 ```bash
-python3 src/main.py
+pip3 install --upgrade -e .
 ```
 
-# Usage
+* Run the program
 
-This is a GUI based application, all configuration is through the user interface.
+```bash
+python3 ada/main.py
+```
 
-There are two tabs, a plotting tab and an options tab
+# Usage overview
+
+There is in-depth documentation on the usage and available features available [here](https://algaeplotter.readthedocs.io/en/latest/).
+
+The starting screen contains the plot, data input and commonly used features.
+The tabs at the top of the screen contain more plotting and analysis options.
 
 ## Plotting
 
@@ -68,53 +79,86 @@ There are two tabs, a plotting tab and an options tab
 
 ### Growth curve data
 
-Algal growth curve data can be imported using the `Add Data` button, this will open a file browser to allow you to select the data.
+Algal growth curve data can be imported using the `Add Data` button, this will open a new window to allow you to select the data.
 
-Currently only text files from the Algem photobioreactor are supported, contact me if you need other file types added.
-The selected files will be displayed in the box below, files can be remove by clicking their names.
+The currently supported bioreactor data types are:
+* Algem Pro text files
+* Algem HT-24 CSV (comma separated variable) files
+* Industrial Plankton (IP) T-Iso CSV files
+* Photon Systems Instruments (PSI) photobioreactor ODS files
+* ADA export format/user input format CSV files
 
-The files will be plotted in the order that they are loaded.
+It should be possible to export files of this format from the software that is supplied with each of these bioreactors.
+
+If you have a different bioreactor that is not currently supported please feel free to contact me and I'll try my best to add it.
+
+The imported files will be displayed in the box below the `Add Data` button, files can be removed by clicking the red X and replicates can be added by clicking the green +.
 
 ### Growth condition data
 
 It is possible to display growth condition data (temperature, pH, light, etc) on the right hand y axis.
 
-Data is loaded and removed in the same way as the growth curve data.
+Some bioreactors (IP and PSI) include the condition data in their files, others come as separate files that can be uploaded at the same time as the growth data files.
+
+Condition data can be removed by clicking the red X next to the name.
+
+### Plot
+
+Hit the `Plot!` button to display the currently loaded growth and condition data.
+
+The curves can be clicked on to chage their style.
+
+### Calibration curve
+
+A calibration curve (measured OD to true OD conversion) can be loaded and used to plot the calibrated density (CD).
 
 ### Quick access functions
 
-* **`Save`**: save the plot as an image file, the file name can be configured in the options tab.
-* **`Export`**: export the data files to comma separated variable (`.csv`) files.
-* **`Measure`**: interactively measure the growth rate gradient. A cursor will appear that will allow you to select two points on the growth curves to measure the gradient between them.
-* **`Grid`**: toggle the grid on and off.
+* **`Save`**: Save the currently displayed plot as a png image.
+* **`Export`**: Export the data files to ADA format CSV files.
+* **`Measure`**: Interactively measure the growth rate gradient. A cursor will appear that will allow you to select two points on the growth curves to measure the gradient between them.
+* **`Fit`**: Fit the displayed curves with a selection of predefined functions (if a function you need isn't present, let me know).
+* **`To Table`**: Output common measurements to a table (contact me if you have any more common measurements you would like included).
 
-## Options
+## Options tabs
 
-![Options Screen](/images/options_screen.png)
+There are many configuration options available in the different options tabs, a summary is provided here.
 
-### Axis configuration
+As always, if there are missing features you need, open an issue or get in contact some other way.
 
-Choose the plotting variable, axis label and axis range for the x (time), y (usually some measure of growth/algae density) and y2 (growth conditions).
+### Axes
 
-Leaving text boxes blank will use the variable and unit names from the data files.
+* Set a plot title.
+* Choose plotting variables.
+* Modify the axis labels and unit names.
+* Set the axis ranges.
 
-### Data configuration
+The X axis is always time, Y is usually some measure of growth such as optical density (OD) and Y2 is for growth conditions.
 
-* **`Smooth data`**: apply Savitzky-Golay [1,2,3] smoothing to noisy data.
-* **`Align`**: where there is an offset in the start times between the data files they can be aligned at time 0 by subtracting the first measured time from all subsequent times.
+Leaving text boxes blank will use the variable and unit names from the data files, units can be removed by entering "none".
 
-### Legend configuration
+### Data
 
-Toggle the legend on and off.
+* Apply Savitzky-Golay smoothing to noisy data.
+* Align growth curves to all start from time = 0, or at a given point on the Y axis to facilitate comparisons.
+* Some bioreactors include events in their data and there is an option to show these.
+* Average condition data over a given time window.
+* Remove measurement errors in growth data.
 
-The default legend titles are taken from the file names, they can be modified by selecting them in the drop-down menu, changing the text, and pressing return.
+### Legend
 
-### Style configuration
+* Toggle growth and condition legends on and off (they are also draggable on the plot).
+* Modify legend headings and labels (select label from dropdown, modify it and press enter).
+* Include extra information in the legends.
 
-The default matplotlib plotting [style](https://matplotlib.org/3.1.1/gallery/style_sheets/style_sheets_reference.html), font family, font size and line width can be modified.
+### Style
 
-[1] A. Savitzky, M. J. E. Golay, Smoothing and Differentiation of Data by Simplified Least Squares Procedures. Analytical Chemistry, 1964, 36 (8), pp 1627-1639.
+* Change the preset matplotlib plotting style.
+* Change font sizes and styles.
+* Change the plot line widths.
+* Change the condition axis color.
+* Toggle grid lines on and off.
 
-[2] Numerical Recipes 3rd Edition: The Art of Scientific Computing W.H. Press, S.A. Teukolsky, W.T. Vetterling, B.P. Flannery Cambridge University Press ISBN-13: 9780521880688
+### Stats
 
-[3] SciPy Cookbook (http://scipy.github.io/old-wiki/pages/Cookbook/SavitzkyGolay)
+Currently the only available option here is switching between the standard error and standard deviation.

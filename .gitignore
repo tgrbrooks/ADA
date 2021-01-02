@@ -1,4 +1,5 @@
 __pycache__*
+__init__*
 *.png
 *.swp
 *.txt
@@ -8,6 +9,7 @@ build
 dist
 app
 AlgaePlotter*
+ADA.egg*
 .DS_Store
 _build
 *.pyc

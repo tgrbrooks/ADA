@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Algae Plotter'
+project = 'ADA'
 copyright = '2020, Tom Brooks'
 author = 'Tom Brooks'
 
@@ -50,7 +50,7 @@ html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     'logo_only': True
 }
-html_logo = '../images/logo.png'
+html_logo = '../images/logo_v2.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

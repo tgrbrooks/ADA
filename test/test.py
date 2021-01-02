@@ -2,18 +2,18 @@ import unittest, sys, os
 import tempfile, shutil
 from datetime import datetime, date, time
 
-from src.reader.readtextfile import read_text_file
-from src.gui.mainwindow import App
-from src.gui.exportwindow import ExportWindow
+from ada.reader.read_algem_pro import read_algem_pro
+from ada.gui.main_window import App
+from ada.gui.export_window import ExportWindow
 
 from PyQt5.QtWidgets import QApplication
 
-class AlgaePlotterTestCase(unittest.TestCase):
+class ADATestCase(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
         app = QApplication(sys.argv)
         self.window = App()
-        self.data = read_text_file('test/files/150.txt')
+        self.data = read_algem_pro('test/files/Algem-Pro/150.txt')
         self.window.data.add_data(self.data)
 
     def tearDown(self):
@@ -26,7 +26,7 @@ class AlgaePlotterTestCase(unittest.TestCase):
 
     # ====== reader/readtextfile.py ========
 
-    def test_txt_file_read(self):
+    def test_algem_pro_read(self):
         # Header information
         self.assertEqual(self.data.label, '150', 'Incorrect label read')
         self.assertEqual(self.data.date, date(2018, 1, 16), 'Incorrect date read')
@@ -39,8 +39,9 @@ class AlgaePlotterTestCase(unittest.TestCase):
         self.assertEqual(self.data.xaxis.data.size, 426, 'Incorrect x data read')
         self.assertEqual(len(self.data.signals), 1, 'Incorrect y data read')
 
-    def test_txt_file_read_downsample(self):
-        algem_data = read_text_file('test/files/150.txt', 10)
+    '''
+    def test_algem_pro_read_downsample(self):
+        algem_data = read_algem_pro('test/files/Algem-Pro/150.txt', 10)
         self.assertEqual(algem_data.xaxis.data.size, 42, 'Incorrect x data read')
 
     # ====== reader/dataholder.py ========
@@ -51,20 +52,19 @@ class AlgaePlotterTestCase(unittest.TestCase):
         self.assertEqual(len(self.window.data.replicate_files[0]), 1, 'Wrong number of replicate files')
 
     def test_add_delete_data(self):
-        algem_data = read_text_file('test/files/150.txt')
+        algem_data = read_algem_pro('test/files/Algem-Pro/150.txt')
         self.window.data.add_data(algem_data)
         self.assertEqual(len(self.window.data.data_files), 2, 'Wrong number of data files')
         self.window.data.delete_data(1)
         self.assertEqual(len(self.window.data.data_files), 1, 'Wrong number of data files')
 
     def test_add_delete_replicate(self):
-        algem_data = read_text_file('test/files/150.txt')
+        algem_data = read_algem_pro('test/files/Algem-Pro/150.txt')
         self.window.data.add_replicate(algem_data, 0)
         self.assertEqual(len(self.window.data.replicate_files[0]), 2, 'Wrong number of replicate files')
         self.window.data.delete_replicate(0, 1)
         self.assertEqual(len(self.window.data.replicate_files[0]), 1, 'Wrong number of replicate files')
 
-    '''
     # ====== gui/exportwindow.py ========
     
     def test_export_txt_to_csv(self):

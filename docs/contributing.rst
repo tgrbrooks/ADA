@@ -5,7 +5,7 @@ Contributing
 
 Issues and New Features
 -----------------------
-If you find a bug or there are any features you would like added please open up an issue `here <https://github.com/tgrbrooks/AlgaePlotter/issues>`_.
+If you find a bug or there are any features you would like added please open up an issue `here <https://github.com/tgrbrooks/ADA/issues>`_.
 
 Adding to the Code
 ------------------
@@ -19,9 +19,9 @@ Clone your fork, and set it to track the original repository
 
 .. code:: bash
 
-   git clone https://github.com/< username >/AlgaePlotter.git
-   cd AlgaePlotter
-   git remote add upstream https://github.com/tgrbrooks/AlgaePlotter.git
+   git clone https://github.com/< username >/ADA.git
+   cd ADA
+   git remote add upstream https://github.com/tgrbrooks/ADA.git
 
 Create a new branch to work on your feature
 

@@ -1,12 +1,12 @@
-.. Algae Plotter documentation master file, created by
+.. ADA documentation master file, created by
    sphinx-quickstart on Thu May 21 17:08:52 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Algae Plotter Documentation
+ADA Documentation
 ===========================
 
-This manual covers the features of the Algae Plotter software for both users and developers
+This manual covers the features of the Algal Data Analyser (ADA) software for both users and developers
 
 User Guide
 ----------
