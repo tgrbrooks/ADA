@@ -10,10 +10,10 @@ jobs:
           name: Install and Test
           command: |
             apt-get update
-            apt-get install -y xvfb
+            apt-get install -y xvfb libxcb-xinerama0 qttools5-dev-tools
             pip3 install -r requirements.txt
             pip3 install --upgrade -e .
-            xvfb python3 -m unittest discover
+            xvfb-run -s "-screen 0 640x480x24" python3 -m unittest discover
 
 workflows:
   main:
