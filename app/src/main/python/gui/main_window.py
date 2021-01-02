@@ -36,10 +36,10 @@ class App(QMainWindow):
         super().__init__()
         self.title = 'Algal Data Analyser'
         # Default dimensions
-        self.left = 10
-        self.top = 10
-        self.width = 960
-        self.height = 600
+        self.left = 10 * config.wr
+        self.top = 10 * config.hr
+        self.width = 960 * config.wr
+        self.height = 600 * config.hr
         # Container for data
         self.data = DataHolder()
         # Container for condition data
@@ -52,6 +52,8 @@ class App(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
+        wr = config.wr
+        hr = config.hr
 
         tabs = QTabWidget()
         tabs.setStyleSheet(config.tab_style)
@@ -62,11 +64,11 @@ class App(QMainWindow):
 
         # Main plotting window
         plot_layout = QGridLayout()
-        plot_layout.setContentsMargins(5, 5, 5, 5)
-        plot_layout.setSpacing(10)
+        plot_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
+        plot_layout.setSpacing(10*wr)
 
         # Main plot window (row, column, row extent, column extent)
-        self.plot = PlotCanvas(self, width=10, height=4)
+        self.plot = PlotCanvas(self, width=10*wr, height=4*hr)
         shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -104,7 +106,7 @@ class App(QMainWindow):
         plot_layout.addWidget(table_button, 5, 4)
 
         data_entry_layout = QVBoxLayout()
-        data_entry_layout.setSpacing(5)
+        data_entry_layout.setSpacing(5*wr)
         data_entry_layout.setContentsMargins(5,0,5,0)
         # Add data button
         self.data_button = Button('Add Data', self,
@@ -141,7 +143,7 @@ class App(QMainWindow):
         data_entry_layout.addWidget(calibration_button)
         self.calibration_file = DelLabel(self)
         self.calibration_file.button.clicked.connect(self.remove_calibration_file)
-        self.calibration_file.setFixedHeight(40)
+        self.calibration_file.setFixedHeight(40*hr)
         data_entry_layout.addWidget(self.calibration_file)
 
         # Plot button
@@ -230,8 +232,8 @@ class App(QMainWindow):
         self.yaxis_log = CheckBox('Log scale', self)
         self.yaxis_normlog = CheckBox('ln(Y/Y0)', self)
         ylog_hbox = QHBoxLayout()
-        ylog_hbox.setSpacing(15)
-        ylog_hbox.setContentsMargins(0,0,1,1)
+        ylog_hbox.setSpacing(15*wr)
+        ylog_hbox.setContentsMargins(0, 0, 1*wr, 1*hr)
         ylog_hbox.addWidget(self.yaxis_log)
         ylog_hbox.addWidget(self.yaxis_normlog)
         ylog_widget = QWidget()

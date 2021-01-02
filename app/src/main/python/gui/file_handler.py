@@ -21,8 +21,8 @@ class FileHandlerGui(QWidget):
             self.save_fig = True
         else:
             self.save_fig = False
-        self.width = 640
-        self.height = 480
+        self.width = 640*config.wr
+        self.height = 480*config.hr
         self.initUI()
 
     def initUI(self):

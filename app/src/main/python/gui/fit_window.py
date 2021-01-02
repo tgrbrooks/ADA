@@ -18,8 +18,8 @@ class FitWindow(QMainWindow):
     def __init__(self, parent=None):
         super(FitWindow, self).__init__(parent)
         self.title = 'Fit Curve'
-        self.width = 250
-        self.height = 150
+        self.width = 250*config.wr
+        self.height = 150*config.hr
         self.parent = parent
         self.rows = []
         self.initUI()
@@ -30,8 +30,8 @@ class FitWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         fit_layout = QVBoxLayout()
-        fit_layout.setContentsMargins(5, 5, 5, 5)
-        fit_layout.setSpacing(5)
+        fit_layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        fit_layout.setSpacing(5*config.wr)
 
         # List of row options
         self.curve_option = DropDown('Data:', [], self)

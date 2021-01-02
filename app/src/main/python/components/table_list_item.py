@@ -18,7 +18,7 @@ class TableListItem():
         layout = QHBoxLayout()
 
         spacer = QWidget()
-        spacer.setFixedWidth(10)
+        spacer.setFixedWidth(10*config.wr)
         layout.addWidget(spacer)
 
         # Add a delete button

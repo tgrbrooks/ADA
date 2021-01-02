@@ -50,7 +50,7 @@ class DelLabel(QWidget):
         self.text = QLabel(text)
         self.file_name = ''
         self.text.setStyleSheet(config.label_style)
-        self.text.setFixedHeight(25)
+        self.text.setFixedHeight(25*config.hr)
         layout = QHBoxLayout()
         layout.addWidget(self.button)
         layout.addWidget(self.text)

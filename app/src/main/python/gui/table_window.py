@@ -25,8 +25,8 @@ class TableWindow(QMainWindow):
     def __init__(self, parent=None):
         super(TableWindow, self).__init__(parent)
         self.title = 'Create Table'
-        self.width = 500
-        self.height = 330
+        self.width = 500*config.wr
+        self.height = 330*config.hr
         self.parent = parent
         self.rows = []
         self.initUI()
@@ -39,8 +39,8 @@ class TableWindow(QMainWindow):
         tabs = QTabWidget()
 
         create_layout = QGridLayout()
-        create_layout.setContentsMargins(5, 5, 5, 5)
-        create_layout.setSpacing(5)
+        create_layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        create_layout.setSpacing(5*config.wr)
 
         # List of row options
         self.row_option = DropDown('Row:', config.table_row_options, self)
@@ -49,14 +49,14 @@ class TableWindow(QMainWindow):
         # Button to add a new row
         add_button = Button("Add Row", self)
         add_button.clicked.connect(self.add_row)
-        add_button.setFixedWidth(100)
+        add_button.setFixedWidth(100*config.wr)
         add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
         self.row_list = List(self)
         #self.row_list.setStyleSheet(config.scroll_style)
-        self.row_list.setSpacing(-15)
+        self.row_list.setSpacing(-15*config.wr)
         create_layout.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table

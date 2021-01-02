@@ -28,8 +28,8 @@ class LoadWindow(QMainWindow):
     def __init__(self, parent, data, condition, row=-1):
         super(LoadWindow, self).__init__(parent)
         self.title = 'Load Files'
-        self.width = 350
-        self.height = 150
+        self.width = 350*config.wr
+        self.height = 150*config.hr
         self.parent = parent
         self.data = data
         self.condition = condition
@@ -45,8 +45,8 @@ class LoadWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setSpacing(5*config.wr)
 
         # Dropdown list of available file types
         self.file_type = DropDown('File type:', [], self)
@@ -67,7 +67,7 @@ class LoadWindow(QMainWindow):
 
         # List of files to import
         self.file_list = List(self)
-        self.file_list.setSpacing(-5)
+        self.file_list.setSpacing(-5*config.wr)
         self.file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.file_list)
 
@@ -79,7 +79,7 @@ class LoadWindow(QMainWindow):
         self.select_conditions_button.hide()
 
         self.conditions_file_list = List(self)
-        self.conditions_file_list.setSpacing(-5)
+        self.conditions_file_list.setSpacing(-5*config.wr)
         self.conditions_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
@@ -91,7 +91,7 @@ class LoadWindow(QMainWindow):
         self.select_details_button.hide()
 
         self.details_file_list = List(self)
-        self.details_file_list.setSpacing(-5)
+        self.details_file_list.setSpacing(-5*config.wr)
         self.details_file_list.setStyleSheet(config.default_font_bold)
         layout.addWidget(self.details_file_list)
         self.details_file_list.hide()

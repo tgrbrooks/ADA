@@ -17,8 +17,8 @@ class ExportWindow(QMainWindow):
     def __init__(self, parent=None):
         super(ExportWindow, self).__init__(parent)
         self.title = 'Export Files'
-        self.width = 150
-        self.height = 100
+        self.width = 150*config.wr
+        self.height = 100*config.hr
         self.parent = parent
         self.test_path = 'none'
         self.initUI()
@@ -29,8 +29,8 @@ class ExportWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setSpacing(5*config.wr)
 
         self.rename = CheckBox('Rename with profile', self)
         layout.addWidget(self.rename)

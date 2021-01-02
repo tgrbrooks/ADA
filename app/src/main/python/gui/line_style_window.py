@@ -13,8 +13,8 @@ class LineStyleWindow(QMainWindow):
     def __init__(self, artist, line_i, parent=None):
         super(LineStyleWindow, self).__init__(parent)
         self.title = 'Line Style'
-        self.width = 150
-        self.height = 100
+        self.width = 150*config.wr
+        self.height = 100*config.hr
         self.artist = artist
         self.line_i = line_i
         self.parent = parent
@@ -26,8 +26,8 @@ class LineStyleWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setSpacing(5*config.wr)
 
         self.line_style = DropDown('Line style:', [], self)
         self.line_style.addItem('solid')
