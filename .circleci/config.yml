@@ -1,19 +1,17 @@
 version: 2.1
 
-orbs:
-  python: circleci/python@0.2.1
-
 jobs:
   build-and-test:
-    executor: python/default
+    docker:
+      - image: python:3.6.0
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
       - run:
-          command: ./manage.py test
-          name: Test
+          name: Install and Test
+          command: |
+            pip3 install -r requirements.txt
+            pip3 install --upgrade -e .
+            xvfb python3 -m unittest discover
 
 workflows:
   main:
