@@ -256,6 +256,8 @@ table_row_options = ["profile", "reactor", "gradient", "time to",
                      "fit parameter"]
 fit_options = ["flat line", "linear", "quadratic", "exponential"]
 
+conf_colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
+
 # Width and height ratio
 wr = 1.
 hr = 1.

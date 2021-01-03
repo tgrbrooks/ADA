@@ -54,6 +54,59 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def plot(self, data, condition_data):
 
+        self.data = data
+        self.condition_data = condition_data
+
+        # Reset the plot and configure the base style
+        self.set_style()
+        self.clear_axes()
+        self.plot_list = []
+        self.set_axes_style()
+
+        # Return an empty plot if there's no data
+        if(data.empty and condition_data.empty):
+            self.axes.set_title('Empty plot')
+            self.draw()
+            return
+
+        # Plot the condition data on a separate axis if it exists
+        if not condition_data.empty:
+            self.create_condition_axis()
+
+        self.plot_condition_data(condition_data)
+
+        # Configure the axis range
+        if not condition_data.empty:
+            self.set_condition_range()
+
+        self.x_title = ''
+        self.y_title = ''
+        self.xdata_list = []
+        self.ydata_list = []
+        self.plot_data(data)
+
+        self.create_events(data)
+
+        # If we're fitting the data
+        if config.do_fit:
+            self.fit_data(data)
+
+        # Switch grid on/off
+        self.axes.grid(config.grid)
+
+        self.set_axes_scale()
+        self.set_titles()
+        self.set_axes_ranges()
+
+        self.set_cursor()
+
+        self.set_plot_styles()
+        self.set_legends()
+
+        # Show the plot
+        self.draw()
+
+    def set_style(self):
         # Style configuration
         if(config.style != ''):
             if(config.style == 'default'):
@@ -79,7 +132,9 @@ class PlotCanvas(FigureCanvasQTAgg):
             mpl.rcParams['ytick.labelsize'] = config.label_size
         if(config.line_width >= 0):
             mpl.rcParams['lines.linewidth'] = config.line_width
+        return
 
+    def clear_axes(self):
         # Clear axes and set default visibility
         self.axes.clear()
         # Remove and recreate the twinned axis to prevent the x axis getting
@@ -89,8 +144,9 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.condition_axes.set_axis_off()
         self.axes.patch.set_visible(False)
         self.axes.spines['right'].set_visible(True)
-        plot_list = []
+        return
 
+    def set_axes_style(self):
         # More style settings
         if(config.font_style != ''):
             self.axes.xaxis.label.set_family(config.font_style)
@@ -100,25 +156,21 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.axes.xaxis.label.set_size(config.title_size)
             self.axes.yaxis.label.set_size(config.title_size)
             self.condition_axes.yaxis.label.set_size(config.title_size)
+        return
 
-        if(data.empty and condition_data.empty):
-            self.axes.set_title('Empty plot')
-            self.draw()
-            return
+    def create_condition_axis(self):
+        self.condition_axes.set_axis_on()
+        # Configure axis colour and visibility
+        caxis_colour = 'red'
+        if(is_color_like(config.axis_colour)):
+            caxis_colour = config.axis_colour
+        self.condition_axes.spines['right'].set_color(caxis_colour)
+        self.axes.spines['right'].set_visible(False)
+        self.condition_axes.tick_params(axis='y', colors=caxis_colour)
+        self.condition_axes.yaxis.label.set_color(caxis_colour)
+        return
 
-        # Plot the condition data on a separate axis if it exists
-        colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
-        if not condition_data.empty:
-            self.condition_axes.set_axis_on()
-            # Configure axis colour and visibility
-            caxis_colour = 'red'
-            if(is_color_like(config.axis_colour)):
-                caxis_colour = config.axis_colour
-            self.condition_axes.spines['right'].set_color(caxis_colour)
-            self.axes.spines['right'].set_visible(False)
-            self.condition_axes.tick_params(axis='y', colors=caxis_colour)
-            self.condition_axes.yaxis.label.set_color(caxis_colour)
-
+    def plot_condition_data(self, condition_data):
         # Loop over the condition data files
         for i, cdata in enumerate(condition_data.data_files):
             # Get the x data in the right time units
@@ -146,8 +198,8 @@ class PlotCanvas(FigureCanvasQTAgg):
 
             # Plot the condition data with different colour cycle
             col = 'r'
-            if(i < len(colors)):
-                col = colors[i]
+            if(i < len(config.conf_colors)):
+                col = config.conf_colors[i]
 
             # Average condition data over time
             if(config.condition_average != -1):
@@ -161,33 +213,20 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                  condition_yerr, fmt='--',
                                                  capsize=2, color=col,
                                                  label=legend_label)
-                plot_list.append([condition_plot[0]])
+                self.plot_list.append([condition_plot[0]])
             else:
                 condition_plot = \
                     self.condition_axes.plot(condition_xdata, condition_ydata,
                                              '--', color=col,
                                              label=legend_label)
-                plot_list.append([condition_plot[0]])
+                self.plot_list.append([condition_plot[0]])
 
-        # Configure the axis range
-        if not condition_data.empty:
-            condition_ymin = self.condition_axes.get_ybound()[0]
-            if(config.condition_ymin != -1):
-                condition_ymin = config.condition_ymin
-            condition_ymax = self.condition_axes.get_ybound()[1]
-            if(config.condition_ymax != -1):
-                condition_ymax = config.condition_ymax
-            self.condition_axes.set_ylim([condition_ymin, condition_ymax])
-
-        x_title = ''
-        y_title = ''
-        xdata_list = []
-        ydata_list = []
+    def plot_data(self, data):
         for i, dat in enumerate(data.data_files):
             # Convert the units of time if needed
-            xdata, x_title = self.convert_xdata(dat.xaxis)
+            xdata, self.x_title = self.convert_xdata(dat.xaxis)
             # Get the y axis data for plotting
-            ydata, y_title = self.get_ydata(dat.signals)
+            ydata, self.y_title = self.get_ydata(dat.signals)
 
             legend_label = config.label_names[i]
             if(config.extra_info != 'none' and not config.only_extra):
@@ -223,28 +262,29 @@ class PlotCanvas(FigureCanvasQTAgg):
                                              label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr,
                                                    ydata+yerr, alpha=0.4)
-                plot_list.append([growth_plot[0], fill_area])
+                self.plot_list.append([growth_plot[0], fill_area])
             else:
                 if config.ynormlog:
                     ydata = np.log(ydata/ydata[0])
 
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
-                plot_list.append([growth_plot[0]])
+                self.plot_list.append([growth_plot[0]])
 
-            xdata_list.append(xdata)
-            ydata_list.append(ydata)
+            self.xdata_list.append(xdata)
+            self.ydata_list.append(ydata)
 
+    def create_events(self, data):
         # Show event information
-        event_annotation = self.axes.annotate('',
-                                              xy=(0, 0),
-                                              xytext=(-20, 20),
-                                              textcoords="offset points",
-                                              bbox=dict(
-                                                  boxstyle="round", fc="w"),
-                                              arrowprops=dict(arrowstyle="->"))
-        event_annotation.set_visible(False)
-        annotation_names = []
+        self.event_annotation = self.axes.annotate('',
+                                                   xy=(0, 0),
+                                                   xytext=(-20, 20),
+                                                   textcoords="offset points",
+                                                   bbox=dict(
+                                                       boxstyle="round", fc="w"),
+                                                   arrowprops=dict(arrowstyle="->"))
+        self.event_annotation.set_visible(False)
+        self.annotation_names = []
         annotation_xpos = []
         annotation_ypos = []
         if config.show_events:
@@ -254,112 +294,110 @@ class PlotCanvas(FigureCanvasQTAgg):
                         '%d/%m/%Y %H:%M:%S')
                     for lab in data_event.labels:
                         event_label += '\n' + lab
-                    annotation_names.append(event_label)
+                    self.annotation_names.append(event_label)
                     event_xpos = self.convert_xpos(data_event.xpos)
                     annotation_xpos.append(event_xpos)
-                    x_idx = np.abs(xdata_list[i] - event_xpos).argmin()
-                    event_ypos = ydata_list[i][x_idx]
+                    x_idx = np.abs(self.xdata_list[i] - event_xpos).argmin()
+                    event_ypos = self.ydata_list[i][x_idx]
                     annotation_ypos.append(event_ypos)
-            event_scatter = self.axes.scatter(annotation_xpos,
-                                              annotation_ypos,
-                                              s=10,
-                                              c='black')
+            self.event_scatter = self.axes.scatter(annotation_xpos,
+                                                   annotation_ypos,
+                                                   s=10,
+                                                   c='black')
+        return
 
-        # If we're fitting the data
-        if config.do_fit:
-            # Find the curve to fit
-            fit_index = -1
-            for i, data in enumerate(data.data_files):
-                if config.fit_curve == data.label:
-                    fit_index = i
-            fit_x = xdata_list[fit_index]
-            fit_y = ydata_list[fit_index]
+    def fit_data(self, data):
+        # Find the curve to fit
+        fit_index = -1
+        for i, data in enumerate(data.data_files):
+            if config.fit_curve == data.label:
+                fit_index = i
+        fit_x = self.xdata_list[fit_index]
+        fit_y = self.ydata_list[fit_index]
 
-            # If the data has been found
-            if fit_index != -1:
-                # Set the polynomial degree for the fit
-                fit_degree = 0
-                if (config.fit_type == 'linear' or
-                        config.fit_type == 'exponential'):
-                    fit_degree = 1
-                elif config.fit_type == 'quadratic':
-                    fit_degree = 2
+        # If the data has been found
+        if fit_index != -1:
+            # Set the polynomial degree for the fit
+            fit_degree = 0
+            if (config.fit_type == 'linear' or
+                    config.fit_type == 'exponential'):
+                fit_degree = 1
+            elif config.fit_type == 'quadratic':
+                fit_degree = 2
 
-                # Only fit the data in the given range
-                from_index = np.abs(fit_x - config.fit_from).argmin()
-                to_index = np.abs(fit_x - config.fit_to).argmin()
-                fit_x = fit_x[from_index:to_index]
-                fit_y = fit_y[from_index:to_index]
+            # Only fit the data in the given range
+            from_index = np.abs(fit_x - config.fit_from).argmin()
+            to_index = np.abs(fit_x - config.fit_to).argmin()
+            fit_x = fit_x[from_index:to_index]
+            fit_y = fit_y[from_index:to_index]
 
-                # Need to manipulate the y data and weights if fitting an exp
-                weights = None
-                if config.fit_type == 'exponential':
-                    weights = np.sqrt(fit_y)
-                    fit_y = np.log(fit_y)
+            # Need to manipulate the y data and weights if fitting an exp
+            weights = None
+            if config.fit_type == 'exponential':
+                weights = np.sqrt(fit_y)
+                fit_y = np.log(fit_y)
 
-                # Get the fit results
-                fit_result = np.polyfit(fit_x, fit_y, fit_degree, w=weights)
+            # Get the fit results
+            fit_result = np.polyfit(fit_x, fit_y, fit_degree, w=weights)
 
-                # Plot the resultant function
-                plot_x = np.linspace(config.fit_from, config.fit_to, 1000)
-                x_unit = ''
-                if(len(x_title.split('[')) > 1):
-                    x_unit = (x_title.split('[')[1]).split(']')[0]
-                y_unit = ''
-                if(len(y_title.split('[')) > 1):
-                    y_unit = (y_title.split('[')[1]).split(']')[0]
+            # Plot the resultant function
+            plot_x = np.linspace(config.fit_from, config.fit_to, 1000)
+            x_unit = ''
+            if(len(self.x_title.split('[')) > 1):
+                x_unit = (self.x_title.split('[')[1]).split(']')[0]
+            y_unit = ''
+            if(len(self.y_title.split('[')) > 1):
+                y_unit = (self.y_title.split('[')[1]).split(']')[0]
 
-                # Flat line fit result
-                plot_y = 0. * plot_x + fit_result[0]
-                fit_func_text = '$y = p$'
-                param_text = ('p = ' + exponent_text(fit_result[0]) + ' ' +
-                              y_unit)
+            # Flat line fit result
+            plot_y = 0. * plot_x + fit_result[0]
+            fit_func_text = '$y = p$'
+            param_text = ('p = ' + exponent_text(fit_result[0]) + ' ' +
+                          y_unit)
 
-                # Linear fit result
-                if config.fit_type == 'linear':
-                    plot_y = fit_result[0] * plot_x + fit_result[1]
-                    fit_func_text = '$y = p_1 \cdot x + p_0$'
-                    param_text = ('$p_0$ = ' + exponent_text(fit_result[1]) +
-                                  ' ' + y_unit + '\n' +
-                                  '$p_1$ = ' + exponent_text(fit_result[0]) +
-                                  ' ' + y_unit + '/' + x_unit)
+            # Linear fit result
+            if config.fit_type == 'linear':
+                plot_y = fit_result[0] * plot_x + fit_result[1]
+                fit_func_text = '$y = p_1 \cdot x + p_0$'
+                param_text = ('$p_0$ = ' + exponent_text(fit_result[1]) +
+                              ' ' + y_unit + '\n' +
+                              '$p_1$ = ' + exponent_text(fit_result[0]) +
+                              ' ' + y_unit + '/' + x_unit)
 
-                # Quadratic fit result
-                elif config.fit_type == 'quadratic':
-                    plot_y = (fit_result[0] * np.power(plot_x, 2) +
-                              fit_result[1] * plot_x + fit_result[2])
-                    fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
-                    param_text = ('$p_0$ = ' + exponent_text(fit_result[2]) +
-                                  ' ' + y_unit + '\n' +
-                                  '$p_1$ = ' + exponent_text(fit_result[1]) +
-                                  ' ' + y_unit + '/' + x_unit + '\n' +
-                                  '$p_2$ = ' + exponent_text(fit_result[0]) +
-                                  ' ' + y_unit + '/' + x_unit + '$^2$')
+            # Quadratic fit result
+            elif config.fit_type == 'quadratic':
+                plot_y = (fit_result[0] * np.power(plot_x, 2) +
+                          fit_result[1] * plot_x + fit_result[2])
+                fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
+                param_text = ('$p_0$ = ' + exponent_text(fit_result[2]) +
+                              ' ' + y_unit + '\n' +
+                              '$p_1$ = ' + exponent_text(fit_result[1]) +
+                              ' ' + y_unit + '/' + x_unit + '\n' +
+                              '$p_2$ = ' + exponent_text(fit_result[0]) +
+                              ' ' + y_unit + '/' + x_unit + '$^2$')
 
-                # qExponential fit result
-                elif config.fit_type == 'exponential':
-                    plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
-                    fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
-                    param_text = ('$p_0$ = ' +
-                                  exponent_text(np.exp(fit_result[1])) +
-                                  ' ' + y_unit + '\n' +
-                                  '$p_1$ = ' + exponent_text(fit_result[0]) +
-                                  ' ' + y_unit + '/' + x_unit)
+            # qExponential fit result
+            elif config.fit_type == 'exponential':
+                plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
+                fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
+                param_text = ('$p_0$ = ' +
+                              exponent_text(np.exp(fit_result[1])) +
+                              ' ' + y_unit + '\n' +
+                              '$p_1$ = ' + exponent_text(fit_result[0]) +
+                              ' ' + y_unit + '/' + x_unit)
 
-                fit_plot = self.axes.plot(plot_x, plot_y, '-', color='r',
-                                          label='Fit')
-                self.axes.text(0.25, 0.95, fit_func_text,
-                               transform=self.axes.transAxes,
-                               bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                         fc=(1., 0.8, 0.8)))
-                self.axes.text(0.25, 0.75, param_text,
-                               transform=self.axes.transAxes,
-                               bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                         fc=(1., 0.8, 0.8)))
+            self.axes.plot(plot_x, plot_y, '-', color='r', label='Fit')
+            self.axes.text(0.25, 0.95, fit_func_text,
+                           transform=self.axes.transAxes,
+                           bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                     fc=(1., 0.8, 0.8)))
+            self.axes.text(0.25, 0.75, param_text,
+                           transform=self.axes.transAxes,
+                           bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                     fc=(1., 0.8, 0.8)))
+        return
 
-        # Switch grid on/off
-        self.axes.grid(config.grid)
-
+    def set_axes_scale(self):
         if(config.ylog):
             self.axes.set_yscale('log')
         else:
@@ -374,14 +412,28 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.condition_axes.set_yscale('log')
         else:
             self.condition_axes.set_yscale('linear')
+        return
 
+    def set_titles(self):
         # Configure axis labels
         self.axes.set_title('')
         if(config.title != ''):
             self.axes.set_title(config.title)
-        self.axes.set_xlabel(x_title)
-        self.axes.set_ylabel(y_title)
+        self.axes.set_xlabel(self.x_title)
+        self.axes.set_ylabel(self.y_title)
+        return
 
+    def set_condition_range(self):
+        condition_ymin = self.condition_axes.get_ybound()[0]
+        if(config.condition_ymin != -1):
+            condition_ymin = config.condition_ymin
+        condition_ymax = self.condition_axes.get_ybound()[1]
+        if(config.condition_ymax != -1):
+            condition_ymax = config.condition_ymax
+        self.condition_axes.set_ylim([condition_ymin, condition_ymax])
+        return
+
+    def set_axes_ranges(self):
         # Set the axis range
         xmin = self.axes.get_xbound()[0]
         if(config.xmin != -1):
@@ -397,10 +449,12 @@ class PlotCanvas(FigureCanvasQTAgg):
             ymax = config.ymax
         self.axes.set_xlim([xmin, xmax])
         self.axes.set_ylim([ymin, ymax])
+        return
 
+    def set_cursor(self):
         # Control mouse clicking behaviour
         # Create a special cursor that snaps to growth curves
-        self.cursor = SnapToCursor(self.axes, xdata_list, ydata_list,
+        self.cursor = SnapToCursor(self.axes, self.xdata_list, self.ydata_list,
                                    useblit=False, color='red', linewidth=1)
 
         # Configure the measurement cursor
@@ -425,47 +479,51 @@ class PlotCanvas(FigureCanvasQTAgg):
             # Define action on button press: open line style window
             def onpick(event):
                 selected_line, line_i, min_dist = \
-                    self.find_closest(plot_list, event.xdata, event.ydata)
+                    self.find_closest(self.plot_list, event.xdata, event.ydata)
                 if min_dist < 5:
-                    self.linewindow = LineStyleWindow(plot_list[line_i],
+                    self.linewindow = LineStyleWindow(self.plot_list[line_i],
                                                       line_i, self)
                     self.linewindow.show()
             # Connect action to button press
             self.cid = self.mpl_connect('button_press_event', onpick)
 
             def update_annotation(ind):
-                evt_pos = event_scatter.get_offsets()[ind["ind"][0]]
-                event_annotation.xy = evt_pos
-                event_text = annotation_names[ind["ind"][0]]
-                event_annotation.set_text(event_text)
+                evt_pos = self.event_scatter.get_offsets()[ind["ind"][0]]
+                self.event_annotation.xy = evt_pos
+                event_text = self.annotation_names[ind["ind"][0]]
+                self.event_annotation.set_text(event_text)
 
             def onhover(event):
-                vis = event_annotation.get_visible()
+                vis = self.event_annotation.get_visible()
                 cont = None
                 if event.inaxes == self.axes:
-                    cont, ind = event_scatter.contains(event)
+                    cont, ind = self.event_scatter.contains(event)
                 if cont:
                     update_annotation(ind)
-                    event_annotation.set_visible(True)
+                    self.event_annotation.set_visible(True)
                     self.draw_idle()
                 else:
                     if vis:
-                        event_annotation.set_visible(False)
+                        self.event_annotation.set_visible(False)
                         self.draw_idle()
 
             if config.show_events:
                 self.mpl_connect('motion_notify_event', onhover)
+        return
 
+    def set_plot_styles(self):
         # Apply any saved changes from the line style configuration
         # TODO behaviour when data added/removed
         for pconf in self.plot_config:
-            if(pconf[0] > len(plot_list)):
+            if(pconf[0] > len(self.plot_list)):
                 continue
-            plot_list[pconf[0]][0].set_color(pconf[1][0])
-            plot_list[pconf[0]][0].set_linestyle(pconf[1][1])
-            if len(plot_list[pconf[0]]) > 1:
-                plot_list[pconf[0]][1].set_color(pconf[1][0])
+            self.plot_list[pconf[0]][0].set_color(pconf[1][0])
+            self.plot_list[pconf[0]][0].set_linestyle(pconf[1][1])
+            if len(self.plot_list[pconf[0]]) > 1:
+                self.plot_list[pconf[0]][1].set_color(pconf[1][0])
+        return
 
+    def set_legends(self):
         # Switch legend on/off
         if(config.legend):
             self.legend_on = True
@@ -475,7 +533,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             leg.set_draggable(True)
 
         # Toggle condition legend on
-        if(config.condition_legend and not condition_data.empty):
+        if(config.condition_legend and not self.condition_data.empty):
             self.condition_legend_on = True
             self.condition_legend_title = config.condition_legend_title
             handles, labels = self.condition_axes.get_legend_handles_labels()
@@ -486,9 +544,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             cond_leg.set_draggable(True)
             if(config.legend):
                 self.axes.add_artist(leg)
-
-        # Show the plot
-        self.draw()
+        return
 
     # Function to convert the time data into the desired unit and
     # get the axis title
