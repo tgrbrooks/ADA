@@ -8,19 +8,19 @@ white_background = 'background-color: white;'
 
 tab_style = """
 QTabWidget {
-  font-size: 10pt;
+  font-size: 12pt;
   font-weight: bold;
   font-family: Sans;
 }
 
 QTabWidget::pane {
-  border-top: 0.3em solid #1e8235; 
+  border-top: 0.2em solid #1e8235; 
   background: white;
 } 
 
 QTabBar::tab {
   background: #28a745; 
-  padding: 0.4em 2em 0.4em 2em;
+  padding: 0.3em 0.8em 0.3em 0.8em;
   color: white;
 } 
 
@@ -87,8 +87,8 @@ QComboBox:!editable:on, QComboBox::drop-down:editable:on {
     selection-color: white;
 }
 QComboBox::down-arrow {
-    width: 0.5em;
-    height: 0.5em;
+    width: 0.3em;
+    height: 0.3em;
     background: #1e8235;
 }
 QComboBox::item:selected {
@@ -125,8 +125,8 @@ QSpinBox::up-button:pressed {
     background: #1e8235;
 }
 QSpinBox::up-arrow {
-    width: 0.3em;
-    height: 0.3em;
+    width: 0.2em;
+    height: 0.2em;
     background: #1e8235;
 }
 QSpinBox::down-button {
@@ -141,8 +141,8 @@ QSpinBox::down-button:pressed {
     background: #1e8235;
 }
 QSpinBox::down-arrow {
-    width: 0.3em;
-    height: 0.3em;
+    width: 0.2em;
+    height: 0.2em;
     background: #1e8235;
 }
 """
@@ -230,14 +230,14 @@ big_button_style = 'QPushButton {' +\
                     
 delete_button_style = default_button_font +\
                       'background-color: #dc3545;\
-                       border-radius: 0.4em;\
+                       border-radius: 0.5em;\
                        text-align: center;\
                        vertical-align: middle;\
                        padding: 0em 0.2em 0.2em 0.2em;'
 
 add_button_style = default_button_font +\
                    'background-color: #28a745;\
-                    border-radius: 0.4em;\
+                    border-radius: 0.5em;\
                     text-align: right;\
                     vertical-align: middle;\
                     padding: 0em 0.14em 0.2em 0.2em;'
