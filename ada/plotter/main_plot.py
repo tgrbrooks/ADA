@@ -18,7 +18,7 @@ import matplotlib as mpl
 from ada.reader.data_holder import DataHolder
 from ada.plotter.cursor import Cursor, SnapToCursor
 from ada.plotter.functions import (process_data, average_data,
-    time_average, exponent_text)
+                                   time_average, exponent_text)
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -27,7 +27,7 @@ import ada.configuration as config
 
 class PlotCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=5, height=4, dpi=200*config.wr):
 
         self.fig = Figure(figsize=(width, height), dpi=dpi, tight_layout=True)
         self.axes = self.fig.add_subplot(111)
@@ -232,17 +232,17 @@ class PlotCanvas(FigureCanvasQTAgg):
                                              label=legend_label)
                 plot_list.append([growth_plot[0]])
 
-            
             xdata_list.append(xdata)
             ydata_list.append(ydata)
 
         # Show event information
         event_annotation = self.axes.annotate('',
-                                        xy=(0, 0),
-                                        xytext=(-20,20),
-                                        textcoords="offset points",
-                                        bbox=dict(boxstyle="round", fc="w"),
-                                        arrowprops=dict(arrowstyle="->"))
+                                              xy=(0, 0),
+                                              xytext=(-20, 20),
+                                              textcoords="offset points",
+                                              bbox=dict(
+                                                  boxstyle="round", fc="w"),
+                                              arrowprops=dict(arrowstyle="->"))
         event_annotation.set_visible(False)
         annotation_names = []
         annotation_xpos = []
@@ -250,7 +250,8 @@ class PlotCanvas(FigureCanvasQTAgg):
         if config.show_events:
             for i, data in enumerate(data.data_files):
                 for data_event in data.events:
-                    event_label = data_event.datetime.strftime('%d/%m/%Y %H:%M:%S')
+                    event_label = data_event.datetime.strftime(
+                        '%d/%m/%Y %H:%M:%S')
                     for lab in data_event.labels:
                         event_label += '\n' + lab
                     annotation_names.append(event_label)
@@ -278,8 +279,8 @@ class PlotCanvas(FigureCanvasQTAgg):
             if fit_index != -1:
                 # Set the polynomial degree for the fit
                 fit_degree = 0
-                if (config.fit_type == 'linear' or 
-                    config.fit_type == 'exponential'):
+                if (config.fit_type == 'linear' or
+                        config.fit_type == 'exponential'):
                     fit_degree = 1
                 elif config.fit_type == 'quadratic':
                     fit_degree = 2
@@ -325,8 +326,8 @@ class PlotCanvas(FigureCanvasQTAgg):
 
                 # Quadratic fit result
                 elif config.fit_type == 'quadratic':
-                    plot_y = (fit_result[0] * np.power(plot_x,2) +
-                             fit_result[1] * plot_x + fit_result[2])
+                    plot_y = (fit_result[0] * np.power(plot_x, 2) +
+                              fit_result[1] * plot_x + fit_result[2])
                     fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
                     param_text = ('$p_0$ = ' + exponent_text(fit_result[2]) +
                                   ' ' + y_unit + '\n' +
@@ -335,7 +336,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                   '$p_2$ = ' + exponent_text(fit_result[0]) +
                                   ' ' + y_unit + '/' + x_unit + '$^2$')
 
-                #qExponential fit result
+                # qExponential fit result
                 elif config.fit_type == 'exponential':
                     plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
                     fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
@@ -345,7 +346,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                   '$p_1$ = ' + exponent_text(fit_result[0]) +
                                   ' ' + y_unit + '/' + x_unit)
 
-                fit_plot = self.axes.plot(plot_x, plot_y, '-', color='r', 
+                fit_plot = self.axes.plot(plot_x, plot_y, '-', color='r',
                                           label='Fit')
                 self.axes.text(0.25, 0.95, fit_func_text,
                                transform=self.axes.transAxes,

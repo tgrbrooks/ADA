@@ -21,7 +21,7 @@ class TopLabel(QWidget):
         text.setStyleSheet(config.top_label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
-        shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=1, yOffset=1)
+        shadow = QGraphicsDropShadowEffect(blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
         self.setLayout(layout)
 

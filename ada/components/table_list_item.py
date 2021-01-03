@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
-    QPushButton, QLabel, QWidget, QLineEdit, QComboBox, QSizePolicy)
+                             QPushButton, QLabel, QWidget, QLineEdit, QComboBox, QSizePolicy)
 
 from ada.components.button import DeleteButton
 from ada.components.label import Label, RoundLabel
