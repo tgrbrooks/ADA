@@ -52,7 +52,7 @@ class App(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        print(config.wr)
+        print(config.wr, config.hr)
         wr = config.wr
         hr = config.wr
 
@@ -69,7 +69,7 @@ class App(QMainWindow):
         plot_layout.setSpacing(10*wr)
 
         # Main plot window (row, column, row extent, column extent)
-        self.plot = PlotCanvas(self, width=10*wr, height=4*hr)
+        self.plot = PlotCanvas(self, width=10*wr, height=4*hr, dpi=100*wr)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)

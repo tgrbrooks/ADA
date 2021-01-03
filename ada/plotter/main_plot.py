@@ -27,7 +27,7 @@ import ada.configuration as config
 
 class PlotCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100*config.wr):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
 
         self.fig = Figure(figsize=(width, height), dpi=dpi, tight_layout=True)
         self.axes = self.fig.add_subplot(111)

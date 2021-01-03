@@ -35,8 +35,8 @@ class AddButton(QPushButton):
         shadow = QGraphicsDropShadowEffect(
             blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
-        self.setFixedHeight(18*config.hr)
-        self.setFixedWidth(18*config.wr)
+        self.setFixedHeight(16*config.hr)
+        self.setFixedWidth(16*config.wr)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
 
@@ -47,6 +47,6 @@ class DeleteButton(QPushButton):
         shadow = QGraphicsDropShadowEffect(
             blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
-        self.setFixedHeight(18*config.hr)
-        self.setFixedWidth(18*config.wr)
+        self.setFixedHeight(16*config.hr)
+        self.setFixedWidth(16*config.wr)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)

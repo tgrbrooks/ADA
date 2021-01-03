@@ -82,7 +82,7 @@ class DelListItem():
         self.widget = QWidget()
         self.button = DeleteButton()
         label = QLabel(text)
-        label.setStyleSheet(config.default_font_bold)
+        label.setStyleSheet(config.default_font)
 
         layout = QHBoxLayout()
         spacer = Spacer()

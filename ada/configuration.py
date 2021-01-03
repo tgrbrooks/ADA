@@ -148,7 +148,8 @@ QSpinBox::down-arrow {
 """
 
 default_font = 'font-size: 14pt;\
-                font-family: Sans;'
+                font-family: Sans;\
+                color: #1e8235;'
 default_font_bold = 'font-size: 14pt;\
                      font-weight: bold;\
                      font-family: Sans;\
