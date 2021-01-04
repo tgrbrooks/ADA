@@ -52,7 +52,6 @@ class App(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        print(config.wr, config.hr)
         wr = config.wr
         hr = config.wr
 

@@ -231,14 +231,14 @@ big_button_style = 'QPushButton {' +\
                     
 delete_button_style = default_button_font +\
                       'background-color: #dc3545;\
-                       border-radius: 0.5em;\
+                       border-radius: 0.4em;\
                        text-align: center;\
                        vertical-align: middle;\
                        padding: 0em 0.2em 0.2em 0.2em;'
 
 add_button_style = default_button_font +\
                    'background-color: #28a745;\
-                    border-radius: 0.5em;\
+                    border-radius: 0.4em;\
                     text-align: right;\
                     vertical-align: middle;\
                     padding: 0em 0.14em 0.2em 0.2em;'
