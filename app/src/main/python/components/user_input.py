@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QHBoxLayout, QSizePolicy,
-    QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox)
+                             QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox)
 
 from components.label import LeftLabel
 import configuration as config
@@ -9,7 +9,7 @@ class TextEntry(QWidget):
     def __init__(self, text, parent=None, *args, **kwargs):
         super(TextEntry, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         text = LeftLabel(text, True)
@@ -20,7 +20,8 @@ class TextEntry(QWidget):
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.wr)
         self.setGraphicsEffect(shadow)
 
     def currentText(self):
@@ -29,11 +30,12 @@ class TextEntry(QWidget):
     def text(self):
         return self.entry.text()
 
+
 class SpinBox(QWidget):
     def __init__(self, text, start, min_val, max_val, parent=None, *args, **kwargs):
         super(SpinBox, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         text = LeftLabel(text, True)
@@ -49,7 +51,8 @@ class SpinBox(QWidget):
 
         self.setLayout(layout)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
 
     def currentText(self):
@@ -58,11 +61,12 @@ class SpinBox(QWidget):
     def text(self):
         return self.entry.text()
 
+
 class DropDown(QWidget):
     def __init__(self, text, options, parent=None, *args, **kwargs):
         super(DropDown, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         text = LeftLabel(text, True)
@@ -75,7 +79,8 @@ class DropDown(QWidget):
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
 
     def currentText(self):
@@ -99,11 +104,12 @@ class DropDown(QWidget):
     def setCurrentIndex(self, index):
         return self.entry.setCurrentIndex(index)
 
+
 class CheckBox(QWidget):
     def __init__(self, text, parent=None, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         self.entry = QCheckBox(parent)
@@ -112,7 +118,8 @@ class CheckBox(QWidget):
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
-        shadow = QGraphicsDropShadowEffect(blurRadius=2, xOffset=1, yOffset=1)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
 
     def isChecked(self):

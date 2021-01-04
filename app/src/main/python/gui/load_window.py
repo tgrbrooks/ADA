@@ -1,7 +1,7 @@
 import csv
 
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
-    QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit, QVBoxLayout)
+                             QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit, QVBoxLayout)
 from PyQt5.QtCore import QPoint, Qt
 
 from gui.error_window import ErrorWindow
@@ -15,13 +15,14 @@ from components.spacer import Spacer
 from components.data_list_item import DelListItem
 
 from reader.read_algem_ht24 import (read_algem_ht24,
-    read_algem_ht24_details)
+                                        read_algem_ht24_details)
 from reader.read_algem_pro import read_algem_pro
 from reader.read_ip_t_iso import read_ip_t_iso
 from reader.read_psi import read_psi
 from reader.read_csv import read_csv
 
 import configuration as config
+
 
 class LoadWindow(QMainWindow):
 
@@ -45,7 +46,8 @@ class LoadWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setContentsMargins(
+            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         layout.setSpacing(5*config.wr)
 
         # Dropdown list of available file types
@@ -54,7 +56,7 @@ class LoadWindow(QMainWindow):
         # Can't add HT24 data as replicate
         if self.row == -1:
             self.file_type.addItem('Algem HT24')
-        self.file_type.addItem('IP T-Iso')
+        self.file_type.addItem('IP')
         self.file_type.addItem('PSI')
         self.file_type.addItem('ADA')
         layout.addWidget(self.file_type)
@@ -68,7 +70,7 @@ class LoadWindow(QMainWindow):
         # List of files to import
         self.file_list = List(self)
         self.file_list.setSpacing(-5*config.wr)
-        self.file_list.setStyleSheet(config.default_font_bold)
+        self.file_list.setStyleSheet(config.default_font)
         layout.addWidget(self.file_list)
 
         # Button and list for Algem conditions files
@@ -80,7 +82,7 @@ class LoadWindow(QMainWindow):
 
         self.conditions_file_list = List(self)
         self.conditions_file_list.setSpacing(-5*config.wr)
-        self.conditions_file_list.setStyleSheet(config.default_font_bold)
+        self.conditions_file_list.setStyleSheet(config.default_font)
         layout.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
 
@@ -92,7 +94,7 @@ class LoadWindow(QMainWindow):
 
         self.details_file_list = List(self)
         self.details_file_list.setSpacing(-5*config.wr)
-        self.details_file_list.setStyleSheet(config.default_font_bold)
+        self.details_file_list.setStyleSheet(config.default_font)
         layout.addWidget(self.details_file_list)
         self.details_file_list.hide()
 
@@ -202,7 +204,8 @@ class LoadWindow(QMainWindow):
 
         for file_name in self.files:
             if not file_name.endswith(extension):
-                raise RuntimeError("File %s has the wrong extension" % (file_name))
+                raise RuntimeError(
+                    "File %s has the wrong extension" % (file_name))
 
             # Read in files from Algem Pro
             if file_type == 'Algem Pro':
@@ -233,12 +236,13 @@ class LoadWindow(QMainWindow):
                     else:
                         self.data.add_data(replicate[0])
 
-            # Read in files from Industrial Plankton T-Iso
-            elif file_type == 'IP T-Iso':
+            # Read in files from Industrial Plankton
+            elif file_type == 'IP':
                 try:
                     ip_data, condition_data = read_ip_t_iso(file_name)
                 except Exception as e:
-                    raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
+                    raise RuntimeError(
+                        'Error reading file '+file_name+'\n'+str(e))
                 if self.row == -1:
                     self.data.add_data(ip_data)
                     self.condition.add_data(condition_data)
@@ -250,7 +254,8 @@ class LoadWindow(QMainWindow):
                 try:
                     psi_data, condition_data = read_psi(file_name)
                 except Exception as e:
-                    raise RuntimeError('Error reading file '+file_name+'\n'+str(e))
+                    raise RuntimeError(
+                        'Error reading file '+file_name+'\n'+str(e))
                 if self.row == -1:
                     self.data.add_data(psi_data)
                     self.condition.add_data(condition_data)
@@ -264,7 +269,7 @@ class LoadWindow(QMainWindow):
                     self.condition.add_data(condition_data)
                 else:
                     self.data.add_replicate(csv_data, self.row)
-        
+
         if len(self.condition_files) > 0:
             # Set downsampling if option selected
             downsample = -1
