@@ -5,12 +5,12 @@ Installation
 
 From an installer
 -----------------
-Installers for Windows 10 and MacOS are available on `DropBox <https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0>`_.
+Installers for Windows 10 and MacOS are available on `Github <https://github.com/tgrbrooks/ADA/releases>`_.
 
 MacOS
 '''''
 
-Download the file called ``Algae Plotter.dmg``, and click open with DiskImageMounter.
+Download the file called ``ADA.dmg``, and click open with DiskImageMounter.
 
 Drag the icon into your applications folder.
 
@@ -22,9 +22,9 @@ The installer was made with MacOS Mojave, earlier or later versions may or may n
 Windows 10
 ''''''''''
 
-There is also an installer available for Windows 10 on DropBox, the file is called ``Algae PlotterSetup.exe``. 
+There is also an installer available for Windows 10 on DropBox, the file is called ``ADASetup.exe``. 
 
-Just open the file and follow the installation instructions.
+Simply open the file and follow the installation instructions.
 
 Other
 '''''
