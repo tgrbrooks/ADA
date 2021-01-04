@@ -21,8 +21,8 @@ class FileHandlerGui(QWidget):
             self.save_fig = True
         else:
             self.save_fig = False
-        self.width = 640*config.wr
-        self.height = 480*config.hr
+        self.width = 960*config.wr
+        self.height = 600*config.hr
         self.initUI()
 
     def initUI(self):
@@ -39,22 +39,22 @@ class FileHandlerGui(QWidget):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(
-                    self,
-                    "Open File(s)",
-                    "",
-                    "All Files (*);;Text Files (*.txt)",
-                    options=options)
+            self,
+            "Open File(s)",
+            "",
+            "All Files (*);;Text Files (*.txt)",
+            options=options)
         self.file_names = files
 
     def saveFileDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.file_name, _ = QFileDialog.getSaveFileName(
-                             self,
-                             "Save File",
-                             "",
-                             "All Files (*);;Text Files (*.txt)",
-                             options=options)
+            self,
+            "Save File",
+            "",
+            "All Files (*);;Text Files (*.txt)",
+            options=options)
         if self.file_name and self.save_fig:
             if(self.file_name == ''):
                 self.fig.savefig('graph.png')
@@ -67,9 +67,9 @@ class FileHandlerGui(QWidget):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.directory_name = QFileDialog.getExistingDirectory(
-                               self,
-                               "Select Directory",
-                               options=options)
+            self,
+            "Select Directory",
+            options=options)
 
 
 def get_file_names():
@@ -81,6 +81,7 @@ def get_file_names():
 
 def save_file(fig):
     ex_file = FileHandlerGui('save', fig)
+    ex_file.close()
 
 
 def get_save_file_name():

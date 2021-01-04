@@ -14,7 +14,7 @@ from ada.components.button import Button
 from ada.components.list import List
 from ada.components.user_input import DropDown
 from ada.plotter.functions import (process_data, average_data,
-    time_average)
+                                   time_average)
 
 import ada.configuration as config
 
@@ -39,7 +39,8 @@ class TableWindow(QMainWindow):
         tabs = QTabWidget()
 
         create_layout = QGridLayout()
-        create_layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        create_layout.setContentsMargins(
+            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         create_layout.setSpacing(5*config.wr)
 
         # List of row options
@@ -55,8 +56,8 @@ class TableWindow(QMainWindow):
 
         # List of all the added rows
         self.row_list = List(self)
-        #self.row_list.setStyleSheet(config.scroll_style)
-        self.row_list.setSpacing(-15*config.wr)
+        # self.row_list.setStyleSheet(config.scroll_style)
+        self.row_list.setSpacing(-12*config.wr)
         create_layout.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table
@@ -133,15 +134,16 @@ class TableWindow(QMainWindow):
                                          row.grad_from.text(),
                                          row.grad_to.text()))
                     row_data.append(self.get_gradients(row.data.currentText(),
-                                    float(row.grad_from.text()),
-                                    float(row.grad_to.text())))
+                                                       float(
+                                                           row.grad_from.text()),
+                                                       float(row.grad_to.text())))
                 if row.type == 'time to':
                     row_titles.append('Time (%s) to %s of %s'
                                       % (tunit,
                                          row.data.currentText(),
                                          row.time_to.text()))
                     row_data.append(self.get_time_to(row.data.currentText(),
-                                    float(row.time_to.text())))
+                                                     float(row.time_to.text())))
                 if row.type == 'average of condition':
                     row_titles.append('Average of %s between %s and %s %s'
                                       % (row.condition.currentText(),
@@ -336,7 +338,8 @@ class TableWindow(QMainWindow):
             self.table.setItem(row+1, 0, QTableWidgetItem(str(title)))
             for col, dat in enumerate(self.data[row]):
                 if dat is not None:
-                    self.table.setItem(row+1, col+1, QTableWidgetItem(str(dat)))
+                    self.table.setItem(
+                        row+1, col+1, QTableWidgetItem(str(dat)))
                 else:
                     self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
 

@@ -14,9 +14,9 @@ if __name__ == '__main__':
 
     screen = app.primaryScreen()
     size = screen.availableGeometry()
-    print(size.width(), size.height())
-    config.width_ratio = size.width()/1280.
-    config.height_ratio = size.height()/777.
+    config.wr = size.width()/1280.
+    config.hr = size.width()/1280.
+    #config.hr = size.height()/777.
 
     ex = App()
 

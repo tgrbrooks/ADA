@@ -3,9 +3,9 @@ import csv
 
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
-    QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
-    QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
-    QFormLayout, QHBoxLayout, QMenu, QAction)
+                             QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
+                             QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
+                             QFormLayout, QHBoxLayout, QMenu, QAction)
 from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
@@ -19,7 +19,7 @@ from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
 from ada.components.collapsible_box import CollapsibleBox
 from ada.components.data_list_item import (DataListItem, ConditionListItem,
-    DelListItem)
+                                           DelListItem)
 from ada.gui.error_window import ErrorWindow
 from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
@@ -37,9 +37,9 @@ class App(QMainWindow):
         self.title = 'Algal Data Analyser'
         # Default dimensions
         self.left = 10 * config.wr
-        self.top = 10 * config.hr
+        self.top = 60 * config.wr
         self.width = 960 * config.wr
-        self.height = 600 * config.hr
+        self.height = 600 * config.wr
         # Container for data
         self.data = DataHolder()
         # Container for condition data
@@ -53,7 +53,7 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         wr = config.wr
-        hr = config.hr
+        hr = config.wr
 
         tabs = QTabWidget()
         tabs.setStyleSheet(config.tab_style)
@@ -68,8 +68,9 @@ class App(QMainWindow):
         plot_layout.setSpacing(10*wr)
 
         # Main plot window (row, column, row extent, column extent)
-        self.plot = PlotCanvas(self, width=10*wr, height=4*hr)
-        shadow = QGraphicsDropShadowEffect(blurRadius=10, xOffset=3, yOffset=3)
+        self.plot = PlotCanvas(self, width=10*wr, height=4*hr, dpi=100*wr)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_layout.addWidget(self.plot, 0, 0, 5, 5)
@@ -98,7 +99,7 @@ class App(QMainWindow):
         plot_layout.addWidget(fit_button, 5, 3)
 
         # Table output button
-        table_button = Button('To Table', self, 
+        table_button = Button('To Table', self,
                               'Create a table of growth rates for all curves'
                               '\nConfigure in options tab')
         table_button.clicked.connect(self.update_config)
@@ -107,16 +108,17 @@ class App(QMainWindow):
 
         data_entry_layout = QVBoxLayout()
         data_entry_layout.setSpacing(5*wr)
-        data_entry_layout.setContentsMargins(5,0,5,0)
+        data_entry_layout.setContentsMargins(5, 0, 5, 0)
         # Add data button
         self.data_button = Button('Add Data', self,
-                             'Import data for plotting')
+                                  'Import data for plotting')
         self.data_button.clicked.connect(self.update_config)
         self.data_button.clicked.connect(self.open_data_files)
         self.data_button.clicked.connect(self.update_data_list)
         data_entry_layout.addWidget(self.data_button)
         self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.data_button.customContextMenuRequested.connect(self.on_context_menu)
+        self.data_button.customContextMenuRequested.connect(
+            self.on_context_menu)
 
         self.clear_menu = QMenu(self)
         self.clear_action = QAction('Clear all', self)
@@ -142,7 +144,8 @@ class App(QMainWindow):
         calibration_button.clicked.connect(self.open_calibration_file)
         data_entry_layout.addWidget(calibration_button)
         self.calibration_file = DelLabel(self)
-        self.calibration_file.button.clicked.connect(self.remove_calibration_file)
+        self.calibration_file.button.clicked.connect(
+            self.remove_calibration_file)
         self.calibration_file.setFixedHeight(40*hr)
         data_entry_layout.addWidget(self.calibration_file)
 
@@ -164,7 +167,7 @@ class App(QMainWindow):
         # ---------------------------------------------------------------------
         #                           OPTIONS TABS
         # ---------------------------------------------------------------------
-        
+
         # --------------- AXIS CONFIGURATION
 
         # Axis configuration
@@ -309,7 +312,8 @@ class App(QMainWindow):
         data_box_layout.addRow(self.y_alignment)
 
         # Condition data downsampling and averaging
-        self.condition_average = TextEntry('Condition data time average:', self)
+        self.condition_average = TextEntry(
+            'Condition data time average:', self)
         self.condition_average.setToolTip('Average over a given time window')
         data_box_layout.addRow(self.condition_average)
 
@@ -410,7 +414,8 @@ class App(QMainWindow):
         self.condition_legend_title = TextEntry('Heading:', self)
         condition_form_layout.addRow(self.condition_legend_title)
 
-        self.condition_extra_info = DropDown('Extra text:', config.info_options, self)
+        self.condition_extra_info = DropDown(
+            'Extra text:', config.info_options, self)
         self.condition_extra_info.setToolTip('Show extra information from '
                                              'the file in the legend')
         condition_form_layout.addRow(self.condition_extra_info)
@@ -466,7 +471,7 @@ class App(QMainWindow):
         style_box_layout.addRow(self.axis_colour)
 
         self.grid_toggle = CheckBox('Grid on/off', self)
-        style_box_layout.addRow(' ',self.grid_toggle)
+        style_box_layout.addRow(' ', self.grid_toggle)
 
         style_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         style_box_layout.setLabelAlignment(Qt.AlignCenter)
@@ -594,7 +599,7 @@ class App(QMainWindow):
             data_list_item = ConditionListItem(data.name.split('/')[-1], self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
-                                         data_list_item.widget)
+                                                   data_list_item.widget)
             self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
