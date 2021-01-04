@@ -84,7 +84,7 @@ Algal growth curve data can be imported using the `Add Data` button, this will o
 The currently supported bioreactor data types are:
 * Algem Pro text files
 * Algem HT-24 CSV (comma separated variable) files
-* Industrial Plankton (IP) T-Iso CSV files
+* Industrial Plankton (IP) photobioreactor CSV files
 * Photon Systems Instruments (PSI) photobioreactor ODS files
 * ADA export format/user input format CSV files
 

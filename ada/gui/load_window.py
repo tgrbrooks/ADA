@@ -56,7 +56,7 @@ class LoadWindow(QMainWindow):
         # Can't add HT24 data as replicate
         if self.row == -1:
             self.file_type.addItem('Algem HT24')
-        self.file_type.addItem('IP T-Iso')
+        self.file_type.addItem('IP')
         self.file_type.addItem('PSI')
         self.file_type.addItem('ADA')
         layout.addWidget(self.file_type)
@@ -236,8 +236,8 @@ class LoadWindow(QMainWindow):
                     else:
                         self.data.add_data(replicate[0])
 
-            # Read in files from Industrial Plankton T-Iso
-            elif file_type == 'IP T-Iso':
+            # Read in files from Industrial Plankton
+            elif file_type == 'IP':
                 try:
                     ip_data, condition_data = read_ip_t_iso(file_name)
                 except Exception as e:
