@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an idea for improving ADA
 title: "[FEATURE]"
 labels: enhancement
 assignees: tgrbrooks
