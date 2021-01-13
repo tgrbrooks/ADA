@@ -106,11 +106,9 @@ def read_details(file_name, duplicate_name, downsample=-1):
 
     date_row = next(reader)
     date_all = parse(date_row[1]).date()
-    print(date_all)
 
     time_row = next(reader)
     time_all = parse(time_row[1]).time()
-    print(time_all)
 
     exp_name_row = next(reader)
     exp_name = ''

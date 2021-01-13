@@ -20,12 +20,10 @@ def read_algem_pro(file_name, downsample=-1):
                 # Get all the relevant data from header
                 if line.find('Date=') == 0:
                     date_str = (line.split('"')[1])
-                    parsed_date = parse(date_str)
-                    algem_data.date = parsed_date.date()
+                    algem_data.date = parse(date_str).date()
                 if line.find('Time=') == 0:
                     time_str = (line.split('"')[1])
-                    parsed_time = parse(time_str)
-                    algem_data.time = parsed_time.time()
+                    algem_data.time = parse(time_str).time()
                 if line.find('Title=') == 0:
                     algem_data.title = line.split('"')[1]
                 if line.find('Stats=') == 0:
