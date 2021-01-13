@@ -3,22 +3,14 @@ import os
 import csv
 from datetime import datetime, date, time
 import numpy as np
+from dateutil.parser import parse
 
 # Local import
 from ada.reader.algae_data import AlgaeData
 
 
-def str_to_datetime(datetime_str):
-    date_str = (datetime_str.split(' ')[0]).split('/')
-    time_str = (datetime_str.split(' ')[1]).split(':')
-    datetime_out = datetime(int(date_str[2]), int(date_str[0]),
-                            int(date_str[1]), int(time_str[0]),
-                            int(time_str[1]), 0)
-    return datetime_out
-
-
 # Loop over text files and read them in
-def read_ip_t_iso(file_name):
+def read_ip(file_name):
     ip_data = AlgaeData(file_name)
     condition_data = AlgaeData(file_name)
     with open(file_name, 'r', errors='ignore') as f:
@@ -64,7 +56,7 @@ def read_ip_t_iso(file_name):
                                'Could not find sensor data')
                     
         first_measurement = next(reader)
-        start_datetime = str_to_datetime(first_measurement[0])
+        start_datetime = parse(first_measurement[0])
         ip_data.date = start_datetime.date()
         condition_data.date = start_datetime.date()
         ip_data.time = start_datetime.time()
@@ -83,7 +75,7 @@ def read_ip_t_iso(file_name):
 
         for row in reader:
             if row[0] == "Event: ":
-                current_datetime = str_to_datetime(row[1])
+                current_datetime = parse(row[1])
                 time_diff = (current_datetime - start_datetime).total_seconds()
                 # Possible to have multiple events at the same time
                 found_existing = False
@@ -98,7 +90,7 @@ def read_ip_t_iso(file_name):
                     data_event.labels = [row[2]]
                     ip_data.events.append(data_event)
                 continue
-            current_datetime = str_to_datetime(row[0])
+            current_datetime = parse(row[0])
             time_diff = (current_datetime - start_datetime).total_seconds()
             cond_i = 0
             for i, measurement in enumerate(row):
