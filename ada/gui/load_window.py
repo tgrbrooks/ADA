@@ -17,7 +17,7 @@ from ada.components.data_list_item import DelListItem
 from ada.reader.read_algem_ht24 import (read_algem_ht24,
                                         read_algem_ht24_details)
 from ada.reader.read_algem_pro import read_algem_pro
-from ada.reader.read_ip_t_iso import read_ip_t_iso
+from ada.reader.read_ip import read_ip
 from ada.reader.read_psi import read_psi
 from ada.reader.read_csv import read_csv
 
@@ -239,7 +239,7 @@ class LoadWindow(QMainWindow):
             # Read in files from Industrial Plankton
             elif file_type == 'IP':
                 try:
-                    ip_data, condition_data = read_ip_t_iso(file_name)
+                    ip_data, condition_data = read_ip(file_name)
                 except Exception as e:
                     raise RuntimeError(
                         'Error reading file '+file_name+'\n'+str(e))

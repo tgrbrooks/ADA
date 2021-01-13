@@ -3,6 +3,7 @@ import os
 import csv
 from datetime import datetime, date, time
 import numpy as np
+from dateutil.parser import parse
 
 # Local import
 from ada.reader.algae_data import AlgaeData
@@ -104,12 +105,10 @@ def read_details(file_name, duplicate_name, downsample=-1):
     reader = csv.reader(f, delimiter=',')
 
     date_row = next(reader)
-    date_str = date_row[1].split('/')
-    date_all = date(int(date_str[0]), int(date_str[1]), int(date_str[2]))
+    date_all = parse(date_row[1]).date()
 
     time_row = next(reader)
-    time_str = time_row[1].split(':')
-    time_all = time(int(time_str[0]), int(time_str[1]), int(time_str[2]))
+    time_all = parse(time_row[1]).time()
 
     exp_name_row = next(reader)
     exp_name = ''

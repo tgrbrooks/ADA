@@ -3,6 +3,7 @@ import os
 import csv
 from datetime import datetime, date, time
 import numpy as np
+from dateutil.parser import parse
 
 # Local import
 from ada.reader.algae_data import AlgaeData
@@ -26,14 +27,10 @@ def read_csv(file_name):
                 condition_data.profile = row[7]
 
             elif row[0].lower() == 'date':
-                date_str = row[1].split('-')
-                start_date = date(int(date_str[0]), int(date_str[1]),
-                                  int(date_str[2]))
+                start_date = parse(row[1]).date()
                 csv_data.date = start_date
                 condition_data.date = start_date
-                time_str = row[3].split(':')
-                start_time = time(int(time_str[0]), int(time_str[1]),
-                                  int(time_str[2]))
+                start_time = parse(row[3]).time()
                 csv_data.time = start_time
                 condition_data.time = start_time
 
