@@ -132,6 +132,8 @@ def read_details(file_name, duplicate_name, downsample=-1):
         if row[0].split(' ')[-1] == 'Replicates':
             rep_list = [row[0].split(' ')[0]]
             for replicate in row[1].split(' ')[1:]:
+                if replicate == rep_list[0]:
+                    continue
                 rep_list.append(replicate)
             replicates.append(rep_list)
 
