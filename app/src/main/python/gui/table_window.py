@@ -217,7 +217,7 @@ class TableWindow(QMainWindow):
                     y2 = ydat
                 if x1 is not None and x2 is not None:
                     break
-            if x1 is None and x2 is None:
+            if x1 is None or x2 is None:
                 gradients.append(None)
             else:
                 gradients.append((y2-y1)/(x2-x1))

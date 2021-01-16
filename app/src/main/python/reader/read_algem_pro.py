@@ -2,6 +2,7 @@
 import os
 from datetime import datetime, date, time
 import numpy as np
+from dateutil.parser import parse
 
 # Local import
 from reader.algae_data import AlgaeData
@@ -18,13 +19,11 @@ def read_algem_pro(file_name, downsample=-1):
                     break
                 # Get all the relevant data from header
                 if line.find('Date=') == 0:
-                    date_str = (line.split('"')[1]).split('/')
-                    algem_data.date = date(int(date_str[0]), int(date_str[1]),
-                                           int(date_str[2]))
+                    date_str = (line.split('"')[1])
+                    algem_data.date = parse(date_str).date()
                 if line.find('Time=') == 0:
-                    time_str = (line.split('"')[1]).split(':')
-                    algem_data.time = time(int(time_str[0]), int(time_str[1]),
-                                           int(time_str[2]))
+                    time_str = (line.split('"')[1])
+                    algem_data.time = parse(time_str).time()
                 if line.find('Title=') == 0:
                     algem_data.title = line.split('"')[1]
                 if line.find('Stats=') == 0:

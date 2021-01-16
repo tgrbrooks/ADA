@@ -8,7 +8,7 @@ import configuration as config
 # Function to apply alignment, outlier removal and smoothing
 def process_data(xdata, ydata):
     # Remove any values <= 0
-    xdata, ydata = remove_zeros(xdata, ydata)
+    #xdata, ydata = remove_zeros(xdata, ydata)
 
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:

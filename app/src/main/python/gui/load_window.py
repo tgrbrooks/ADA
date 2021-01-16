@@ -17,7 +17,8 @@ from components.data_list_item import DelListItem
 from reader.read_algem_ht24 import (read_algem_ht24,
                                         read_algem_ht24_details)
 from reader.read_algem_pro import read_algem_pro
-from reader.read_ip_t_iso import read_ip_t_iso
+from reader.read_algem_ht24_txt import read_algem_ht24_txt
+from reader.read_ip import read_ip
 from reader.read_psi import read_psi
 from reader.read_csv import read_csv
 
@@ -185,6 +186,116 @@ class LoadWindow(QMainWindow):
             print('Error: ' + str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
+            
+    def load_algem_pro(self, file_name):
+        # Read in files from Algem Pro
+        algem_data = read_algem_pro(file_name)
+        if self.row == -1:
+            self.data.add_data(algem_data)
+        else:
+            self.data.add_replicate(algem_data, self.row)
+
+    def load_algem_ht24_txt(self, file_name):
+        downsample = -1
+        if isint(self.downsample.text()):
+            downsample = int(self.downsample.text())
+
+        algem_data_list, rep_algem_data_list, cond_data_list,\
+            rep_cond_data_list = read_algem_ht24_txt(file_name, downsample)
+        for algem_data in algem_data_list:
+            self.data.add_data(algem_data)
+        for replicate in rep_algem_data_list:
+            if self.merge_replicates.isChecked():
+                self.data.add_replicate(replicate[0], replicate[1])
+            else:
+                self.data.add_data(replicate[0])
+        for condition_data in cond_data_list:
+            self.condition.add_data(condition_data)
+        for replicate in rep_cond_data_list:
+            if self.merge_replicates.isChecked():
+                self.condition.add_replicate(replicate[0], replicate[1])
+            else:
+                self.condition.add_data(replicate[0])
+
+    def load_algem_ht24(self, file_name):
+        # Read in files from Algem HT24 if details file is provided
+        if len(self.details) == 0:
+            algem_data_list = read_algem_ht24(file_name)
+            for algem_data in algem_data_list:
+                self.data.add_data(algem_data)
+
+        # Read in files from Algem HT24 without details file
+        else:
+            algem_data_list, replicate_data_list = read_algem_ht24_details(
+                file_name, self.details[0])
+            for algem_data in algem_data_list:
+                self.data.add_data(algem_data)
+            for replicate in replicate_data_list:
+                if self.merge_replicates.isChecked():
+                    self.data.add_replicate(replicate[0], replicate[1])
+                else:
+                    self.data.add_data(replicate[0])
+
+    def load_ip(self, file_name):
+        # Read in files from Industrial Plankton
+        try:
+            ip_data, condition_data = read_ip(file_name)
+        except Exception as e:
+            raise RuntimeError(
+                'Error reading file '+file_name+'\n'+str(e))
+        if self.row == -1:
+            self.data.add_data(ip_data)
+            self.condition.add_data(condition_data)
+        else:
+            self.data.add_replicate(ip_data, self.row)
+
+    def load_psi(self, file_name):
+        # Read in files from Photon System Instruments photobioreactor
+        try:
+            psi_data, condition_data = read_psi(file_name)
+        except Exception as e:
+            raise RuntimeError(
+                'Error reading file '+file_name+'\n'+str(e))
+        if self.row == -1:
+            self.data.add_data(psi_data)
+            self.condition.add_data(condition_data)
+        else:
+            self.data.add_replicate(psi_data, self.row)
+
+    def load_ada(self, file_name):
+        csv_data, condition_data = read_csv(file_name)
+        if self.row == -1:
+            self.data.add_data(csv_data)
+            self.condition.add_data(condition_data)
+        else:
+            self.data.add_replicate(csv_data, self.row)
+
+    def load_algem_pro_conditions(self, file_name, downsample):
+        # Read in conditions files from Algem Pro
+        algem_conditions = read_algem_pro(file_name, downsample)
+        self.condition.add_data(algem_conditions)
+
+    def load_algem_ht24_conditions(self, file_name, downsample):
+        # Read in files from Algem HT24 if details file is provided
+        if len(self.details) == 0:
+            algem_conditions_list = read_algem_ht24(file_name,
+                                                    downsample)
+            for algem_conditions in algem_conditions_list:
+                self.condition.add_data(algem_conditions)
+
+        # Read in files from Algem HT24 without details file
+        else:
+            algem_conditions_list, replicate_conditions_list = \
+                read_algem_ht24_details(file_name, self.details[0],
+                                        downsample)
+            for algem_conditions in algem_conditions_list:
+                self.condition.add_data(algem_conditions)
+            for replicate in replicate_conditions_list:
+                if self.merge_replicates.isChecked():
+                    self.condition.add_replicate(replicate[0],
+                                                 replicate[1])
+                else:
+                    self.condition.add_data(replicate[0])
 
     def load_handler(self):
         try:
@@ -196,79 +307,22 @@ class LoadWindow(QMainWindow):
 
     def load(self):
         file_type = self.file_type.currentText()
-        extension = '.csv'
-        if file_type == 'Algem Pro':
-            extension = '.txt'
-        if file_type == 'PSI':
-            extension = '.ods'
-
         for file_name in self.files:
-            if not file_name.endswith(extension):
+            if file_type == 'Algem Pro' and file_name.endswith('.txt'):
+                self.load_algem_pro(file_name)
+            elif file_type == 'Algem HT24' and file_name.endswith('.txt'):
+                self.load_algem_ht24_txt(file_name)
+            elif file_type == 'Algem HT24' and file_name.endswith('.csv'):
+                self.load_algem_ht24(file_name)
+            elif file_type == 'IP' and file_name.endswith('.csv'):
+                self.load_ip(file_name)
+            elif file_type == 'PSI' and file_name.endswith('.ods'):
+                self.load_psi(file_name)
+            elif file_type == 'ADA' and file_name.endswith('.csv'):
+                self.load_algem_ada(file_name)
+            else:
                 raise RuntimeError(
                     "File %s has the wrong extension" % (file_name))
-
-            # Read in files from Algem Pro
-            if file_type == 'Algem Pro':
-                algem_data = read_algem_pro(file_name)
-                if self.row == -1:
-                    self.data.add_data(algem_data)
-                else:
-                    self.data.add_replicate(algem_data, self.row)
-
-            # Read in files from Algem HT24 if details file is provided
-            elif file_type == 'Algem HT24' and len(self.details) == 0:
-                algem_data_list = read_algem_ht24(file_name)
-                for algem_data in algem_data_list:
-                    if self.row == -1:
-                        self.data.add_data(algem_data)
-                    else:
-                        self.data.add_replicate(algem_data, self.row)
-
-            # Read in files from Algem HT24 without details file
-            elif file_type == 'Algem HT24':
-                algem_data_list, replicate_data_list = read_algem_ht24_details(
-                    file_name, self.details[0])
-                for algem_data in algem_data_list:
-                    self.data.add_data(algem_data)
-                for replicate in replicate_data_list:
-                    if self.merge_replicates.isChecked():
-                        self.data.add_replicate(replicate[0], replicate[1])
-                    else:
-                        self.data.add_data(replicate[0])
-
-            # Read in files from Industrial Plankton
-            elif file_type == 'IP':
-                try:
-                    ip_data, condition_data = read_ip_t_iso(file_name)
-                except Exception as e:
-                    raise RuntimeError(
-                        'Error reading file '+file_name+'\n'+str(e))
-                if self.row == -1:
-                    self.data.add_data(ip_data)
-                    self.condition.add_data(condition_data)
-                else:
-                    self.data.add_replicate(ip_data, self.row)
-
-            # Read in files from Photon System Instruments photobioreactor
-            elif file_type == 'PSI':
-                try:
-                    psi_data, condition_data = read_psi(file_name)
-                except Exception as e:
-                    raise RuntimeError(
-                        'Error reading file '+file_name+'\n'+str(e))
-                if self.row == -1:
-                    self.data.add_data(psi_data)
-                    self.condition.add_data(condition_data)
-                else:
-                    self.data.add_replicate(psi_data, self.row)
-
-            elif file_type == 'ADA':
-                csv_data, condition_data = read_csv(file_name)
-                if self.row == -1:
-                    self.data.add_data(csv_data)
-                    self.condition.add_data(condition_data)
-                else:
-                    self.data.add_replicate(csv_data, self.row)
 
         if len(self.condition_files) > 0:
             # Set downsampling if option selected
@@ -278,37 +332,15 @@ class LoadWindow(QMainWindow):
 
             # Load in optional conditions data for algem machines
             for file_name in self.condition_files:
-                if not file_name.endswith(extension):
+                if file_type == 'Algem Pro' and file_name.endswith('.txt'):
+                    self.load_algem_pro_conditions(file_name, downsample)
+                elif file_type == 'Algem HT24' and file_name.endswith('.csv'):
+                    self.load_algem_ht24_conditions(file_name, downsample)
+                else:
                     raise RuntimeError("File %s has the wrong extension" %
                                        (file_name))
 
-                # Read in conditions files from Algem Pro
-                if file_type == 'Algem Pro':
-                    algem_conditions = read_algem_pro(file_name, downsample)
-                    self.condition.add_data(algem_conditions)
-
-                # Read in files from Algem HT24 if details file is provided
-                elif file_type == 'Algem HT24' and len(self.details) == 0:
-                    algem_conditions_list = read_algem_ht24(file_name,
-                                                            downsample)
-                    for algem_conditions in algem_conditions_list:
-                        self.condition.add_data(algem_conditions)
-
-                # Read in files from Algem HT24 without details file
-                elif file_type == 'Algem HT24':
-                    algem_conditions_list, replicate_conditions_list = \
-                        read_algem_ht24_details(file_name, self.details[0],
-                                                downsample)
-                    for algem_conditions in algem_conditions_list:
-                        self.condition.add_data(algem_conditions)
-                    for replicate in replicate_conditions_list:
-                        if self.merge_replicates.isChecked():
-                            self.condition.add_replicate(replicate[0],
-                                                         replicate[1])
-                        else:
-                            self.condition.add_data(replicate[0])
-
-        # Update the data lists in the main window
+       # Update the data lists in the main window
         self.parent.update_data_list()
         self.parent.update_condition_data_list()
         self.close()
