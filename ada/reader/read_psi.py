@@ -3,20 +3,12 @@ import os
 import csv
 from datetime import datetime, date, time, timedelta
 import numpy as np
+from dateutil.parser import parse
 
 import ezodf as ods
 
 # Local import
 from ada.reader.algae_data import AlgaeData
-
-
-def str_to_datetime(datetime_str):
-    date_str = (datetime_str.split(' ')[0]).split('.')
-    time_str = (datetime_str.split(' ')[1]).split(':')
-    datetime_out = datetime(int(date_str[2]), int(date_str[1]),
-                            int(date_str[0]), int(time_str[0]),
-                            int(time_str[1]), int(time_str[2]))
-    return datetime_out
 
 
 # Loop over text files and read them in
@@ -34,7 +26,7 @@ def read_psi(file_name):
             psi_data.title = sheet[0, 1].plaintext()
             condition_data.title = sheet[0, 1].plaintext()
             # Get start date
-            start_datetime = str_to_datetime(sheet[1, 1].plaintext())
+            start_datetime = parse(sheet[1, 1].plaintext())
             psi_data.date = start_datetime.date()
             condition_data.date = start_datetime.date()
             # Get start time

@@ -10,9 +10,10 @@ An PyQt5 based plotting and analysis package for algae growth curves.
 
 ## Just the application
 
-* MacOS [installer](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0&preview=Algae+Plotter.dmg) (via Dropbox)
+Head over to the [releases](https://github.com/tgrbrooks/ADA/releases) page for:
+* MacOS installer = ADA.dmg
   * Tested on Mojave, should still work on Catalina.
-* Windows 10 [installer](https://www.dropbox.com/sh/pa48a3jmwdhks1o/AACyNKSP8AvDUff5IjPBasApa?dl=0&preview=Algae+PlotterSetup.exe) (via Dropbox)
+* Windows 10 installer = ADASetup.exe
 
 Other operating systems can be supported upon request.
 
