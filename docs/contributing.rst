@@ -39,3 +39,9 @@ When finished, make sure all the changed files have been committed and pushed to
    git push origin < branch name >
 
 Find your branch on GitHub and click ``New pull request``. Add a message about the new feature and then I will review it and merge if appropriate.
+
+Adding a new file type
+----------------------
+
+Adding a new model
+------------------
