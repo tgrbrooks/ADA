@@ -55,15 +55,15 @@ class ExportWindow(QMainWindow):
             self.error.show()
 
     def export(self):
+        path = self.test_path
+        if self.test_path == 'none':
+            path = get_save_directory_name()
         for data in self.parent.data.data_files:
-            filename = data.name.split('.')[0] + '.csv'
-            path = self.test_path
-            if self.test_path == 'none':
-                path = get_save_directory_name()
+            filename = data.label + '.csv'
             if self.rename.isChecked():
-                filename = path + '/' + data.profile + '.csv'
+                filename = path + '/' + data.profile + '_ada.csv'
             else:
-                filename = path + '/' + filename.split('/')[-1].split('.')[0] + '.csv'
+                filename = path + '/' + filename.split('/')[-1].split('.')[0] + '_ada.csv'
 
             # Get the condition data if that option is checked
             conditions = None

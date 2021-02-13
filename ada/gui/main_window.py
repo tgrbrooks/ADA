@@ -76,13 +76,13 @@ class App(QMainWindow):
         plot_layout.addWidget(self.plot, 0, 0, 5, 5)
 
         # Saving options
-        save_button = Button('Save', self, 'Save the figure')
+        save_button = Button('Save Plot', self, 'Save the figure')
         save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         plot_layout.addWidget(save_button, 5, 0)
 
         # Export options
-        export_button = Button('Export', self,
+        export_button = Button('Export Data', self,
                                'Export the data to CSV')
         export_button.clicked.connect(self.export_files)
         plot_layout.addWidget(export_button, 5, 1)
