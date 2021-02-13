@@ -20,7 +20,7 @@ from ada.reader.read_algem_pro import read_algem_pro
 from ada.reader.read_algem_ht24_txt import read_algem_ht24_txt
 from ada.reader.read_ip import read_ip
 from ada.reader.read_psi import read_psi
-from ada.reader.read_csv import read_csv
+from ada.reader.read_ada import read_ada
 
 import ada.configuration as config
 
@@ -263,12 +263,13 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(psi_data, self.row)
 
     def load_ada(self, file_name):
-        csv_data, condition_data = read_csv(file_name)
+        ada_data, condition_data = read_ada(file_name)
         if self.row == -1:
-            self.data.add_data(csv_data)
-            self.condition.add_data(condition_data)
+            self.data.add_data(ada_data)
+            if condition_data is not None:
+                self.condition.add_data(condition_data)
         else:
-            self.data.add_replicate(csv_data, self.row)
+            self.data.add_replicate(ada_data, self.row)
 
     def load_algem_pro_conditions(self, file_name, downsample):
         # Read in conditions files from Algem Pro
@@ -319,7 +320,7 @@ class LoadWindow(QMainWindow):
             elif file_type == 'PSI' and file_name.endswith('.ods'):
                 self.load_psi(file_name)
             elif file_type == 'ADA' and file_name.endswith('.csv'):
-                self.load_algem_ada(file_name)
+                self.load_ada(file_name)
             else:
                 raise RuntimeError(
                     "File %s has the wrong extension" % (file_name))
