@@ -572,7 +572,7 @@ class App(QMainWindow):
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
         for i, data in enumerate(self.data.data_files):
-            data_list_item = DataListItem(data.name.split('/')[-1], i, self)
+            data_list_item = DataListItem(data.label, i, self)
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
                                          data_list_item.widget)

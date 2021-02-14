@@ -218,13 +218,13 @@ class LoadWindow(QMainWindow):
                 self.condition.add_data(replicate[0])
 
     def load_algem_ht24(self, file_name):
-        # Read in files from Algem HT24 if details file is provided
+        # Read in files from Algem HT24 if no details file is provided
         if len(self.details) == 0:
             algem_data_list = read_algem_ht24(file_name)
             for algem_data in algem_data_list:
                 self.data.add_data(algem_data)
 
-        # Read in files from Algem HT24 without details file
+        # Read in files from Algem HT24 with details file
         else:
             algem_data_list, replicate_data_list = read_algem_ht24_details(
                 file_name, self.details[0])
