@@ -39,7 +39,7 @@ class DataListItem():
                     lambda: parent.remove_replicate(j)
                 )
                 inner_label = QLabel(
-                    parent.data.replicate_files[index][j].name.split('/')[-1]
+                    parent.data.replicate_files[index][j].label
                 )
                 inner_label.setStyleSheet(config.small_font)
                 hlayout.addWidget(inner_label)
