@@ -8,7 +8,8 @@ import ada.configuration as config
 # Function to apply alignment, outlier removal and smoothing
 def process_data(xdata, ydata):
     # Remove any values <= 0
-    #xdata, ydata = remove_zeros(xdata, ydata)
+    if config.remove_zeros:
+        xdata, ydata = remove_zeros(xdata, ydata)
 
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:
@@ -29,11 +30,11 @@ def process_data(xdata, ydata):
     return xdata, ydata
 
 
-# Function to remove any values <= 0
+# Function to remove any zero values
 def remove_zeros(xdata, ydata):
     data_index = 0
     while data_index < len(ydata):
-        if (ydata[data_index] <= 0):
+        if (ydata[data_index] == 0):
             ydata = np.delete(ydata, data_index)
             xdata = np.delete(xdata, data_index)
             data_index = data_index - 1
@@ -69,19 +70,24 @@ def remove_outliers(xdata, ydata):
         data_index = data_index + 1
     # Apply automatic outlier detection
     if(config.auto_remove):
-        # get the average difference between data points
-        mean_diff = 0
-        for i in range(0, len(ydata)-1, 1):
-            mean_diff = mean_diff + abs(ydata[i]-ydata[i+1])
-        mean_diff = mean_diff / (len(ydata)-1)
-        data_index = 0
-        # If the difference to the next point is over 20x the mean,
-        # delete the next point
-        while data_index < len(ydata)-1:
-            if abs(ydata[data_index] - ydata[data_index+1]) > 20.*mean_diff:
-                ydata = np.delete(ydata, data_index+1)
-                xdata = np.delete(xdata, data_index+1)
-            data_index = data_index + 1
+        # Do this iteratively until no points are removed
+        removed_points = 1
+        while (removed_points != 0):
+            removed_points = 0
+            # get the average difference between data points
+            mean_diff = 0
+            for i in range(0, len(ydata)-1, 1):
+                mean_diff = mean_diff + abs(ydata[i]-ydata[i+1])
+            mean_diff = mean_diff / (len(ydata)-1)
+            data_index = 0
+            # If the difference to the next point is over 20x the mean,
+            # delete the next point
+            while data_index < len(ydata)-1:
+                if abs(ydata[data_index] - ydata[data_index+1]) > 20.*mean_diff:
+                    removed_points += 1
+                    ydata = np.delete(ydata, data_index+1)
+                    xdata = np.delete(xdata, data_index+1)
+                data_index = data_index + 1
     return xdata, ydata
 
 
