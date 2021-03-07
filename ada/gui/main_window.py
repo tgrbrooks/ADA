@@ -64,7 +64,7 @@ class App(QMainWindow):
 
         # Main plotting window
         splitter = QSplitter()
-        
+
         plot_layout = QGridLayout()
         plot_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
         plot_layout.setSpacing(10*wr)
@@ -601,7 +601,7 @@ class App(QMainWindow):
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
         for i, data in enumerate(self.condition_data.data_files):
-            data_list_item = ConditionListItem(data.name.split('/')[-1], self)
+            data_list_item = ConditionListItem(data.label, self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
                                                    data_list_item.widget)
