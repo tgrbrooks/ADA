@@ -23,6 +23,7 @@ from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 class LoadWindow(QMainWindow):
@@ -32,6 +33,8 @@ class LoadWindow(QMainWindow):
         self.title = 'Load Files'
         self.width = 350*config.wr
         self.height = 150*config.hr
+        logger.debug('Creating load window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.parent = parent
         self.data = data
         self.condition = condition
@@ -120,6 +123,7 @@ class LoadWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def update_options(self):
+        logger.debug('Updating the load options based on file type')
         file_type = self.file_type.currentText()
         self.select_conditions_button.hide()
         self.conditions_file_list.hide()
@@ -144,15 +148,17 @@ class LoadWindow(QMainWindow):
         gp = widget.mapToGlobal(QPoint())
         lp = display_list.viewport().mapFromGlobal(gp)
         row = display_list.row(display_list.itemAt(lp))
-        for i, file_name in enumerate(file_list):
+        logger.debug('Removing item %i from data list' % row)
+        for i, _ in enumerate(file_list):
             if i != row:
                 continue
             del file_list[i]
         self.fill_list(file_list, display_list)
 
     def fill_list(self, file_list, display_list):
+        logger.debug('Creating list of files to be loaded')
         display_list.clear()
-        for i, file_name in enumerate(file_list):
+        for file_name in file_list:
             list_item = DelListItem(file_name.split('/')[-1])
             list_item.button.clicked.connect(
                 lambda: self.remove_item(file_list, display_list)
@@ -161,33 +167,37 @@ class LoadWindow(QMainWindow):
             display_list.setItemWidget(list_item.item, list_item.widget)
 
     def select_data(self):
+        logger.debug('Selecting data files')
         try:
             self.files = self.files + get_file_names()
             self.fill_list(self.files, self.file_list)
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     def select_details(self):
+        logger.debug('Selecting details files')
         try:
             self.details = get_file_names()
             self.fill_list(self.details, self.details_file_list)
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     def select_conditions(self):
+        logger.debug('Selecting conditions files')
         try:
             self.condition_files = get_file_names()
             self.fill_list(self.condition_files, self.conditions_file_list)
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
-            
+
     def load_algem_pro(self, file_name):
+        logger.info('Loading an Algem-Pro file %s' % file_name)
         # Read in files from Algem Pro
         algem_data = read_algem_pro(file_name)
         if self.row == -1:
@@ -200,6 +210,8 @@ class LoadWindow(QMainWindow):
         if isint(self.downsample.text()):
             downsample = int(self.downsample.text())
 
+        logger.info('Loading a partial HT-24 file %s, downsample: %i' %
+                    (file_name, downsample))
         algem_data_list, rep_algem_data_list, cond_data_list,\
             rep_cond_data_list = read_algem_ht24_txt(file_name, downsample)
         for algem_data in algem_data_list:
@@ -218,6 +230,7 @@ class LoadWindow(QMainWindow):
                 self.condition.add_data(replicate[0])
 
     def load_algem_ht24(self, file_name):
+        logger.info('Loading HT-24 file %s' % file_name)
         # Read in files from Algem HT24 if no details file is provided
         if len(self.details) == 0:
             algem_data_list = read_algem_ht24(file_name)
@@ -237,6 +250,7 @@ class LoadWindow(QMainWindow):
                     self.data.add_data(replicate[0])
 
     def load_ip(self, file_name):
+        logger.info('Loading IP file %s' % file_name)
         # Read in files from Industrial Plankton
         try:
             ip_data, condition_data = read_ip(file_name)
@@ -250,6 +264,7 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(ip_data, self.row)
 
     def load_psi(self, file_name):
+        logger.info('Loading PSI file %s' % file_name)
         # Read in files from Photon System Instruments photobioreactor
         try:
             psi_data, condition_data = read_psi(file_name)
@@ -263,6 +278,7 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(psi_data, self.row)
 
     def load_ada(self, file_name):
+        logger.info('Loading ADA file %s' % file_name)
         ada_data, condition_data = read_ada(file_name)
         if self.row == -1:
             self.data.add_data(ada_data)
@@ -272,11 +288,15 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(ada_data, self.row)
 
     def load_algem_pro_conditions(self, file_name, downsample):
+        logger.info('Loading Algem-Pro condition file %s, downsample %i' %
+                    (file_name, downsample))
         # Read in conditions files from Algem Pro
         algem_conditions = read_algem_pro(file_name, downsample)
         self.condition.add_data(algem_conditions)
 
     def load_algem_ht24_conditions(self, file_name, downsample):
+        logger.info('Loading HT-24 condition file %s, downsample %i' %
+                    (file_name, downsample))
         # Read in files from Algem HT24 if details file is provided
         if len(self.details) == 0:
             algem_conditions_list = read_algem_ht24(file_name,
@@ -302,11 +322,12 @@ class LoadWindow(QMainWindow):
         try:
             self.load()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     def load(self):
+        logger.debug('Loading files into ADA')
         file_type = self.file_type.currentText()
         for file_name in self.files:
             if file_type == 'Algem Pro' and file_name.endswith('.txt'):

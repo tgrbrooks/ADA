@@ -10,6 +10,7 @@ from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry
 from ada.type_functions import isfloat
 import ada.configuration as config
+from ada.logger import logger
 
 
 # Class for a table constructor window
@@ -20,6 +21,8 @@ class FitWindow(QMainWindow):
         self.title = 'Fit Curve'
         self.width = 250*config.wr
         self.height = 150*config.hr
+        logger.debug('Creating fit window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.parent = parent
         self.rows = []
         self.initUI()
@@ -30,7 +33,8 @@ class FitWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         fit_layout = QVBoxLayout()
-        fit_layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        fit_layout.setContentsMargins(
+            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         fit_layout.setSpacing(5*config.wr)
 
         # List of row options
@@ -63,6 +67,8 @@ class FitWindow(QMainWindow):
         config.do_fit = True
         config.fit_curve = self.curve_option.currentText()
         config.fit_type = self.fit_option.currentText()
+        logger.debug('Fitting %s with %s' %
+                     (config.fit_curve, config.fit_type))
         if isfloat(self.fit_from.text()):
             config.fit_from = float(self.fit_from.text())
         else:

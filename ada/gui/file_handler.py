@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 # Class to handle the file browser
@@ -23,6 +24,8 @@ class FileHandlerGui(QWidget):
             self.save_fig = False
         self.width = 960*config.wr
         self.height = 600*config.hr
+        logger.debug('Creating file handler window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.initUI()
 
     def initUI(self):
@@ -36,6 +39,7 @@ class FileHandlerGui(QWidget):
             self.saveDirectoryDialog()
 
     def openFileNamesDialog(self):
+        logger.debug('Creating window for getting file names for opening')
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(
@@ -47,6 +51,7 @@ class FileHandlerGui(QWidget):
         self.file_names = files
 
     def saveFileDialog(self):
+        logger.debug('Creating window for creating file name for saving')
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.file_name, _ = QFileDialog.getSaveFileName(
@@ -64,6 +69,7 @@ class FileHandlerGui(QWidget):
                 self.fig.savefig(self.file_name)
 
     def saveDirectoryDialog(self):
+        logger.debug('Creating window for choosing save directory')
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.directory_name = QFileDialog.getExistingDirectory(

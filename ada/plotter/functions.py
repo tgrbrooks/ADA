@@ -127,7 +127,7 @@ def average_data(xdatas, ydatas, show_err=False):
     new_ydata = np.array([])
     new_yerr = np.array([])
     if len(xdatas) <= 1:
-        return xdatas[0], ydatas[0]
+        return xdatas[0], ydatas[0], new_yerr
     for i, x_i in enumerate(xdatas[0]):
         ys = np.array([ydatas[0][i]])
         for j in range(1, len(xdatas), 1):

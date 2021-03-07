@@ -41,6 +41,8 @@ class App(QMainWindow):
         self.top = 60 * config.wr
         self.width = 960 * config.wr
         self.height = 600 * config.wr
+        logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
+            self.left, self.top, self.width, self.height))
         # Container for data
         self.data = DataHolder()
         # Container for condition data
@@ -520,16 +522,18 @@ class App(QMainWindow):
 
     # Function: Open and read in data files
     def open_data_files(self):
+        logger.debug('Opening data files')
         try:
             self.load = LoadWindow(self, self.data, self.condition_data)
             self.load.show()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     # Function: Open and read in calibration
     def open_calibration_file(self):
+        logger.debug('Loading calibration curve from file')
         try:
             self.calibration_file.clear()
             calib_file_name = get_file_names()
@@ -537,11 +541,12 @@ class App(QMainWindow):
             self.calibration = read_calibration(calib_file_name[0])
             self.update_data_list()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     def remove_calibration_file(self):
+        logger.debug('Removing calibration curve')
         self.calibration_file.clear()
         self.calibration = None
 
@@ -549,6 +554,7 @@ class App(QMainWindow):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
         if action == self.clear_action:
+            logger.debug('Clearing all data')
             self.data.clear()
             self.update_data_list()
             self.condition_data.clear()
@@ -556,24 +562,27 @@ class App(QMainWindow):
 
     # Function: Update the main plot
     def update_plot(self):
+        logger.debug('Updating the main plot')
         try:
             self.plot.plot(self.data, self.condition_data)
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     # Function: Save the main plot
     def save_plot(self):
+        logger.info('Saving the plot')
         try:
             self.plot.save()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     # Function: Update the list of data files and associated options
     def update_data_list(self):
+        logger.debug('Updating the list of data files')
         self.data_list.clear()
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
@@ -598,6 +607,7 @@ class App(QMainWindow):
 
     # Function: Update the list of condition data and associated options
     def update_condition_data_list(self):
+        logger.debug('Updating the list of condition data files')
         self.condition_data_list.clear()
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
@@ -631,7 +641,8 @@ class App(QMainWindow):
     # Function: Remove file from list of data
     def remove_item(self):
         row = self.get_data_row()
-        for i, data in enumerate(self.data.data_files):
+        logger.debug('Removing data list item %i' % row)
+        for i, _ in enumerate(self.data.data_files):
             if i != row:
                 continue
             self.data.delete_data(i)
@@ -640,7 +651,9 @@ class App(QMainWindow):
     # Function: Remove file from list of data
     def remove_replicate(self, index):
         row = self.get_data_row()
-        for i, data in enumerate(self.data.data_files):
+        logger.debug('Removing replicate %i from data list item %i' %
+                     (index, row))
+        for i, _ in enumerate(self.data.data_files):
             if i != row:
                 continue
             self.data.delete_replicate(i, index)
@@ -649,7 +662,8 @@ class App(QMainWindow):
     # Function: Remove file from list of condition data
     def remove_condition_item(self):
         row = self.get_condition_row()
-        for i, data in enumerate(self.condition_data.data_files):
+        logger.debug('Removing condition data list item %i' % row)
+        for i, _ in enumerate(self.condition_data.data_files):
             if i != row:
                 continue
             self.condition_data.delete_data(i)
@@ -657,11 +671,13 @@ class App(QMainWindow):
 
     def add_to_item(self):
         row = self.get_data_row()
+        logger.debug('Adding replicate to data list item %i' % row)
         # Open file with file handler
         self.load = LoadWindow(self, self.data, self.condition_data, row)
         self.load.show()
 
     def download_template(self):
+        logger.debug('Downloading ADA data template')
         template = ['Name,,Title,,Reactor,,Profile,\n',
                     'Date,2020-01-15,Time,18:18:18\n',
                     'Time [hr],OD [],Conditions\n']
@@ -676,17 +692,21 @@ class App(QMainWindow):
         config.do_fit = False
         config.cursor = not config.cursor
 
+    # Open window for fitting data
     def fit_curve(self):
+        logger.debug('Opening fit window')
         self.fit = FitWindow(self)
         self.fit.show()
 
-    # Function: Toggle grid on and off
+    # Open window for creating a data table
     def create_table(self):
+        logger.debug('Opening table window')
         self.table = TableWindow(self)
         self.table.show()
 
-    # Function: Export data to csv format
+    # Function: Open window for exporting data to csv format
     def export_files(self):
+        logger.debug('Opening export window')
         self.export = ExportWindow(self)
         self.export.show()
 

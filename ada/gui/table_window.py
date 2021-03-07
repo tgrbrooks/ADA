@@ -17,6 +17,7 @@ from ada.plotter.functions import (process_data, average_data,
                                    time_average)
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 # Class for a table constructor window
@@ -27,6 +28,8 @@ class TableWindow(QMainWindow):
         self.title = 'Create Table'
         self.width = 500*config.wr
         self.height = 330*config.hr
+        logger.debug('Creating table window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.parent = parent
         self.rows = []
         self.initUI()
@@ -88,6 +91,7 @@ class TableWindow(QMainWindow):
 
     # Add a new row to the table
     def add_row(self):
+        logger.debug('Adding %s row to table' % self.row_option.currentText())
         table_list_item = TableListItem(self.row_option.currentText(), self)
         self.row_list.addItem(table_list_item.item)
         self.row_list.setItemWidget(table_list_item.item,
@@ -101,11 +105,13 @@ class TableWindow(QMainWindow):
         gp = widget.mapToGlobal(QPoint())
         lp = self.row_list.viewport().mapFromGlobal(gp)
         row = self.row_list.row(self.row_list.itemAt(lp))
+        logger.debug('Removing row %i from table' % row)
         self.row_list.takeItem(row)
         self.rows.pop(row)
 
     # Create table and write to file
     def make_table(self):
+        logger.debug('Creating the table')
         try:
             # Get the column headings from the data file names
             column_headings = self.get_headings()
@@ -177,31 +183,36 @@ class TableWindow(QMainWindow):
             self.data = row_data
             self.show_table()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
 
     def get_headings(self):
+        logger.debug('Getting the table row headings')
         headings = ['File']
         for data in self.parent.data.data_files:
             headings.append(data.label)
         return headings
 
     def get_profiles(self):
+        logger.debug('Getting the data profile names')
         profiles = []
         for data in self.parent.data.data_files:
             profiles.append(data.profile)
         return profiles
 
     def get_reactors(self):
+        logger.debug('Getting the reactor names')
         reactors = []
         for data in self.parent.data.data_files:
             reactors.append(data.reactor)
         return reactors
 
     def get_gradients(self, data_name, grad_from, grad_to):
+        logger.debug('Getting gradient of %s from %.2f to %.2f' %
+                     (data_name, grad_from, grad_to))
         gradients = []
-        for i, data in enumerate(self.parent.data.data_files):
+        for i, _ in enumerate(self.parent.data.data_files):
             xdata, ydata = self.get_xy_data(i, data_name)
             # Calculate the gradient
             x1 = None
@@ -224,8 +235,10 @@ class TableWindow(QMainWindow):
         return gradients
 
     def get_time_to(self, data_name, time_to):
+        logger.debug('Getting the time to reach %s of %.2f' %
+                     (data_name, time_to))
         times = []
-        for i, data in enumerate(self.parent.data.data_files):
+        for i, _ in enumerate(self.parent.data.data_files):
             found = False
             xdata, ydata = self.get_xy_data(i, data_name)
             for i, ydat in enumerate(ydata):
@@ -247,7 +260,7 @@ class TableWindow(QMainWindow):
             xdatas.append(xdata)
             ydatas.append(ydata)
         if len(xdatas) > 1:
-            xdata, ydata, yerr = average_data(xdatas, ydatas)
+            xdata, ydata, _ = average_data(xdatas, ydatas)
             return xdata, ydata
         elif len(xdatas) == 1:
             return xdatas[0], ydatas[0]
@@ -255,9 +268,10 @@ class TableWindow(QMainWindow):
             raise RuntimeError('No data found')
 
     def get_averages(self, cond_name, start_t, end_t):
+        logger.debug('Getting average of %s between time %.2f and %.2f' %
+                     (cond_name, start_t, end_t))
         averages = []
-        for i, data in enumerate(self.parent.data.data_files):
-            found = False
+        for i, _ in enumerate(self.parent.data.data_files):
             xdata, ydata = self.get_condition_xy_data(i, cond_name)
             dat = np.array([])
             for i, x in enumerate(xdata):
@@ -268,8 +282,9 @@ class TableWindow(QMainWindow):
         return averages
 
     def get_condition_at(self, cond_name, time):
+        logger.debug('Getting condition %s at time %.2f' % (cond_name, time))
         values = []
-        for i, data in enumerate(self.parent.data.data_files):
+        for i, _ in enumerate(self.parent.data.data_files):
             xdata, ydata = self.get_condition_xy_data(i, cond_name)
             values.append(np.interp(time, xdata, ydata))
         return values
@@ -285,7 +300,7 @@ class TableWindow(QMainWindow):
             xdata = cond.get_xdata(config.xvar)
             ydata = cond.get_signal(cond_name)
             if config.condition_average != -1:
-                xdata, ydata, yerr = time_average(
+                xdata, ydata, _ = time_average(
                     xdata,
                     ydata,
                     config.condition_average)
@@ -294,8 +309,10 @@ class TableWindow(QMainWindow):
                            % (self.parent.data.data_files[i].name))
 
     def get_fit(self, data_name, fit_name, fit_param, fit_from, fit_to):
+        logger.debug('Fitting %s with %s from %.2f to %.2f and recording %s' % (
+            data_name, fit_name, fit_from, fit_to, fit_param))
         values = []
-        for i, data in enumerate(self.parent.data.data_files):
+        for i, _ in enumerate(self.parent.data.data_files):
             xdata, ydata = self.get_xy_data(i, data_name)
             fit_degree = 0
             if fit_name == 'y = p1*x + p0' or fit_name == 'y = p0*exp(p1*x)':
@@ -330,6 +347,7 @@ class TableWindow(QMainWindow):
         return values
 
     def show_table(self):
+        logger.debug('Displaying the table')
         self.table.setRowCount(len(self.titles)+1)
         self.table.setColumnCount(len(self.header))
         for col, head in enumerate(self.header):
@@ -348,6 +366,7 @@ class TableWindow(QMainWindow):
             file_name = get_save_file_name()
             if not file_name.endswith('.csv'):
                 file_name = file_name + '.csv'
+            logger.info('Saving the table as %s' % file_name)
             with open(file_name, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(self.header)
@@ -361,6 +380,6 @@ class TableWindow(QMainWindow):
                     writer.writerow(row)
             self.close()
         except Exception as e:
-            print('Error: ' + str(e))
+            logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
             self.error.show()
