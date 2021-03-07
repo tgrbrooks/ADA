@@ -56,6 +56,7 @@ class DataListItem():
         self.widget.setLayout(vlayout)
         self.item.setSizeHint(self.widget.sizeHint())
 
+
 class ConditionListItem():
 
     def __init__(self, text, parent=None):
@@ -76,6 +77,7 @@ class ConditionListItem():
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
+
 
 class DelListItem():
 

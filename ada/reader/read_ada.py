@@ -57,7 +57,8 @@ def read_ada(file_name):
                     if len(measurement_name.split(' [')) < 2:
                         signal.unit = ''
                     else:
-                        signal.unit = measurement_name.split(' [')[0].split(']')[0]
+                        signal.unit = measurement_name.split(
+                            ' [')[0].split(']')[0]
                     if not is_conditions:
                         ada_data.signals.append(signal)
                     else:
@@ -74,7 +75,8 @@ def read_ada(file_name):
                     elif i < cond_i or not has_conditions:
                         ada_data.signals[i-1].append(float(measurement))
                     elif i > cond_i:
-                        condition_data.signals[i-cond_i-1].append(float(measurement))
+                        condition_data.signals[i-cond_i -
+                                               1].append(float(measurement))
 
     # Some error checking
     if(ada_data.xaxis.name == ''):
@@ -83,7 +85,7 @@ def read_ada(file_name):
     if(len(ada_data.signals) == 0):
         raise RuntimeError('Issue processing header:\n'
                            'Could not find sensor data')
-            
+
     # Check data has been read in
     if(ada_data.xaxis.data.size == 0):
         raise RuntimeError('Issue processing data:\n'

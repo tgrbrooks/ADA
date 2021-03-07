@@ -10,6 +10,7 @@ from ada.components.button import Button
 from ada.components.user_input import CheckBox
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 class ExportWindow(QMainWindow):
@@ -19,6 +20,8 @@ class ExportWindow(QMainWindow):
         self.title = 'Export Files'
         self.width = 150*config.wr
         self.height = 100*config.hr
+        logger.debug('Creating export window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.parent = parent
         self.test_path = 'none'
         self.initUI()
@@ -29,7 +32,8 @@ class ExportWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setContentsMargins(
+            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         layout.setSpacing(5*config.wr)
 
         self.rename = CheckBox('Rename with profile', self)
@@ -58,12 +62,15 @@ class ExportWindow(QMainWindow):
         path = self.test_path
         if self.test_path == 'none':
             path = get_save_directory_name()
+        logger.info('Exporting files to %s' % path)
         for data in self.parent.data.data_files:
             filename = data.label + '.csv'
             if self.rename.isChecked():
                 filename = path + '/' + data.profile + '_ada.csv'
             else:
-                filename = path + '/' + filename.split('/')[-1].split('.')[0] + '_ada.csv'
+                filename = path + '/' + \
+                    filename.split('/')[-1].split('.')[0] + '_ada.csv'
+            logger.debug('Exporting file %s' % filename)
 
             # Get the condition data if that option is checked
             conditions = None
@@ -80,19 +87,21 @@ class ExportWindow(QMainWindow):
             with open(filename, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 name_header = ['Name', data.label,
-                               'Title', data.title, 
+                               'Title', data.title,
                                'Reactor', data.reactor,
                                'Profile', data.profile]
                 writer.writerow(name_header)
                 date_header = ['Date', data.date, 'Time', data.time]
                 writer.writerow(date_header)
-                measurement_header = [data.xaxis.name + ' [' + data.xaxis.unit + ']']
+                measurement_header = [
+                    data.xaxis.name + ' [' + data.xaxis.unit + ']']
                 for sig in data.signals:
                     measurement_header.append(sig.name + ' [' + sig.unit + ']')
                 if conditions is not None:
                     measurement_header.append('Conditions')
                     for sig in conditions.signals:
-                        measurement_header.append(sig.name + ' [' + sig.unit + ']')
+                        measurement_header.append(
+                            sig.name + ' [' + sig.unit + ']')
                 writer.writerow(measurement_header)
                 for i, xdat in enumerate(data.xaxis.data):
                     row = [xdat]
@@ -101,7 +110,8 @@ class ExportWindow(QMainWindow):
                     # Find closest signal time
                     if conditions is not None:
                         row.append('')
-                        cond_ind = (np.abs(conditions.xaxis.data - xdat)).argmin()
+                        cond_ind = (
+                            np.abs(conditions.xaxis.data - xdat)).argmin()
                         for sig in conditions.signals:
                             row.append(sig.data[cond_ind])
                     writer.writerow(row)
