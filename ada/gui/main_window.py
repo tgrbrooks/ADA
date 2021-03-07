@@ -28,6 +28,7 @@ from ada.gui.load_window import LoadWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 from ada.type_functions import isfloat, isint
 import ada.configuration as config
+from ada.logger import logger
 
 
 class App(QMainWindow):
@@ -691,6 +692,7 @@ class App(QMainWindow):
 
     # Function: Update the global configuration
     def update_config(self):
+        logger.debug('Updating configuration')
         config.title = self.figure_title.text()
 
         # x axis config
