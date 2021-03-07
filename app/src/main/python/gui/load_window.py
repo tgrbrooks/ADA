@@ -20,7 +20,7 @@ from reader.read_algem_pro import read_algem_pro
 from reader.read_algem_ht24_txt import read_algem_ht24_txt
 from reader.read_ip import read_ip
 from reader.read_psi import read_psi
-from reader.read_csv import read_csv
+from reader.read_ada import read_ada
 
 import configuration as config
 
@@ -218,13 +218,13 @@ class LoadWindow(QMainWindow):
                 self.condition.add_data(replicate[0])
 
     def load_algem_ht24(self, file_name):
-        # Read in files from Algem HT24 if details file is provided
+        # Read in files from Algem HT24 if no details file is provided
         if len(self.details) == 0:
             algem_data_list = read_algem_ht24(file_name)
             for algem_data in algem_data_list:
                 self.data.add_data(algem_data)
 
-        # Read in files from Algem HT24 without details file
+        # Read in files from Algem HT24 with details file
         else:
             algem_data_list, replicate_data_list = read_algem_ht24_details(
                 file_name, self.details[0])
@@ -263,12 +263,13 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(psi_data, self.row)
 
     def load_ada(self, file_name):
-        csv_data, condition_data = read_csv(file_name)
+        ada_data, condition_data = read_ada(file_name)
         if self.row == -1:
-            self.data.add_data(csv_data)
-            self.condition.add_data(condition_data)
+            self.data.add_data(ada_data)
+            if condition_data is not None:
+                self.condition.add_data(condition_data)
         else:
-            self.data.add_replicate(csv_data, self.row)
+            self.data.add_replicate(ada_data, self.row)
 
     def load_algem_pro_conditions(self, file_name, downsample):
         # Read in conditions files from Algem Pro
@@ -319,7 +320,7 @@ class LoadWindow(QMainWindow):
             elif file_type == 'PSI' and file_name.endswith('.ods'):
                 self.load_psi(file_name)
             elif file_type == 'ADA' and file_name.endswith('.csv'):
-                self.load_algem_ada(file_name)
+                self.load_ada(file_name)
             else:
                 raise RuntimeError(
                     "File %s has the wrong extension" % (file_name))

@@ -14,7 +14,7 @@ def read_algem_ht24(file_name, downsample=-1):
     algem_data_list = []
     with open(file_name, 'r', errors='ignore') as f:
         try:
-            reader = csv.reader(f, delimiter=',') 
+            reader = csv.reader(f, delimiter=',')
             # Process the header data first
             header = next(reader)
             x_name = ''
@@ -27,7 +27,8 @@ def read_algem_ht24(file_name, downsample=-1):
                         x_unit = info[1][1:-1]
                 if i != 0 and len(info) >= 2:
                     algem_data = AlgaeData(file_name + ' (' + info[1] + ')')
-                    algem_data.label = algem_data.label + ' (' + info[1] + ')'
+                    algem_data.label = '(' + info[1] + ') ' + algem_data.label
+                    algem_data.sub_reactor = info[1]
                     algem_data.xaxis.name = x_name
                     algem_data.xaxis.unit = x_unit
                     algem_data.signals.append(algem_data.Signal())
@@ -91,7 +92,7 @@ def read_algem_ht24(file_name, downsample=-1):
 
 def get_index(name, data_list):
     for i, data in enumerate(data_list):
-        if data.label.split('(')[-1].split(')')[0] == name:
+        if data.sub_reactor == name:
             return i
     return -1
 
@@ -120,14 +121,14 @@ def read_details(file_name, duplicate_name, downsample=-1):
     if(len(reac_row) > 1):
         reactor = reac_row[1]
 
-    setup_row = next(reader)
+    next(reader)
 
-    profiles = []
+    profiles = {}
     replicates = []
     for row in reader:
         if row[0].split(' ')[-1] == 'Profile':
             profile = row[1].split('.algp')[0].split('\\')[-1]
-            profiles.append(profile)
+            profiles[row[0].split(' ')[0]] = profile
 
         if row[0].split(' ')[-1] == 'Replicates':
             rep_list = [row[0].split(' ')[0]]
@@ -138,36 +139,38 @@ def read_details(file_name, duplicate_name, downsample=-1):
             replicates.append(rep_list)
 
     # Add the information to the algem data
-    name_dict = {}
-    for i, algem_data in enumerate(algem_data_list):
+    for _, algem_data in enumerate(algem_data_list):
         algem_data.date = date_all
         algem_data.time = time_all
         algem_data.title = exp_name
+        algem_data.profile = profiles[algem_data.sub_reactor]
         algem_data.reactor = reactor
-        algem_data.profile = profiles[i]
-        name_dict[algem_data.label.split('(')[-1].split(')')[0]] = i
 
+    new_algem_data_list = []
+    algem_data_index = 0
     replicate_data_list = []
     used_replicates = []
     # Remove the replicates from main list and put in a new one
-    for i, replicate in enumerate(replicates):
+    for _, replicate in enumerate(replicates):
         # Check if replicates have been used
         if set(replicate) in used_replicates:
             continue
         first_data = replicate[0]
         first_i = get_index(first_data, algem_data_list)
+        new_algem_data_list.append(algem_data_list[first_i])
         if len(replicate) != 1:
             # Loop over the replicates
             for rep in replicate[1:]:
                 rep_i = get_index(rep, algem_data_list)
-                replicate_data_list.append([algem_data_list[rep_i], first_i])
-                algem_data_list.pop(rep_i)
+                replicate_data_list.append([algem_data_list[rep_i], algem_data_index])
         used_replicates.append(set(replicate))
+        algem_data_index += 1
 
-    return algem_data_list, replicate_data_list
+    return new_algem_data_list, replicate_data_list
+
 
 def read_algem_ht24_details(file_name1, file_name2, downsample=-1):
-    
+
     # Determine which file is the details file
     f1 = open(file_name1, 'r', errors='ignore')
     reader1 = csv.reader(f1, delimiter=',')

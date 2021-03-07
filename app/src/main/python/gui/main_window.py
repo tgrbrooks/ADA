@@ -76,13 +76,13 @@ class App(QMainWindow):
         plot_layout.addWidget(self.plot, 0, 0, 5, 5)
 
         # Saving options
-        save_button = Button('Save', self, 'Save the figure')
+        save_button = Button('Save Plot', self, 'Save the figure')
         save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         plot_layout.addWidget(save_button, 5, 0)
 
         # Export options
-        export_button = Button('Export', self,
+        export_button = Button('Export Data', self,
                                'Export the data to CSV')
         export_button.clicked.connect(self.export_files)
         plot_layout.addWidget(export_button, 5, 1)
@@ -572,7 +572,7 @@ class App(QMainWindow):
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
         for i, data in enumerate(self.data.data_files):
-            data_list_item = DataListItem(data.name.split('/')[-1], i, self)
+            data_list_item = DataListItem(data.label, i, self)
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
                                          data_list_item.widget)
