@@ -17,7 +17,6 @@ from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
 from ada.components.list import List
 from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
-from ada.components.collapsible_box import CollapsibleBox
 from ada.components.data_list_item import (DataListItem, ConditionListItem,
                                            DelListItem)
 from ada.gui.error_window import ErrorWindow
@@ -28,6 +27,7 @@ from ada.gui.load_window import LoadWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 from ada.type_functions import isfloat, isint
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 
@@ -48,7 +48,7 @@ class App(QMainWindow):
         # Container for condition data
         self.condition_data = DataHolder()
         self.calibration = None
-        self.setStyleSheet(config.main_background)
+        self.setStyleSheet(styles.main_background)
         self.initUI()
 
     def initUI(self):
@@ -59,7 +59,7 @@ class App(QMainWindow):
         hr = config.wr
 
         tabs = QTabWidget()
-        tabs.setStyleSheet(config.tab_style)
+        tabs.setStyleSheet(styles.tab_style)
 
         # ---------------------------------------------------------------------
         #                           PLOTTING TAB
@@ -292,7 +292,7 @@ class App(QMainWindow):
         axis_v_layout.addWidget(Spacer())
 
         axis_box_widget = QWidget()
-        axis_box_widget.setStyleSheet(config.white_background)
+        axis_box_widget.setStyleSheet(styles.white_background)
         axis_box_widget.setLayout(axis_v_layout)
         tabs.addTab(axis_box_widget, 'Axes')
 
@@ -357,7 +357,7 @@ class App(QMainWindow):
         data_h_layout.addWidget(Spacer())
 
         data_box_widget = QWidget()
-        data_box_widget.setStyleSheet(config.white_background)
+        data_box_widget.setStyleSheet(styles.white_background)
         data_box_widget.setLayout(data_h_layout)
         tabs.addTab(data_box_widget, 'Data')
 
@@ -442,7 +442,7 @@ class App(QMainWindow):
         legend_h_layout.addWidget(Spacer())
 
         legend_box_widget = QWidget()
-        legend_box_widget.setStyleSheet(config.white_background)
+        legend_box_widget.setStyleSheet(styles.white_background)
         legend_box_widget.setLayout(legend_h_layout)
         tabs.addTab(legend_box_widget, 'Legend')
 
@@ -491,7 +491,7 @@ class App(QMainWindow):
         style_h_layout.addWidget(Spacer())
         style_h_widget = QWidget()
         style_h_widget.setLayout(style_h_layout)
-        style_h_widget.setStyleSheet(config.white_background)
+        style_h_widget.setStyleSheet(styles.white_background)
         tabs.addTab(style_h_widget, 'Style')
 
         # --------------- STATS CONFIGURATION
@@ -508,7 +508,7 @@ class App(QMainWindow):
         stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
         stats_box_widget = QWidget()
-        stats_box_widget.setStyleSheet(config.white_background)
+        stats_box_widget.setStyleSheet(styles.white_background)
         stats_box_widget.setLayout(stats_box_layout)
         tabs.addTab(stats_box_widget, 'Stats')
 

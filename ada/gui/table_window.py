@@ -17,6 +17,7 @@ from ada.plotter.functions import (process_data, average_data,
                                    time_average)
 
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 
@@ -85,7 +86,7 @@ class TableWindow(QMainWindow):
         table_widget.setLayout(table_layout)
 
         tabs.addTab(table_widget, "Table")
-        tabs.setStyleSheet(config.tab_style)
+        tabs.setStyleSheet(styles.tab_style)
 
         self.setCentralWidget(tabs)
 

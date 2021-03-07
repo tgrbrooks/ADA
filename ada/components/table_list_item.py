@@ -5,6 +5,7 @@ from ada.components.button import DeleteButton
 from ada.components.label import Label, RoundLabel
 from ada.components.user_input import DropDown, TextEntry
 import ada.configuration as config
+import ada.styles as styles
 
 
 class TableListItem():

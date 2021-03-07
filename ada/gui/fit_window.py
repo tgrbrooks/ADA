@@ -10,6 +10,7 @@ from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry
 from ada.type_functions import isfloat
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 
