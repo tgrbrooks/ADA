@@ -5,7 +5,7 @@ import csv
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
                              QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
                              QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
-                             QFormLayout, QHBoxLayout, QMenu, QAction)
+                             QFormLayout, QHBoxLayout, QMenu, QAction, QSplitter)
 from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
@@ -63,6 +63,8 @@ class App(QMainWindow):
         # ---------------------------------------------------------------------
 
         # Main plotting window
+        splitter = QSplitter()
+        
         plot_layout = QGridLayout()
         plot_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
         plot_layout.setSpacing(10*wr)
@@ -106,9 +108,13 @@ class App(QMainWindow):
         table_button.clicked.connect(self.create_table)
         plot_layout.addWidget(table_button, 5, 4)
 
+        plot_widget = QWidget()
+        plot_widget.setLayout(plot_layout)
+        splitter.addWidget(plot_widget)
+
         data_entry_layout = QVBoxLayout()
-        data_entry_layout.setSpacing(5*wr)
-        data_entry_layout.setContentsMargins(5, 0, 5, 0)
+        data_entry_layout.setSpacing(10*wr)
+        data_entry_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
         # Add data button
         self.data_button = Button('Add Data', self,
                                   'Import data for plotting')
@@ -157,12 +163,9 @@ class App(QMainWindow):
 
         data_entry_widget = QWidget()
         data_entry_widget.setLayout(data_entry_layout)
-        plot_layout.addWidget(data_entry_widget, 0, 5, 6, 1)
+        splitter.addWidget(data_entry_widget)
 
-        plot_widget = QWidget()
-        plot_widget.setStyleSheet(config.white_background)
-        plot_widget.setLayout(plot_layout)
-        tabs.addTab(plot_widget, 'Plotting')
+        tabs.addTab(splitter, 'Plotting')
 
         # ---------------------------------------------------------------------
         #                           OPTIONS TABS
