@@ -587,9 +587,9 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     # Function to retrieve y data from list of possible signals
     def get_ydata(self, signals, condition=False):
-        ydata = signals[0].data
         y_title = ''
         found_ydata = False
+        
         yvar = config.yvar
         name = config.yname
         unit = config.yunit
@@ -615,12 +615,20 @@ class PlotCanvas(FigureCanvasQTAgg):
                 found_ydata = True
                 ydata = self.parent.calibration.calibrate_od(sig.data)
                 y_title = 'CD'
+                if(name != ''):
+                    y_title = y_title.replace(y_title, name)
+                elif(unit != ''):
+                    y_title = y_title + " ["+unit+"]"
         if config.ynormlog and name == '' and not condition:
             y_title = 'ln('+yvar+'/'+yvar+'$_{0}$)'
+            if(name != ''):
+                y_title = y_title.replace(y_title, name)
+            elif(unit != ''):
+                y_title = y_title + " ["+unit+"]"
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title
-
+    
     # Function to find the closest curve to an x,y point
     def find_closest(self, plots, x, y):
         min_dist = 99999
