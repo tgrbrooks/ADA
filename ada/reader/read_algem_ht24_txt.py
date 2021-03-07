@@ -36,9 +36,11 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                         continue
                     reactor = line.split('="')[1].split(',')[0]
                     profile = line.split('.algp')[0].split('\\')[-1]
-                    name = file_name.split('/')[-1].split('.')[0] + ' (' + reactor + ')'
+                    name = file_name.split(
+                        '/')[-1].split('.')[0] + ' (' + reactor + ')'
 
-                    replicates = line.split('.algp,')[-1].split(',"')[0].split(',')
+                    replicates = line.split(
+                        '.algp,')[-1].split(',"')[0].split(',')
                     replicate_dict[reactor] = [replicates[5], replicates[6]]
 
                     algem_data = AlgaeData(file_name + ' (' + reactor + ')')
@@ -54,7 +56,8 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                     algem_data.signals[0].name = 'OD'
                     algem_data_dict[reactor] = algem_data
 
-                    condition_data = AlgaeData(file_name + ' (' + reactor + ')')
+                    condition_data = AlgaeData(
+                        file_name + ' (' + reactor + ')')
                     condition_data.label = name
                     condition_data.profile = profile
                     condition_data.date = date
@@ -104,11 +107,14 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                     continue
 
                 if data_str[1] == 'Light':
-                    condition_data_dict[reactor].xaxis.append(float(data_str[2]))
-                    condition_data_dict[reactor].signals[0].append(float(data_str[3]))
+                    condition_data_dict[reactor].xaxis.append(
+                        float(data_str[2]))
+                    condition_data_dict[reactor].signals[0].append(
+                        float(data_str[3]))
                 else:
                     algem_data_dict[reactor].xaxis.append(float(data_str[2]))
-                    algem_data_dict[reactor].signals[0].append(float(data_str[3]))
+                    algem_data_dict[reactor].signals[0].append(
+                        float(data_str[3]))
 
             # Separate out into replicates
             algem_data_list = []
@@ -126,7 +132,8 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                 cond_data_list.append(condition_data_dict[reac])
                 for rep in reps:
                     rep_algem_data_list.append([algem_data_dict[rep], index])
-                    rep_cond_data_list.append([condition_data_dict[rep], index])
+                    rep_cond_data_list.append(
+                        [condition_data_dict[rep], index])
                 index += 1
 
             # If everything is successful return the algem data product

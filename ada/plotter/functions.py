@@ -3,10 +3,12 @@ import random
 from math import factorial
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 # Function to apply alignment, outlier removal and smoothing
 def process_data(xdata, ydata):
+    logger.debug('Processing data')
     # Remove any values <= 0
     if config.remove_zeros:
         xdata, ydata = remove_zeros(xdata, ydata)
@@ -20,7 +22,7 @@ def process_data(xdata, ydata):
 
     # remove outliers
     if (config.remove_above >= 0 or
-            config.remove_below >= 0 or
+        config.remove_below >= 0 or
             config.auto_remove):
         xdata, ydata = remove_outliers(xdata, ydata)
 
@@ -32,6 +34,7 @@ def process_data(xdata, ydata):
 
 # Function to remove any zero values
 def remove_zeros(xdata, ydata):
+    logger.debug('Removing any y=0 points in data')
     data_index = 0
     while data_index < len(ydata):
         if (ydata[data_index] == 0):
@@ -41,8 +44,10 @@ def remove_zeros(xdata, ydata):
         data_index = data_index + 1
     return xdata, ydata
 
+
 # Function to align all plots to the same y value
 def align_to_y(xdata, ydata):
+    logger.debug('Aligning data to y = %.2f' % config.y_alignment)
     # Find the first y index greater than the alignment point
     index = 0
     for i, y in enumerate(ydata):
@@ -70,9 +75,12 @@ def remove_outliers(xdata, ydata):
         data_index = data_index + 1
     # Apply automatic outlier detection
     if(config.auto_remove):
+        logger.debug('Auto-removing outliers')
         # Do this iteratively until no points are removed
         removed_points = 1
+        iteration = 0
         while (removed_points != 0):
+            logger.debug('')
             removed_points = 0
             # get the average difference between data points
             mean_diff = 0
@@ -88,12 +96,14 @@ def remove_outliers(xdata, ydata):
                     ydata = np.delete(ydata, data_index+1)
                     xdata = np.delete(xdata, data_index+1)
                 data_index = data_index + 1
+            logger.debug('Data %i, iteration %i, removed points = %i' %
+                         (data_index, iteration, removed_points))
     return xdata, ydata
 
 
 # Function to apply savitsky golay smoothing to data from SciPy cookbook
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
-
+    logger.debug('Smoothing data')
     try:
         window_size = np.abs(np.int(window_size))
         order = np.abs(np.int(order))
@@ -123,6 +133,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
 # Function to average replicate data sets
 def average_data(xdatas, ydatas, show_err=False):
+    logger.debug('Averaging data')
     new_xdata = np.array([])
     new_ydata = np.array([])
     new_yerr = np.array([])
@@ -145,6 +156,7 @@ def average_data(xdatas, ydatas, show_err=False):
 
 # Function to average data over time period
 def time_average(xdata, ydata, window, show_err=False):
+    logger.debug('Averaging data over time window of %i' % window)
     new_xdata = np.array([])
     new_ydata = np.array([])
     new_yerr = np.array([])

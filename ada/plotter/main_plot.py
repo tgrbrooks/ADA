@@ -23,6 +23,7 @@ from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
 import ada.configuration as config
+from ada.logger import logger
 
 
 class PlotCanvas(FigureCanvasQTAgg):
@@ -53,11 +54,13 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.plot(empty_data, empty_condition)
 
     def plot(self, data, condition_data):
+        logger.debug('Creating plot')
 
         self.data = data
         self.condition_data = condition_data
 
         # Reset the plot and configure the base style
+        logger.debug('Resetting plot and configuring style')
         self.set_style()
         self.clear_axes()
         self.plot_list = []
@@ -65,12 +68,14 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         # Return an empty plot if there's no data
         if(data.empty and condition_data.empty):
+            logger.debug('No data present')
             self.axes.set_title('Empty plot')
             self.draw()
             return
 
         # Plot the condition data on a separate axis if it exists
         if not condition_data.empty:
+            logger.debug('Plotting condition data')
             self.create_condition_axis()
 
         self.plot_condition_data(condition_data)
@@ -85,10 +90,12 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.ydata_list = []
         self.plot_data(data)
 
+        logger.debug('Creating events')
         self.create_events(data)
 
         # If we're fitting the data
         if config.do_fit:
+            logger.debug('Fitting the data')
             self.fit_data(data)
 
         # Switch grid on/off
@@ -174,7 +181,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         # Loop over the condition data files
         for i, cdata in enumerate(condition_data.data_files):
             # Get the x data in the right time units
-            condition_xdata, condition_x_title = \
+            condition_xdata, _ = \
                 self.convert_xdata(cdata.xaxis)
 
             # Get the desired condition data and configure title
@@ -243,9 +250,9 @@ class PlotCanvas(FigureCanvasQTAgg):
                 xdatas = [xdata]
                 ydatas = [ydata]
                 for j in range(1, len(data.replicate_files[i]), 1):
-                    rep_xdata, rep_xtitle = \
+                    rep_xdata, _ = \
                         self.convert_xdata(data.replicate_files[i][j].xaxis)
-                    rep_ydata, rep_ytitle = \
+                    rep_ydata, _ = \
                         self.get_ydata(data.replicate_files[i][j].signals)
                     rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
@@ -307,6 +314,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         return
 
     def fit_data(self, data):
+        logger.debug('Fitting %s with %s' % (config.fit_curve, config.fit_type))
         # Find the curve to fit
         fit_index = -1
         for i, data in enumerate(data.data_files):
@@ -478,7 +486,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
             # Define action on button press: open line style window
             def onpick(event):
-                selected_line, line_i, min_dist = \
+                _, line_i, min_dist = \
                     self.find_closest(self.plot_list, event.xdata, event.ydata)
                 if min_dist < 5:
                     self.linewindow = LineStyleWindow(self.plot_list[line_i],
@@ -589,7 +597,7 @@ class PlotCanvas(FigureCanvasQTAgg):
     def get_ydata(self, signals, condition=False):
         y_title = ''
         found_ydata = False
-        
+
         yvar = config.yvar
         name = config.yname
         unit = config.yunit
@@ -628,7 +636,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         if not found_ydata:
             raise RuntimeError('Could not find signal %s' % (yvar))
         return ydata, y_title
-    
+
     # Function to find the closest curve to an x,y point
     def find_closest(self, plots, x, y):
         min_dist = 99999

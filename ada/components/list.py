@@ -8,6 +8,6 @@ class List(QListWidget):
         super(List, self).__init__(parent, *args, **kwargs)
 
         self.setStyleSheet(config.scroll_style)
-        
+
         if tooltip is not None:
             self.setToolTip(tooltip)

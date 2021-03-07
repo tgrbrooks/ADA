@@ -329,3 +329,10 @@ grid = False
 
 # Stats config
 std_err = False
+
+# Fitting configuration
+do_fit = False
+fit_curve = ''
+fit_type = ''
+fit_from = 0
+fit_to = 0
