@@ -10,6 +10,7 @@ from ada.components.button import Button
 from ada.components.user_input import CheckBox
 
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 

@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QHBoxLayout, QSizePolicy,
 
 from ada.components.label import LeftLabel
 import ada.configuration as config
+import ada.styles as styles
 
 
 class TextEntry(QWidget):
@@ -16,7 +17,7 @@ class TextEntry(QWidget):
         layout.addWidget(text)
 
         self.entry = QLineEdit(parent)
-        self.entry.setStyleSheet(config.right_line_edit_style)
+        self.entry.setStyleSheet(styles.right_line_edit_style)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -46,7 +47,7 @@ class SpinBox(QWidget):
         self.entry.setMinimum(min_val)
         self.entry.setMaximum(max_val)
         self.entry.setSingleStep(1)
-        self.entry.setStyleSheet(config.spinbox_style)
+        self.entry.setStyleSheet(styles.spinbox_style)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -74,7 +75,7 @@ class DropDown(QWidget):
 
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
-        self.entry.setStyleSheet(config.dropdown_style)
+        self.entry.setStyleSheet(styles.dropdown_style)
         self.entry.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         layout.addWidget(self.entry)
 
@@ -114,7 +115,7 @@ class CheckBox(QWidget):
 
         self.entry = QCheckBox(parent)
         self.entry.setText(text)
-        self.entry.setStyleSheet(config.round_label_style)
+        self.entry.setStyleSheet(styles.round_label_style)
         layout.addWidget(self.entry)
 
         self.setLayout(layout)

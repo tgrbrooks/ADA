@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
 from ada.components.button import AddButton, DeleteButton
 from ada.components.spacer import Spacer
 import ada.configuration as config
+import ada.styles as styles
 
 
 class DataListItem():
@@ -17,7 +18,7 @@ class DataListItem():
         add_button.clicked.connect(parent.add_to_item)
         add_button.clicked.connect(parent.update_data_list)
         label = QLabel(text)
-        label.setStyleSheet(config.default_font_bold)
+        label.setStyleSheet(styles.default_font_bold)
 
         hwidget = QWidget()
         layout = QHBoxLayout()
@@ -41,7 +42,7 @@ class DataListItem():
                 inner_label = QLabel(
                     parent.data.replicate_files[index][j].label
                 )
-                inner_label.setStyleSheet(config.small_font)
+                inner_label.setStyleSheet(styles.small_font)
                 hlayout.addWidget(inner_label)
                 hlayout.addStretch()
                 hlayout.setSizeConstraint(QLayout.SetFixedSize)
@@ -65,7 +66,7 @@ class ConditionListItem():
         del_button = DeleteButton()
         del_button.clicked.connect(parent.remove_condition_item)
         label = QLabel(text)
-        label.setStyleSheet(config.default_font_bold)
+        label.setStyleSheet(styles.default_font_bold)
 
         layout = QHBoxLayout()
         layout.addWidget(del_button)
@@ -86,7 +87,7 @@ class DelListItem():
         self.widget = QWidget()
         self.button = DeleteButton()
         label = QLabel(text)
-        label.setStyleSheet(config.default_font)
+        label.setStyleSheet(styles.default_font)
 
         layout = QHBoxLayout()
         spacer = Spacer()

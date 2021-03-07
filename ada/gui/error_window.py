@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QGridLayout, QLabel, QWidget
 
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 
@@ -20,7 +21,7 @@ class ErrorWindow(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
-        self.setStyleSheet(config.error_background)
+        self.setStyleSheet(styles.error_background)
 
         layout = QGridLayout()
         layout.setContentsMargins(
@@ -28,7 +29,7 @@ class ErrorWindow(QMainWindow):
         layout.setSpacing(5*config.wr)
 
         text = QLabel(self.message)
-        text.setStyleSheet(config.error_font)
+        text.setStyleSheet(styles.error_font)
         text.setWordWrap(True)
 
         layout.addWidget(text, 0, 0)

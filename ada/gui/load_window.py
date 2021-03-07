@@ -23,6 +23,7 @@ from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
 
 import ada.configuration as config
+import ada.styles as styles
 from ada.logger import logger
 
 
@@ -74,7 +75,7 @@ class LoadWindow(QMainWindow):
         # List of files to import
         self.file_list = List(self)
         self.file_list.setSpacing(-5*config.wr)
-        self.file_list.setStyleSheet(config.default_font)
+        self.file_list.setStyleSheet(styles.default_font)
         layout.addWidget(self.file_list)
 
         # Button and list for Algem conditions files
@@ -86,7 +87,7 @@ class LoadWindow(QMainWindow):
 
         self.conditions_file_list = List(self)
         self.conditions_file_list.setSpacing(-5*config.wr)
-        self.conditions_file_list.setStyleSheet(config.default_font)
+        self.conditions_file_list.setStyleSheet(styles.default_font)
         layout.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
 
@@ -98,7 +99,7 @@ class LoadWindow(QMainWindow):
 
         self.details_file_list = List(self)
         self.details_file_list.setSpacing(-5*config.wr)
-        self.details_file_list.setStyleSheet(config.default_font)
+        self.details_file_list.setStyleSheet(styles.default_font)
         layout.addWidget(self.details_file_list)
         self.details_file_list.hide()
 
