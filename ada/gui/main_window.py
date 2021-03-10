@@ -504,6 +504,21 @@ class App(QMainWindow):
                                 'Unchecked = show standard deviation')
         stats_box_layout.addRow(' ', self.std_err)
 
+        self.show_fit_text = CheckBox('Show fit model text', self)
+        self.show_fit_text.setToolTip('Checked = display equation for fitted model\n'
+                                "Unchecked = don't display equation")
+        stats_box_layout.addRow(' ', self.show_fit_text)
+
+        self.show_fit_result = CheckBox('Show fit parameters', self)
+        self.show_fit_result.setToolTip('Checked = show fitted values of model parameters\n'
+                                'Unchecked = don''t show fit parameters')
+        stats_box_layout.addRow(' ', self.show_fit_result)
+
+        self.show_fit_errors = CheckBox('Show fit errors', self)
+        self.show_fit_errors.setToolTip('Checked = show uncertainties on fit parameters\n'
+                                'Unchecked = don''t show uncertainties')
+        stats_box_layout.addRow(' ', self.show_fit_errors)
+
         stats_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
@@ -694,9 +709,13 @@ class App(QMainWindow):
 
     # Open window for fitting data
     def fit_curve(self):
-        logger.debug('Opening fit window')
-        self.fit = FitWindow(self)
-        self.fit.show()
+        if not config.do_fit:
+            logger.debug('Opening fit window')
+            self.fit = FitWindow(self)
+            self.fit.show()
+        else:
+            config.do_fit = False
+            self.update_plot()
 
     # Open window for creating a data table
     def create_table(self):
@@ -833,5 +852,8 @@ class App(QMainWindow):
 
         # Stats config
         config.std_err = self.std_err.isChecked()
+        config.show_fit_text = self.show_fit_text.isChecked()
+        config.show_fit_result = self.show_fit_result.isChecked()
+        config.show_fit_errors = self.show_fit_errors.isChecked()
 
-        config.do_fit = False
+        #config.do_fit = False

@@ -183,12 +183,26 @@ def time_average(xdata, ydata, window, show_err=False):
     return new_xdata, new_ydata, new_yerr
 
 
-# Function to find nearest index in numpy array
+def get_exponent(value):
+    return np.floor(np.log10(np.abs(value))).astype(int)
+
+# Function to write big numbers prettily
 def exponent_text(value):
-    exponent = np.floor(np.log10(np.abs(value))).astype(int)
+    exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
         text = '%1.2f' % (value)
         return text
     value = value/(1.*10.**exponent)
     text = r'%1.2f$\times10^{%i}$' % (value, exponent)
+    return text
+
+# Function to write big numbers prettily (with errors!)
+def exponent_text_errors(value, error):
+    exponent = get_exponent(value)
+    if exponent >= 0 and exponent <= 2:
+        text = '%1.2f ($\pm$%1.2f)' % (value, error)
+        return text
+    value = value/(1.*10.**exponent)
+    error = error/(1.*10.**exponent)
+    text = r'%1.2f ($\pm$%1.2f)$\times10^{%i}$' % (value, error, exponent)
     return text

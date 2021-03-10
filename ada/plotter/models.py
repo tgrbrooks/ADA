@@ -1,6 +1,6 @@
 import numpy as np
 
-from ada.plotter.functions import exponent_text
+from ada.plotter.functions import exponent_text, exponent_text_errors
 
 
 class GrowthModel:
@@ -15,6 +15,16 @@ class GrowthModel:
         for i, param in enumerate(self.latex_params):
             text += param + ' = ' + \
                 exponent_text(fit_result[i]) + ' ' + self.units[i]
+            if i < (len(self.params) - 1):
+                text += '\n'
+        return text
+
+    def param_text_error(self, fit_result, covm):
+        errors = np.sqrt(np.diag(covm))
+        text = ''
+        for i, param in enumerate(self.latex_params):
+            text += param + ' = ' + \
+                exponent_text_errors(fit_result[i], errors[i]) + ' ' + self.units[i]
             if i < (len(self.params) - 1):
                 text += '\n'
         return text

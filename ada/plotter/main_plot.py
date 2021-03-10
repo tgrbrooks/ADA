@@ -90,6 +90,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.y_title = ''
         self.xdata_list = []
         self.ydata_list = []
+        self.yerr_list = []
         self.plot_data(data)
 
         logger.debug('Creating events')
@@ -266,6 +267,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 if config.ynormlog:
                     yerr = yerr/ydata
                     ydata = np.log(ydata/ydata[0])
+                self.yerr_list.append(yerr)
 
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
@@ -320,8 +322,8 @@ class PlotCanvas(FigureCanvasQTAgg):
                      (config.fit_curve, config.fit_type))
         # Find the curve to fit
         fit_index = -1
-        for i, data in enumerate(data.data_files):
-            if config.fit_curve == data.label:
+        for i, dat in enumerate(data.data_files):
+            if config.fit_curve == dat.label:
                 fit_index = i
         fit_x = self.xdata_list[fit_index]
         fit_y = self.ydata_list[fit_index]
@@ -330,19 +332,12 @@ class PlotCanvas(FigureCanvasQTAgg):
         if fit_index == -1:
             return
 
-        # Set the polynomial degree for the fit
-        fit_degree = 0
-        if (config.fit_type == 'linear' or
-                config.fit_type == 'exponential'):
-            fit_degree = 1
-        elif config.fit_type == 'quadratic':
-            fit_degree = 2
-
         # Only fit the data in the given range
-        from_index = np.abs(fit_x - config.fit_from).argmin()
-        to_index = np.abs(fit_x - config.fit_to).argmin()
-        fit_x = fit_x[from_index:to_index]
-        fit_y = fit_y[from_index:to_index]
+        if config.fit_from != config.fit_to:
+            from_index = np.abs(fit_x - config.fit_from).argmin()
+            to_index = np.abs(fit_x - config.fit_to).argmin()
+            fit_x = fit_x[from_index:to_index]
+            fit_y = fit_y[from_index:to_index]
 
         x_unit = ''
         if(len(self.x_title.split('[')) > 1):
@@ -353,18 +348,38 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         model = get_model(config.fit_type, x_unit, y_unit)
         func = model.func()
-        fit_result, _ = curve_fit(func, fit_x, fit_y)
+
+        # If there are replicate files then average the data
+        if(len(data.replicate_files[fit_index]) > 1):
+            fit_sigma = self.yerr_list[fit_index]
+            fit_sigma = fit_sigma[from_index:to_index]
+            fit_result, covm = curve_fit(func, fit_x, fit_y, p0=config.fit_start, sigma=fit_sigma, bounds=(
+                config.fit_min, config.fit_max))
+        else:
+            print(config.fit_start)
+            print(config.fit_min)
+            print(config.fit_max)
+            fit_result, covm = curve_fit(func, fit_x, fit_y, bounds=(config.fit_min, config.fit_max))
+
         self.axes.plot(fit_x, func(fit_x, *fit_result),
                        '-', color='r', label='Fit')
 
-        self.axes.text(0.25, 0.95, model.latex,
-                       transform=self.axes.transAxes,
-                       bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                 fc=(1., 0.8, 0.8)))
-        self.axes.text(0.25, 0.65, model.param_text(fit_result),
-                       transform=self.axes.transAxes,
-                       bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                 fc=(1., 0.8, 0.8)))
+        bounding_box = dict(boxstyle="round", ec=(
+            1., 0.5, 0.5), fc=(1., 0.8, 0.8))
+        if config.show_fit_text:
+            self.axes.text(0.25, 0.95, model.latex,
+                           transform=self.axes.transAxes,
+                           bbox=bounding_box)
+
+        if config.show_fit_result and not config.show_fit_errors:
+            self.axes.text(0.25, 0.65, model.param_text(fit_result),
+                           transform=self.axes.transAxes,
+                           bbox=bounding_box)
+
+        if config.show_fit_result and config.show_fit_errors:
+            self.axes.text(0.25, 0.65, model.param_text_error(fit_result, covm),
+                           transform=self.axes.transAxes,
+                           bbox=bounding_box)
         return
 
     def set_axes_scale(self):
