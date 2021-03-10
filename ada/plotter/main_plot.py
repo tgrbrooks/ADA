@@ -2,6 +2,7 @@
 import random
 from math import factorial
 import numpy as np
+from scipy.optimize import curve_fit
 
 # pyqt5 imports
 from PyQt5.QtWidgets import QSizePolicy
@@ -19,6 +20,7 @@ from ada.reader.data_holder import DataHolder
 from ada.plotter.cursor import Cursor, SnapToCursor
 from ada.plotter.functions import (process_data, average_data,
                                    time_average, exponent_text)
+from ada.plotter.models import get_model
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -314,7 +316,8 @@ class PlotCanvas(FigureCanvasQTAgg):
         return
 
     def fit_data(self, data):
-        logger.debug('Fitting %s with %s' % (config.fit_curve, config.fit_type))
+        logger.debug('Fitting %s with %s' %
+                     (config.fit_curve, config.fit_type))
         # Find the curve to fit
         fit_index = -1
         for i, data in enumerate(data.data_files):
@@ -323,86 +326,45 @@ class PlotCanvas(FigureCanvasQTAgg):
         fit_x = self.xdata_list[fit_index]
         fit_y = self.ydata_list[fit_index]
 
-        # If the data has been found
-        if fit_index != -1:
-            # Set the polynomial degree for the fit
-            fit_degree = 0
-            if (config.fit_type == 'linear' or
-                    config.fit_type == 'exponential'):
-                fit_degree = 1
-            elif config.fit_type == 'quadratic':
-                fit_degree = 2
+        # If the data hasn't been found
+        if fit_index == -1:
+            return
 
-            # Only fit the data in the given range
-            from_index = np.abs(fit_x - config.fit_from).argmin()
-            to_index = np.abs(fit_x - config.fit_to).argmin()
-            fit_x = fit_x[from_index:to_index]
-            fit_y = fit_y[from_index:to_index]
+        # Set the polynomial degree for the fit
+        fit_degree = 0
+        if (config.fit_type == 'linear' or
+                config.fit_type == 'exponential'):
+            fit_degree = 1
+        elif config.fit_type == 'quadratic':
+            fit_degree = 2
 
-            # Need to manipulate the y data and weights if fitting an exp
-            weights = None
-            if config.fit_type == 'exponential':
-                weights = np.sqrt(fit_y)
-                fit_y = np.log(fit_y)
+        # Only fit the data in the given range
+        from_index = np.abs(fit_x - config.fit_from).argmin()
+        to_index = np.abs(fit_x - config.fit_to).argmin()
+        fit_x = fit_x[from_index:to_index]
+        fit_y = fit_y[from_index:to_index]
 
-            # Get the fit results
-            fit_result = np.polyfit(fit_x, fit_y, fit_degree, w=weights)
+        x_unit = ''
+        if(len(self.x_title.split('[')) > 1):
+            x_unit = (self.x_title.split('[')[1]).split(']')[0]
+        y_unit = ''
+        if(len(self.y_title.split('[')) > 1):
+            y_unit = (self.y_title.split('[')[1]).split(']')[0]
 
-            # Plot the resultant function
-            plot_x = np.linspace(config.fit_from, config.fit_to, 1000)
-            x_unit = ''
-            if(len(self.x_title.split('[')) > 1):
-                x_unit = (self.x_title.split('[')[1]).split(']')[0]
-            y_unit = ''
-            if(len(self.y_title.split('[')) > 1):
-                y_unit = (self.y_title.split('[')[1]).split(']')[0]
+        model = get_model(config.fit_type, x_unit, y_unit)
+        func = model.func()
+        fit_result, _ = curve_fit(func, fit_x, fit_y)
+        self.axes.plot(fit_x, func(fit_x, *fit_result),
+                       '-', color='r', label='Fit')
 
-            # Flat line fit result
-            plot_y = 0. * plot_x + fit_result[0]
-            fit_func_text = '$y = p$'
-            param_text = ('p = ' + exponent_text(fit_result[0]) + ' ' +
-                          y_unit)
-
-            # Linear fit result
-            if config.fit_type == 'linear':
-                plot_y = fit_result[0] * plot_x + fit_result[1]
-                fit_func_text = '$y = p_1 \cdot x + p_0$'
-                param_text = ('$p_0$ = ' + exponent_text(fit_result[1]) +
-                              ' ' + y_unit + '\n' +
-                              '$p_1$ = ' + exponent_text(fit_result[0]) +
-                              ' ' + y_unit + '/' + x_unit)
-
-            # Quadratic fit result
-            elif config.fit_type == 'quadratic':
-                plot_y = (fit_result[0] * np.power(plot_x, 2) +
-                          fit_result[1] * plot_x + fit_result[2])
-                fit_func_text = '$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$'
-                param_text = ('$p_0$ = ' + exponent_text(fit_result[2]) +
-                              ' ' + y_unit + '\n' +
-                              '$p_1$ = ' + exponent_text(fit_result[1]) +
-                              ' ' + y_unit + '/' + x_unit + '\n' +
-                              '$p_2$ = ' + exponent_text(fit_result[0]) +
-                              ' ' + y_unit + '/' + x_unit + '$^2$')
-
-            # qExponential fit result
-            elif config.fit_type == 'exponential':
-                plot_y = np.exp(fit_result[0] * plot_x + fit_result[1])
-                fit_func_text = '$y = p_0 \cdot \exp(p_1 \cdot x)$'
-                param_text = ('$p_0$ = ' +
-                              exponent_text(np.exp(fit_result[1])) +
-                              ' ' + y_unit + '\n' +
-                              '$p_1$ = ' + exponent_text(fit_result[0]) +
-                              ' ' + y_unit + '/' + x_unit)
-
-            self.axes.plot(plot_x, plot_y, '-', color='r', label='Fit')
-            self.axes.text(0.25, 0.95, fit_func_text,
-                           transform=self.axes.transAxes,
-                           bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                     fc=(1., 0.8, 0.8)))
-            self.axes.text(0.25, 0.75, param_text,
-                           transform=self.axes.transAxes,
-                           bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
-                                     fc=(1., 0.8, 0.8)))
+        self.axes.text(0.25, 0.95, model.latex,
+                       transform=self.axes.transAxes,
+                       bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                 fc=(1., 0.8, 0.8)))
+        self.axes.text(0.25, 0.65, model.param_text(fit_result),
+                       transform=self.axes.transAxes,
+                       bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5),
+                                 fc=(1., 0.8, 0.8)))
         return
 
     def set_axes_scale(self):
