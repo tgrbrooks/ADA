@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+from scipy.optimize import curve_fit
 
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QScrollArea, QListWidget,
@@ -15,6 +16,7 @@ from ada.components.list import List
 from ada.components.user_input import DropDown
 from ada.plotter.functions import (process_data, average_data,
                                    time_average)
+from ada.plotter.models import get_model
 
 import ada.configuration as config
 import ada.styles as styles
@@ -92,12 +94,17 @@ class TableWindow(QMainWindow):
 
     # Add a new row to the table
     def add_row(self):
-        logger.debug('Adding %s row to table' % self.row_option.currentText())
-        table_list_item = TableListItem(self.row_option.currentText(), self)
-        self.row_list.addItem(table_list_item.item)
-        self.row_list.setItemWidget(table_list_item.item,
-                                    table_list_item.widget)
-        self.rows.append(table_list_item)
+        try:
+            logger.debug('Adding %s row to table' % self.row_option.currentText())
+            table_list_item = TableListItem(self.row_option.currentText(), self)
+            self.row_list.addItem(table_list_item.item)
+            self.row_list.setItemWidget(table_list_item.item,
+                                        table_list_item.widget)
+            self.rows.append(table_list_item)
+        except Exception as e:
+            logger.error(str(e))
+            self.error = ErrorWindow(str(e), self)
+            self.error.show()
 
     # Remove a row from the table
     def remove_item(self):

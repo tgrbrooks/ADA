@@ -87,6 +87,9 @@ class DropDown(QWidget):
     def currentText(self):
         return self.entry.currentText()
 
+    def currentTextChanged(self, value):
+        return self.entry.currentTextChanged(value)
+
     def clear(self):
         return self.entry.clear()
 
@@ -94,7 +97,7 @@ class DropDown(QWidget):
         return self.entry.addItem(item)
 
     def addItems(self, items):
-        return self.entry.addItem(items)
+        return self.entry.addItems(items)
 
     def itemText(self, index):
         return self.entry.itemText(index)

@@ -84,7 +84,7 @@ class Zweitering(GrowthModel):
 
 
 def get_model(name, x_unit, y_unit):
-    if name == 'flat_line':
+    if name == 'flat line':
         return FlatLine(x_unit, y_unit)
     if name == 'linear':
         return Linear(x_unit, y_unit)
