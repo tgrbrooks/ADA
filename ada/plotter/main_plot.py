@@ -184,12 +184,12 @@ class PlotCanvas(FigureCanvasQTAgg):
         # Loop over the condition data files
         for i, cdata in enumerate(condition_data.data_files):
             # Get the x data in the right time units
-            condition_xdata, _ = \
-                self.convert_xdata(cdata.xaxis)
+            condition_xdata = cdata.get_xdata(config.xvar)
 
             # Get the desired condition data and configure title
-            condition_ydata, condition_y_title = \
-                self.get_ydata(cdata.signals, True)
+            condition_ydata = cdata.get_ydata(config.condition_yvar)
+            condition_y_title = cdata.get_ytitle(
+                config.condition_yvar, config.condition_yname, config.condition_yunit)
             self.condition_axes.set_ylabel(condition_y_title)
 
             # Get the legend label with any extra info specified in
@@ -234,9 +234,16 @@ class PlotCanvas(FigureCanvasQTAgg):
     def plot_data(self, data):
         for i, dat in enumerate(data.data_files):
             # Convert the units of time if needed
-            xdata, self.x_title = self.convert_xdata(dat.xaxis)
+            xdata = dat.get_xdata(config.xvar)
+            self.x_title = dat.get_xtitle(
+                config.xvar, config.xname, config.xunit)
             # Get the y axis data for plotting
-            ydata, self.y_title = self.get_ydata(dat.signals)
+            ydata = dat.get_ydata(config.yvar, self.parent.calibration)
+            self.y_title = dat.get_ytitle(
+                config.yvar, config.yname, config.yunit, self.parent.calibration, config.ynormlog)
+
+            # Apply alignment, outlier removal, and smoothing
+            xdata, ydata = process_data(xdata, ydata)
 
             legend_label = config.label_names[i]
             if(config.extra_info != 'none' and not config.only_extra):
@@ -245,18 +252,15 @@ class PlotCanvas(FigureCanvasQTAgg):
             elif(config.extra_info != 'none' and config.only_extra):
                 legend_label = dat.get_header_info(config.extra_info)
 
-            # Apply alignment, outlier removal, and smoothing
-            xdata, ydata = process_data(xdata, ydata)
-
             # If there are replicate files then average the data
             if(len(data.replicate_files[i]) > 1):
                 xdatas = [xdata]
                 ydatas = [ydata]
                 for j in range(1, len(data.replicate_files[i]), 1):
-                    rep_xdata, _ = \
-                        self.convert_xdata(data.replicate_files[i][j].xaxis)
-                    rep_ydata, _ = \
-                        self.get_ydata(data.replicate_files[i][j].signals)
+                    rep_xdata = data.replicate_files[i][j].get_xdata(
+                        config.xvar)
+                    rep_ydata = data.replicate_files[i][j].get_ydata(
+                        config.yvar, self.parent.calibration)
                     rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
@@ -306,7 +310,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                     for lab in data_event.labels:
                         event_label += '\n' + lab
                     self.annotation_names.append(event_label)
-                    event_xpos = self.convert_xpos(data_event.xpos)
+                    event_xpos = data_event.get_xpos(config.xvar)
                     annotation_xpos.append(event_xpos)
                     x_idx = np.abs(self.xdata_list[i] - event_xpos).argmin()
                     event_ypos = self.ydata_list[i][x_idx]
@@ -359,7 +363,8 @@ class PlotCanvas(FigureCanvasQTAgg):
             print(config.fit_start)
             print(config.fit_min)
             print(config.fit_max)
-            fit_result, covm = curve_fit(func, fit_x, fit_y, bounds=(config.fit_min, config.fit_max))
+            fit_result, covm = curve_fit(
+                func, fit_x, fit_y, bounds=(config.fit_min, config.fit_max))
 
         self.axes.plot(fit_x, func(fit_x, *fit_result),
                        '-', color='r', label='Fit')
@@ -530,89 +535,6 @@ class PlotCanvas(FigureCanvasQTAgg):
             if(config.legend):
                 self.axes.add_artist(leg)
         return
-
-    # Function to convert the time data into the desired unit and
-    # get the axis title
-    def convert_xdata(self, xaxisdata):
-        xdata = xaxisdata.data
-        x_title = xaxisdata.title()
-        if(config.xname != ''):
-            x_title = x_title.replace(xaxisdata.name, config.xname)
-        x_unit = xaxisdata.unit
-        if(config.xvar == 'seconds'):
-            x_unit = 'sec'
-        if(config.xvar == 'minutes'):
-            xdata = xdata / 60.
-            x_unit = 'min'
-        if(config.xvar == 'hours'):
-            xdata = xdata / (60.*60.)
-            x_unit = 'hr'
-        if(config.xvar == 'days'):
-            xdata = xdata / (60.*60.*24.)
-            x_unit = 'day'
-        if(config.xunit != ''):
-            x_unit = config.xunit
-
-        if(config.xunit.lower() == 'none'):
-            x_title = x_title.replace("["+xaxisdata.unit+"]", "")
-        else:
-            x_title = x_title.replace("["+xaxisdata.unit+"]", "["+x_unit+"]")
-        return xdata, x_title
-
-    def convert_xpos(self, xpos):
-        xpos_out = xpos
-        if(config.xvar == 'minutes'):
-            xpos_out = xpos / 60.
-        if(config.xvar == 'hours'):
-            xpos_out = xpos / (60.*60.)
-        if(config.xvar == 'days'):
-            xpos_out = xpos / (60.*60.*24.)
-
-        return xpos_out
-
-    # Function to retrieve y data from list of possible signals
-    def get_ydata(self, signals, condition=False):
-        y_title = ''
-        found_ydata = False
-
-        yvar = config.yvar
-        name = config.yname
-        unit = config.yunit
-        if condition:
-            yvar = config.condition_yvar
-            name = config.condition_yname
-            unit = config.condition_yunit
-        for sig in signals:
-            if sig.name == yvar:
-                # Loaded calibration curve takes precedence
-                if yvar == 'CD' and self.parent.calibration is not None:
-                    continue
-                found_ydata = True
-                ydata = sig.data
-                y_title = sig.title()
-                if(name != ''):
-                    y_title = y_title.replace(sig.name, name)
-                if(unit.lower() == 'none'):
-                    y_title = y_title.replace("["+sig.unit+"]", "")
-                elif(unit != ''):
-                    y_title = y_title.replace("["+sig.unit+"]", "["+unit+"]")
-            elif yvar == 'CD' and self.parent.calibration is not None and sig.name == 'OD':
-                found_ydata = True
-                ydata = self.parent.calibration.calibrate_od(sig.data)
-                y_title = 'CD'
-                if(name != ''):
-                    y_title = y_title.replace(y_title, name)
-                elif(unit != ''):
-                    y_title = y_title + " ["+unit+"]"
-        if config.ynormlog and name == '' and not condition:
-            y_title = 'ln('+yvar+'/'+yvar+'$_{0}$)'
-            if(name != ''):
-                y_title = y_title.replace(y_title, name)
-            elif(unit != ''):
-                y_title = y_title + " ["+unit+"]"
-        if not found_ydata:
-            raise RuntimeError('Could not find signal %s' % (yvar))
-        return ydata, y_title
 
     # Function to find the closest curve to an x,y point
     def find_closest(self, plots, x, y):
