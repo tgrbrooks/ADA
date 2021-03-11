@@ -7,7 +7,7 @@ font_options = ["sans-serif", "serif", "cursive", "fantasy", "monospace"]
 table_row_options = ["profile", "reactor", "gradient", "time to",
                      "average of condition", "condition at time",
                      "fit parameter"]
-fit_options = ["flat line", "linear", "quadratic", "exponential"]
+fit_options = ["flat line", "linear", "quadratic", "exponential", "zweitering"]
 
 conf_colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
 
@@ -82,6 +82,9 @@ grid = False
 
 # Stats config
 std_err = False
+show_fit_text = False
+show_fit_result = False
+show_fit_errors = False
 
 # Fitting configuration
 do_fit = False
@@ -89,3 +92,6 @@ fit_curve = ''
 fit_type = ''
 fit_from = 0
 fit_to = 0
+fit_start = []
+fit_min = []
+fit_max = []

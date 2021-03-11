@@ -1,7 +1,10 @@
+import numpy as np
+
 from PyQt5.QtWidgets import (QWidget, QLabel, QHBoxLayout, QSizePolicy,
                              QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox)
 
 from ada.components.label import LeftLabel
+from ada.type_functions import isfloat
 import ada.configuration as config
 import ada.styles as styles
 
@@ -30,6 +33,55 @@ class TextEntry(QWidget):
 
     def text(self):
         return self.entry.text()
+
+
+class ParameterBounds(QWidget):
+    def __init__(self, text, parent=None, *args, **kwargs):
+        super(ParameterBounds, self).__init__(*args, **kwargs)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        text = LeftLabel(text, True)
+        layout.addWidget(text)
+
+        self.start = QLineEdit(parent)
+        self.start.setPlaceholderText('Start')
+        self.start.setStyleSheet(styles.mid_line_edit_style)
+        layout.addWidget(self.start)
+
+        self.min = QLineEdit(parent)
+        self.min.setPlaceholderText('Min')
+        self.min.setStyleSheet(styles.mid_line_edit_style)
+        layout.addWidget(self.min)
+
+        self.max = QLineEdit(parent)
+        self.max.setPlaceholderText('Max')
+        self.max.setStyleSheet(styles.right_line_edit_style)
+        layout.addWidget(self.max)
+
+        self.setLayout(layout)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.wr)
+        self.setGraphicsEffect(shadow)
+
+    def get_start(self):
+        start_str = self.start.text()
+        if isfloat(start_str):
+            return float(start_str)
+        return 1
+
+    def get_min(self):
+        min_str = self.min.text()
+        if isfloat(min_str):
+            return float(min_str)
+        return -np.inf
+
+    def get_max(self):
+        max_str = self.max.text()
+        if isfloat(max_str):
+            return float(max_str)
+        return np.inf
 
 
 class SpinBox(QWidget):
@@ -87,6 +139,9 @@ class DropDown(QWidget):
     def currentText(self):
         return self.entry.currentText()
 
+    def currentTextChanged(self, value):
+        return self.entry.currentTextChanged(value)
+
     def clear(self):
         return self.entry.clear()
 
@@ -94,7 +149,7 @@ class DropDown(QWidget):
         return self.entry.addItem(item)
 
     def addItems(self, items):
-        return self.entry.addItem(items)
+        return self.entry.addItems(items)
 
     def itemText(self, index):
         return self.entry.itemText(index)

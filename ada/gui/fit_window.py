@@ -2,12 +2,14 @@ import csv
 import numpy as np
 
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QLabel, QWidget,
-                             QPushButton, QComboBox, QLineEdit)
+                             QPushButton, QComboBox, QLineEdit, QHBoxLayout)
 
 from ada.gui.error_window import ErrorWindow
 from ada.components.label import Label
 from ada.components.button import Button
-from ada.components.user_input import DropDown, TextEntry
+from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
+from ada.components.spacer import Spacer
+from ada.plotter.models import get_model
 from ada.type_functions import isfloat
 import ada.configuration as config
 import ada.styles as styles
@@ -26,6 +28,7 @@ class FitWindow(QMainWindow):
             self.width, self.height))
         self.parent = parent
         self.rows = []
+        self.bounds = []
         self.initUI()
 
     def initUI(self):
@@ -33,10 +36,12 @@ class FitWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.resize(self.width, self.height)
 
-        fit_layout = QVBoxLayout()
-        fit_layout.setContentsMargins(
+        window_layout = QHBoxLayout()
+        window_layout.setContentsMargins(
             5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        fit_layout.setSpacing(5*config.wr)
+        window_layout.setSpacing(5*config.wr)
+
+        fit_layout = QVBoxLayout()
 
         # List of row options
         self.curve_option = DropDown('Data:', [], self)
@@ -53,15 +58,51 @@ class FitWindow(QMainWindow):
         self.fit_to = TextEntry('To:', self)
         fit_layout.addWidget(self.fit_to)
 
+        self.set_bounds = CheckBox('Set parameter bounds', self)
+        self.set_bounds.entry.stateChanged.connect(self.render_bounds)
+        fit_layout.addWidget(self.set_bounds)
+
         # Button to add a new row
         fit_button = Button("Fit", self)
         fit_button.clicked.connect(self.fit)
         fit_layout.addWidget(fit_button)
 
+        fit_widget = QWidget()
+        fit_widget.setLayout(fit_layout)
+        window_layout.addWidget(fit_widget)
+
+        self.bound_layout = QVBoxLayout()
+        self.param_bounds = ParameterBounds("p", self)
+        self.bound_layout.addWidget(self.param_bounds)
+
+        self.bound_widget = QWidget()
+        self.bound_widget.setLayout(self.bound_layout)
+        window_layout.addWidget(self.bound_widget)
+        self.bound_widget.hide()
+
         widget = QWidget()
-        widget.setLayout(fit_layout)
+        widget.setLayout(window_layout)
 
         self.setCentralWidget(widget)
+
+
+    def render_bounds(self):
+        self.bounds = []
+        for i in reversed(range(self.bound_layout.count())): 
+            self.bound_layout.itemAt(i).widget().setParent(None)
+        if self.set_bounds.isChecked():
+            self.resize(self.width * 2, self.height)
+            model = get_model(self.fit_option.currentText(), '', '')
+            for i, param in enumerate(model.params):
+                self.bounds.append(ParameterBounds(param, self))
+                self.bound_layout.addWidget(self.bounds[i])
+            self.bound_layout.addWidget(Spacer())
+            self.bound_widget.setLayout(self.bound_layout)
+            self.bound_widget.show()
+        else:
+            self.bound_widget.hide()
+            self.resize(self.width, self.height)
+
 
     # Add the fit info to the configuration
     def fit(self):
@@ -78,5 +119,16 @@ class FitWindow(QMainWindow):
             config.fit_to = float(self.fit_to.text())
         else:
             config.fit_to = 0
+        config.fit_start = []
+        config.fit_min = []
+        config.fit_max = []
+        for bound in self.bounds:
+            config.fit_start.append(bound.get_start())
+            config.fit_min.append(bound.get_min())
+            config.fit_max.append(bound.get_max())
+        if len(config.fit_start) == 0:
+            config.fit_start = None
+            config.fit_min = None
+            config.fit_max = None
         self.parent.update_plot()
         self.close()

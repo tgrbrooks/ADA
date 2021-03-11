@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
 from ada.components.button import DeleteButton
 from ada.components.label import Label, RoundLabel
 from ada.components.user_input import DropDown, TextEntry
+from ada.plotter.models import get_model
 import ada.configuration as config
 import ada.styles as styles
 
@@ -81,21 +82,16 @@ class TableListItem():
 
         # Value of fit parameter needs fit and parameter
         if(text == 'fit parameter'):
-            self.fit = DropDown('Fit:', [], self.widget)
-            self.fit.addItem('y = p0')
-            self.fit.addItem('y = p1*x + p0')
-            self.fit.addItem('y = p2*x^2 + p1*x + p0')
-            self.fit.addItem('y = p0*exp(p1*x)')
+            self.fit = DropDown('Fit:', config.fit_options, self.widget)
+            self.fit.entry.currentTextChanged.connect(self.update_param_list)
             layout.addWidget(self.fit)
             self.data = DropDown('Data:', [], self.widget)
             if len(parent.parent.data.data_files) > 0:
                 for sig in parent.parent.data.data_files[0].signals:
                     self.data.addItem(sig.name)
             layout.addWidget(self.data)
-            self.param = DropDown('Parameter:', [], self.widget)
-            self.param.addItem('p0')
-            self.param.addItem('p1')
-            self.param.addItem('p2')
+            model = get_model(self.fit.currentText(), '', '')
+            self.param = DropDown('Parameter:', model.params, self.widget)
             layout.addWidget(self.param)
             self.fit_from = TextEntry('From:', self.widget)
             layout.addWidget(self.fit_from)
@@ -108,3 +104,8 @@ class TableListItem():
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
+
+    def update_param_list(self, fit_name):
+        self.param.clear()
+        model = get_model(fit_name, "", "")
+        self.param.addItems(model.params)

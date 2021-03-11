@@ -197,6 +197,10 @@ right_line_edit_style = default_font_bold +\
                    border: 0.05em solid #1e8235;\
                    padding: 0.2em;'
 
+mid_line_edit_style = default_font_bold +\
+                   'border: 0.05em solid #1e8235;\
+                   padding: 0.2em;'
+
 main_button_style = 'QPushButton {' +\
                     default_button_font + \
                     'background-color: #28a745;\

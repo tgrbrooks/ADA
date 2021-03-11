@@ -64,12 +64,12 @@ class LoadWindow(QMainWindow):
         self.file_type.addItem('IP')
         self.file_type.addItem('PSI')
         self.file_type.addItem('ADA')
+        self.file_type.entry.currentTextChanged.connect(self.update_options)
         layout.addWidget(self.file_type)
 
         # Button for selecting files to import
         select_file_button = Button("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
-        select_file_button.clicked.connect(self.update_options)
         layout.addWidget(select_file_button)
 
         # List of files to import
@@ -118,6 +118,8 @@ class LoadWindow(QMainWindow):
         load_button = Button("Load", self)
         load_button.clicked.connect(self.load_handler)
         layout.addWidget(load_button)
+
+        self.update_options()
 
         widget = QWidget()
         widget.setLayout(layout)
