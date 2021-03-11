@@ -80,7 +80,7 @@ class AlgaeData():
                     continue
                 found_ydata = True
                 ydata = sig.data
-            elif yvar == 'CD' and self.parent.calibration is not None and sig.name == 'OD':
+            elif yvar == 'CD' and calib is not None and sig.name == 'OD':
                 found_ydata = True
                 ydata = calib.calibrate_od(sig.data)
         if not found_ydata:

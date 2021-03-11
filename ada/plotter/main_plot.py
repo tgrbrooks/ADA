@@ -187,7 +187,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             condition_xdata = cdata.get_xdata(config.xvar)
 
             # Get the desired condition data and configure title
-            condition_ydata = cdata.get_ydata(config.condition_yvar)
+            condition_ydata = cdata.get_signal(config.condition_yvar)
             condition_y_title = cdata.get_ytitle(
                 config.condition_yvar, config.condition_yname, config.condition_yunit)
             self.condition_axes.set_ylabel(condition_y_title)
@@ -360,9 +360,6 @@ class PlotCanvas(FigureCanvasQTAgg):
             fit_result, covm = curve_fit(func, fit_x, fit_y, p0=config.fit_start, sigma=fit_sigma, bounds=(
                 config.fit_min, config.fit_max))
         else:
-            print(config.fit_start)
-            print(config.fit_min)
-            print(config.fit_max)
             fit_result, covm = curve_fit(
                 func, fit_x, fit_y, bounds=(config.fit_min, config.fit_max))
 

@@ -221,7 +221,7 @@ class TableWindow(QMainWindow):
                      (data_name, grad_from, grad_to))
         gradients = []
         for i, _ in enumerate(self.parent.data.data_files):
-            xdata, ydata = self.get_xy_data(i, data_name)
+            xdata, ydata, _ = self.get_xy_data(i, data_name)
             # Calculate the gradient
             x1 = None
             y1 = None
@@ -248,7 +248,7 @@ class TableWindow(QMainWindow):
         times = []
         for i, _ in enumerate(self.parent.data.data_files):
             found = False
-            xdata, ydata = self.get_xy_data(i, data_name)
+            xdata, ydata, _ = self.get_xy_data(i, data_name)
             for i, ydat in enumerate(ydata):
                 if ydat >= time_to:
                     times.append(xdata[i])
@@ -263,15 +263,18 @@ class TableWindow(QMainWindow):
         ydatas = []
         for rep in self.parent.data.replicate_files[i]:
             xdata = rep.get_xdata(config.xvar)
-            ydata = rep.get_signal(data_name)
+            ydata = rep.get_ydata(data_name, self.parent.calibration)
             xdata, ydata = process_data(xdata, ydata)
             xdatas.append(xdata)
             ydatas.append(ydata)
         if len(xdatas) > 1:
-            xdata, ydata, _ = average_data(xdatas, ydatas)
-            return xdata, ydata
+            xdata, ydata, yerr = average_data(xdatas, ydatas, config.std_err)
+            if config.ynormlog:
+                yerr = yerr/ydata
+                ydata = np.log(ydata/ydata[0])
+            return xdata, ydata, yerr
         elif len(xdatas) == 1:
-            return xdatas[0], ydatas[0]
+            return xdatas[0], ydatas[0], None
         else:
             raise RuntimeError('No data found')
 
@@ -309,9 +312,7 @@ class TableWindow(QMainWindow):
             ydata = cond.get_signal(cond_name)
             if config.condition_average != -1:
                 xdata, ydata, _ = time_average(
-                    xdata,
-                    ydata,
-                    config.condition_average)
+                    xdata, ydata, config.condition_average)
             return xdata, ydata
         raise RuntimeError('No condition data found for %s'
                            % (self.parent.data.data_files[i].name))
@@ -321,37 +322,28 @@ class TableWindow(QMainWindow):
             data_name, fit_name, fit_from, fit_to, fit_param))
         values = []
         for i, _ in enumerate(self.parent.data.data_files):
-            xdata, ydata = self.get_xy_data(i, data_name)
-            fit_degree = 0
-            if fit_name == 'y = p1*x + p0' or fit_name == 'y = p0*exp(p1*x)':
-                fit_degree = 1
-            if fit_name == 'y = p2*x^2 + p1*x + p0':
-                fit_degree = 2
+            fit_x, fit_y, fit_sigma = self.get_xy_data(i, data_name)
 
-            from_index = np.abs(xdata - fit_from).argmin()
-            to_index = np.abs(xdata - fit_to).argmin()
-            xdata = xdata[from_index:to_index]
-            ydata = ydata[from_index:to_index]
+            # Only fit the data in the given range
+            if fit_from != fit_to:
+                from_index = np.abs(fit_x - fit_from).argmin()
+                to_index = np.abs(fit_x - fit_to).argmin()
+                fit_x = fit_x[from_index:to_index]
+                fit_y = fit_y[from_index:to_index]
 
-            weights = None
-            if fit_name == 'y = p0*exp(p1*x)':
-                weights = np.sqrt(ydata)
-                ydata = np.log(ydata)
+            model = get_model(fit_name, '', '')
+            func = model.func()
 
-            fit_result = np.polyfit(xdata, ydata, fit_degree, w=weights)
+            # If there are replicate files then average the data
+            if fit_sigma is not None:
+                fit_sigma = fit_sigma[from_index:to_index]
+                fit_result, _ = curve_fit(func, fit_x, fit_y, sigma=fit_sigma)
+            else:
+                fit_result, _ = curve_fit(func, fit_x, fit_y)
 
-            if fit_param == 'p2':
-                if fit_name == 'y = p2*x^2 + p1*x + p0':
-                    values.append(fit_result[0])
-                else:
-                    values.append(0)
-            if fit_param == 'p1':
-                if fit_name != 'y = p0':
-                    values.append(fit_result[fit_degree-1])
-                else:
-                    values.append(0)
-            if fit_param == 'p0':
-                values.append(fit_result[fit_degree])
+            for i, param in enumerate(model.params):
+                if param == fit_param:
+                    values.append(fit_result[i])
         return values
 
     def show_table(self):
