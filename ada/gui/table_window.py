@@ -14,9 +14,9 @@ from ada.components.table_list_item import TableListItem
 from ada.components.button import Button
 from ada.components.list import List
 from ada.components.user_input import DropDown
-from ada.plotter.functions import (process_data, average_data,
+from ada.data.processor import (process_data, average_data,
                                    time_average)
-from ada.plotter.models import get_model
+from ada.data.models import get_model
 
 import ada.configuration as config
 import ada.styles as styles

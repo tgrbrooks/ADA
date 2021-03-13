@@ -9,7 +9,7 @@ from ada.components.label import Label
 from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
 from ada.components.spacer import Spacer
-from ada.plotter.models import get_model
+from ada.data.models import get_model
 from ada.type_functions import isfloat
 import ada.configuration as config
 import ada.styles as styles

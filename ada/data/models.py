@@ -1,6 +1,6 @@
 import numpy as np
 
-from ada.plotter.functions import exponent_text, exponent_text_errors
+from ada.data.processor import exponent_text, exponent_text_errors
 
 
 class GrowthModel:

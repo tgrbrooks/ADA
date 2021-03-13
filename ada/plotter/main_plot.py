@@ -17,11 +17,11 @@ from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
-from ada.reader.data_holder import DataHolder
+from ada.data.data_holder import DataHolder
 from ada.plotter.cursor import Cursor, SnapToCursor
-from ada.plotter.functions import (process_data, average_data,
+from ada.data.processor import (process_data, average_data,
                                    time_average, exponent_text)
-from ada.plotter.models import get_model
+from ada.data.models import get_model
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -114,7 +114,6 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         self.set_plot_styles()
         self.set_legends()
-        DragHandler(self)
 
         # Show the plot
         self.draw()

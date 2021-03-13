@@ -1,5 +1,5 @@
 # Local includes
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Class to store data files in
