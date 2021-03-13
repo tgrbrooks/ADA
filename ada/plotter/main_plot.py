@@ -22,7 +22,6 @@ from ada.plotter.cursor import Cursor, SnapToCursor
 from ada.plotter.functions import (process_data, average_data,
                                    time_average, exponent_text)
 from ada.plotter.models import get_model
-from ada.plotter.drag_handler import DragHandler
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
