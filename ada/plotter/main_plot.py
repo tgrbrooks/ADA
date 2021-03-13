@@ -13,6 +13,7 @@ from matplotlib.figure import Figure
 from matplotlib.colors import is_color_like
 import matplotlib.pyplot as plt
 import matplotlib.style
+from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
@@ -21,6 +22,7 @@ from ada.plotter.cursor import Cursor, SnapToCursor
 from ada.plotter.functions import (process_data, average_data,
                                    time_average, exponent_text)
 from ada.plotter.models import get_model
+from ada.plotter.drag_handler import DragHandler
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -38,6 +40,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.condition_axes.set_axis_off()
         self.axes.set_zorder(self.condition_axes.get_zorder() + 1)
         self.axes.patch.set_visible(False)
+        self.dragged = None
 
         FigureCanvasQTAgg.__init__(self, self.fig)
         self.setParent(parent)
@@ -112,6 +115,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         self.set_plot_styles()
         self.set_legends()
+        DragHandler(self)
 
         # Show the plot
         self.draw()
@@ -371,17 +375,18 @@ class PlotCanvas(FigureCanvasQTAgg):
         if config.show_fit_text:
             self.axes.text(0.25, 0.95, model.latex,
                            transform=self.axes.transAxes,
-                           bbox=bounding_box)
+                           bbox=bounding_box, picker=True)
 
         if config.show_fit_result and not config.show_fit_errors:
             self.axes.text(0.25, 0.65, model.param_text(fit_result),
                            transform=self.axes.transAxes,
-                           bbox=bounding_box)
+                           bbox=bounding_box, picker=True)
 
         if config.show_fit_result and config.show_fit_errors:
             self.axes.text(0.25, 0.65, model.param_text_error(fit_result, covm),
                            transform=self.axes.transAxes,
-                           bbox=bounding_box)
+                           bbox=bounding_box, picker=True)
+
         return
 
     def set_axes_scale(self):
@@ -465,14 +470,37 @@ class PlotCanvas(FigureCanvasQTAgg):
 
             # Define action on button press: open line style window
             def onpick(event):
+                if isinstance(event.artist, Text):
+                    self.dragged = event.artist
+                    self.pick_pos = (event.mouseevent.xdata, event.mouseevent.ydata)
+                return True
+
+            def onpress(event):
                 _, line_i, min_dist = \
                     self.find_closest(self.plot_list, event.xdata, event.ydata)
                 if min_dist < 5:
                     self.linewindow = LineStyleWindow(self.plot_list[line_i],
                                                       line_i, self)
                     self.linewindow.show()
+                return True
+
+            def on_release_event(event):
+                if self.dragged is not None :
+                    old_pos = self.dragged.get_position()
+                    inv = self.axes.transAxes.inverted()
+                    pick_pos = inv.transform(self.axes.transData.transform((self.pick_pos[0], self.pick_pos[1])))
+                    event_pos = inv.transform(self.axes.transData.transform((event.xdata, event.ydata)))
+                    new_pos = (old_pos[0] + event_pos[0] - pick_pos[0],
+                               old_pos[1] + event_pos[1] - pick_pos[1])
+                    self.dragged.set_position(new_pos)
+                    self.dragged = None
+                    self.draw_idle()
+                return True
+
             # Connect action to button press
-            self.cid = self.mpl_connect('button_press_event', onpick)
+            self.cid = self.mpl_connect('button_press_event', onpress)
+            self.mpl_connect('pick_event', onpick)
+            self.mpl_connect("button_release_event", on_release_event)
 
             def update_annotation(ind):
                 evt_pos = self.event_scatter.get_offsets()[ind["ind"][0]]
