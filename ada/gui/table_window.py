@@ -361,7 +361,7 @@ class TableWindow(QMainWindow):
             for col, dat in enumerate(self.data[row]):
                 if dat is not None:
                     self.table.setItem(
-                        row+1, col+1, QTableWidgetItem('.*f' % (config.sig_figs, dat)))
+                        row+1, col+1, QTableWidgetItem('%.*f' % (config.sig_figs, dat)))
                 else:
                     self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
 
