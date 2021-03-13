@@ -4,23 +4,26 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QHBoxLayout, QSizePolicy,
                              QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox)
 
 from ada.components.label import LeftLabel
-from ada.type_functions import isfloat
+from ada.type_functions import isfloat, isint
 import ada.configuration as config
 import ada.styles as styles
 
 
 class TextEntry(QWidget):
-    def __init__(self, text, parent=None, *args, **kwargs):
+    def __init__(self, text, parent=None, default=None, *args, **kwargs):
         super(TextEntry, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
+        self.default = default
 
         text = LeftLabel(text, True)
         layout.addWidget(text)
 
         self.entry = QLineEdit(parent)
         self.entry.setStyleSheet(styles.right_line_edit_style)
+        if default is not None and default != -1:
+            self.entry.setPlaceholderText(str(default))
         layout.addWidget(self.entry)
 
         self.setLayout(layout)
@@ -33,6 +36,19 @@ class TextEntry(QWidget):
 
     def text(self):
         return self.entry.text()
+
+    def setPlaceholderText(self, text):
+        return self.entry.setPlaceholderText(text)
+
+    def get_float(self):
+        if isfloat(self.entry.text()):
+            return float(self.entry.text())
+        return self.default
+
+    def get_int(self):
+        if isint(self.entry.text()):
+            return int(self.entry.text())
+        return self.default
 
 
 class ParameterBounds(QWidget):
@@ -91,6 +107,8 @@ class SpinBox(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        self.start = start
+
         text = LeftLabel(text, True)
         layout.addWidget(text)
 
@@ -113,6 +131,16 @@ class SpinBox(QWidget):
 
     def text(self):
         return self.entry.text()
+
+    def get_float(self):
+        if isfloat(self.entry.text()):
+            return float(self.entry.text())
+        return self.start
+
+    def get_int(self):
+        if isint(self.entry.text()):
+            return int(self.entry.text())
+        return self.start
 
 
 class DropDown(QWidget):
@@ -159,6 +187,12 @@ class DropDown(QWidget):
 
     def setCurrentIndex(self, index):
         return self.entry.setCurrentIndex(index)
+
+    def get_list(self):
+        output_list = []
+        for i in range(self.entry.count()):
+            output_list.append(self.entry.itemText(i))
+        return output_list
 
 
 class CheckBox(QWidget):

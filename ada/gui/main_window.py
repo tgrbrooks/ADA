@@ -25,7 +25,7 @@ from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
-from ada.type_functions import isfloat, isint
+from ada.type_functions import isfloat, isint, set_float, set_int
 import ada.configuration as config
 import ada.styles as styles
 from ada.logger import logger
@@ -203,9 +203,9 @@ class App(QMainWindow):
         x_form_layout.addRow(self.xaxis_unit)
 
         # X axis range
-        self.xaxis_min = TextEntry('Range min:', self)
+        self.xaxis_min = TextEntry('Range min:', self, config.xmin)
         x_form_layout.addRow(self.xaxis_min)
-        self.xaxis_max = TextEntry('Range max:', self)
+        self.xaxis_max = TextEntry('Range max:', self, config.xmax)
         x_form_layout.addRow(self.xaxis_max)
 
         # X axis log scale
@@ -232,9 +232,9 @@ class App(QMainWindow):
         y_form_layout.addRow(self.yaxis_unit)
 
         # Y axis range
-        self.yaxis_min = TextEntry('Range min:', self)
+        self.yaxis_min = TextEntry('Range min:', self, config.ymin)
         y_form_layout.addRow(self.yaxis_min)
-        self.yaxis_max = TextEntry('Range max:', self)
+        self.yaxis_max = TextEntry('Range max:', self, config.ymax)
         y_form_layout.addRow(self.yaxis_max)
 
         # Y axis log scale
@@ -270,9 +270,11 @@ class App(QMainWindow):
         z_form_layout.addRow(self.condition_yaxis_unit)
 
         # Condition Y axis range
-        self.condition_yaxis_min = TextEntry('Range min:', self)
+        self.condition_yaxis_min = TextEntry(
+            'Range min:', self, config.condition_ymin)
         z_form_layout.addRow(self.condition_yaxis_min)
-        self.condition_yaxis_max = TextEntry('Range max:', self)
+        self.condition_yaxis_max = TextEntry(
+            'Range max:', self, config.condition_ymax)
         z_form_layout.addRow(self.condition_yaxis_max)
 
         # Condition Y axis log scale
@@ -313,13 +315,13 @@ class App(QMainWindow):
         data_box_layout.addRow(' ', self.align_data)
 
         # Align all data at Y position
-        self.y_alignment = TextEntry('Align at Y:', self)
+        self.y_alignment = TextEntry('Align at Y:', self, config.y_alignment)
         self.y_alignment.setToolTip('Align all growth curves at given Y value')
         data_box_layout.addRow(self.y_alignment)
 
         # Condition data downsampling and averaging
         self.condition_average = TextEntry(
-            'Condition data time average:', self)
+            'Condition data time average:', self, config.condition_average)
         self.condition_average.setToolTip('Average over a given time window')
         data_box_layout.addRow(self.condition_average)
 
@@ -340,9 +342,11 @@ class App(QMainWindow):
         data_v_form_layout = QFormLayout()
         self.auto_remove = CheckBox('Auto-remove outliers off/on', self)
         data_v_form_layout.addRow(' ', self.auto_remove)
-        self.remove_above = TextEntry('Remove above:', self)
+        self.remove_above = TextEntry(
+            'Remove above:', self, config.remove_above)
         data_v_form_layout.addRow(self.remove_above)
-        self.remove_below = TextEntry('Remove below:', self)
+        self.remove_below = TextEntry(
+            'Remove below:', self, config.remove_below)
         data_v_form_layout.addRow(self.remove_below)
         self.remove_zeros = CheckBox('Remove points with y=0 off/on', self)
         data_v_form_layout.addRow(' ', self.remove_zeros)
@@ -461,17 +465,21 @@ class App(QMainWindow):
         style_box_layout.addRow(self.font_dropdown)
 
         # Font size textbox
-        self.title_size = SpinBox('Title font size:', 14, 0, 100, self)
+        self.title_size = SpinBox(
+            'Title font size:', config.title_size, 0, 100, self)
         style_box_layout.addRow(self.title_size)
 
-        self.legend_size = SpinBox('Legend font size:', 12, 0, 100, self)
+        self.legend_size = SpinBox(
+            'Legend font size:', config.legend_size, 0, 100, self)
         style_box_layout.addRow(self.legend_size)
 
-        self.label_size = SpinBox('Label font size:', 12, 0, 100, self)
+        self.label_size = SpinBox(
+            'Label font size:', config.label_size, 0, 100, self)
         style_box_layout.addRow(self.label_size)
 
         # Line width textbox
-        self.line_width = SpinBox('Line width:', 2, 0, 20, self)
+        self.line_width = SpinBox(
+            'Line width:', config.line_width, 0, 20, self)
         style_box_layout.addRow(self.line_width)
 
         # Condition axis colour
@@ -504,19 +512,23 @@ class App(QMainWindow):
                                 'Unchecked = show standard deviation')
         stats_box_layout.addRow(' ', self.std_err)
 
+        self.sig_figs = SpinBox(
+            'Significant figures:', config.sig_figs, 0, 20, self)
+        stats_box_layout.addRow(self.sig_figs)
+
         self.show_fit_text = CheckBox('Show fit model text', self)
         self.show_fit_text.setToolTip('Checked = display equation for fitted model\n'
-                                "Unchecked = don't display equation")
+                                      "Unchecked = don't display equation")
         stats_box_layout.addRow(' ', self.show_fit_text)
 
         self.show_fit_result = CheckBox('Show fit parameters', self)
         self.show_fit_result.setToolTip('Checked = show fitted values of model parameters\n'
-                                'Unchecked = don''t show fit parameters')
+                                        'Unchecked = don''t show fit parameters')
         stats_box_layout.addRow(' ', self.show_fit_result)
 
         self.show_fit_errors = CheckBox('Show fit errors', self)
         self.show_fit_errors.setToolTip('Checked = show uncertainties on fit parameters\n'
-                                'Unchecked = don''t show uncertainties')
+                                        'Unchecked = don''t show uncertainties')
         stats_box_layout.addRow(' ', self.show_fit_errors)
 
         stats_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -526,6 +538,46 @@ class App(QMainWindow):
         stats_box_widget.setStyleSheet(styles.white_background)
         stats_box_widget.setLayout(stats_box_layout)
         tabs.addTab(stats_box_widget, 'Stats')
+
+        # --------------- ADVANCED CONFIGURATION
+
+        # Advanced configuration
+        advanced_h_layout = QHBoxLayout()
+        advanced_left_layout = QFormLayout()
+        advanced_right_layout = QFormLayout()
+
+        advanced_left_layout.addWidget(TopLabel('Savitsky-Golay smoothing:'))
+        self.sg_window_size = TextEntry(
+            'Window size', self, config.sg_window_size)
+        advanced_left_layout.addWidget(self.sg_window_size)
+        self.sg_order = TextEntry('Order of polynomial', self, config.sg_order)
+        advanced_left_layout.addWidget(self.sg_order)
+        self.sg_deriv = TextEntry('Order of derivative', self, config.sg_deriv)
+        advanced_left_layout.addWidget(self.sg_deriv)
+        self.sg_rate = TextEntry('Sample spacing', self, config.sg_rate)
+        advanced_left_layout.addWidget(self.sg_rate)
+
+        self.outlier_threshold = TextEntry(
+            'Advanced outlier threshold', self, config.outlier_threshold)
+        advanced_right_layout.addWidget(self.outlier_threshold)
+
+        advanced_left_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        advanced_left_layout.setLabelAlignment(Qt.AlignCenter)
+        advanced_right_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        advanced_right_layout.setLabelAlignment(Qt.AlignCenter)
+
+        advanced_left_widget = QWidget()
+        advanced_left_widget.setStyleSheet(styles.white_background)
+        advanced_left_widget.setLayout(advanced_left_layout)
+        advanced_h_layout.addWidget(advanced_left_widget)
+        advanced_right_widget = QWidget()
+        advanced_right_widget.setStyleSheet(styles.white_background)
+        advanced_right_widget.setLayout(advanced_right_layout)
+        advanced_h_layout.addWidget(advanced_right_widget)
+        advanced_widget = QWidget()
+        advanced_widget.setStyleSheet(styles.white_background)
+        advanced_widget.setLayout(advanced_h_layout)
+        tabs.addTab(advanced_widget, 'Advanced')
 
         # ----------------------------------
         self.setCentralWidget(tabs)
@@ -738,28 +790,16 @@ class App(QMainWindow):
         config.xvar = self.xaxis_dropdown.currentText()
         config.xname = self.xaxis_name.text()
         config.xunit = self.xaxis_unit.text()
-        if(isfloat(self.xaxis_min.text())):
-            config.xmin = float(self.xaxis_min.text())
-        else:
-            config.xmin = -1
-        if(isfloat(self.xaxis_max.text())):
-            config.xmax = float(self.xaxis_max.text())
-        else:
-            config.xmax = -1
+        config.xmin = self.xaxis_min.get_float()
+        config.xmax = self.xaxis_max.get_float()
         config.xlog = self.xaxis_log.isChecked()
 
         # y axis config
         config.yvar = self.yaxis_dropdown.currentText()
         config.yname = self.yaxis_name.text()
         config.yunit = self.yaxis_unit.text()
-        if(isfloat(self.yaxis_min.text())):
-            config.ymin = float(self.yaxis_min.text())
-        else:
-            config.ymin = -1
-        if(isfloat(self.yaxis_max.text())):
-            config.ymax = float(self.yaxis_max.text())
-        else:
-            config.ymax = -1
+        config.ymin = self.yaxis_min.get_float()
+        config.ymax = self.yaxis_max.get_float()
         config.ylog = self.yaxis_log.isChecked()
         config.ynormlog = self.yaxis_normlog.isChecked()
 
@@ -768,39 +808,19 @@ class App(QMainWindow):
             self.condition_yaxis_dropdown.currentText()
         config.condition_yname = self.condition_yaxis_name.text()
         config.condition_yunit = self.condition_yaxis_unit.text()
-        if(isfloat(self.condition_yaxis_min.text())):
-            config.condition_ymin = \
-                float(self.condition_yaxis_min.text())
-        else:
-            config.condition_ymin = -1
-        if(isfloat(self.condition_yaxis_max.text())):
-            config.condition_ymax = float(self.condition_yaxis_max.text())
-        else:
-            config.condition_ymax = -1
+        config.condition_ymin = self.condition_yaxis_min.get_float()
+        config.condition_ymax = self.condition_yaxis_max.get_float()
         config.condition_ylog = self.condition_yaxis_log.isChecked()
 
         # Data config
         config.smooth = self.smooth_data.isChecked()
         config.align = self.align_data.isChecked()
-        if(isfloat(self.y_alignment.text())):
-            config.y_alignment = float(self.y_alignment.text())
-        else:
-            config.y_alignment = -1
+        config.y_alignment = self.y_alignment.get_float()
         config.auto_remove = self.auto_remove.isChecked()
         config.remove_zeros = self.remove_zeros.isChecked()
-        if(isfloat(self.remove_above.text())):
-            config.remove_above = float(self.remove_above.text())
-        else:
-            config.remove_above = -1
-        if(isfloat(self.remove_below.text())):
-            config.remove_below = float(self.remove_below.text())
-        else:
-            config.remove_below = -1
-        if(isfloat(self.condition_average.text())):
-            config.condition_average = \
-                float(self.condition_average.text())
-        else:
-            config.condition_average = -1
+        config.remove_above = self.remove_above.get_float()
+        config.remove_below = self.remove_below.get_float()
+        config.condition_average = self.condition_average.get_float()
         config.show_events = self.show_events.isChecked()
 
         # Legend config
@@ -813,14 +833,8 @@ class App(QMainWindow):
         config.condition_legend_title = self.condition_legend_title.text()
         if(config.condition_legend_title.lower() == 'none'):
             config.condition_legend_title = ''
-        config.label_names.clear()
-        for i in range(self.legend_names.count()):
-            config.label_names.append(self.legend_names.itemText(i))
-        config.condition_label_names.clear()
-        for i in range(self.condition_legend_names.count()):
-            config.condition_label_names.append(
-                self.condition_legend_names.itemText(i)
-            )
+        config.label_names = self.legend_names.get_list()
+        config.condition_label_names = self.condition_legend_names.get_list()
         config.extra_info = self.extra_info.currentText()
         config.condition_extra_info = \
             self.condition_extra_info.currentText()
@@ -831,22 +845,10 @@ class App(QMainWindow):
         # Style config
         config.style = self.style_dropdown.currentText()
         config.font_style = self.font_dropdown.currentText()
-        if(isfloat(self.title_size.text())):
-            config.title_size = float(self.title_size.text())
-        else:
-            config.title_size = -1
-        if(isfloat(self.legend_size.text())):
-            config.legend_size = float(self.legend_size.text())
-        else:
-            config.legend_size = -1
-        if(isfloat(self.label_size.text())):
-            config.label_size = float(self.label_size.text())
-        else:
-            config.label_size = -1
-        if(isfloat(self.line_width.text())):
-            config.line_width = float(self.line_width.text())
-        else:
-            config.line_width = -1
+        config.title_size = self.title_size.get_float()
+        config.legend_size = self.legend_size.get_float()
+        config.label_size = self.label_size.get_float()
+        config.line_width = self.line_width.get_float()
         config.axis_colour = self.axis_colour.text()
         config.grid = self.grid_toggle.isChecked()
 
@@ -855,5 +857,11 @@ class App(QMainWindow):
         config.show_fit_text = self.show_fit_text.isChecked()
         config.show_fit_result = self.show_fit_result.isChecked()
         config.show_fit_errors = self.show_fit_errors.isChecked()
+        config.sig_figs = self.sig_figs.get_int()
 
-        #config.do_fit = False
+        # Advanced config
+        config.sg_window_size = self.sg_window_size.get_float()
+        config.sg_order = self.sg_order.get_float()
+        config.sg_deriv = self.sg_deriv.get_float()
+        config.sg_rate = self.sg_rate.get_float()
+        config.outlier_threshold = self.outlier_threshold.get_float()

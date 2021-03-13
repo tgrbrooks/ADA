@@ -95,8 +95,10 @@ class TableWindow(QMainWindow):
     # Add a new row to the table
     def add_row(self):
         try:
-            logger.debug('Adding %s row to table' % self.row_option.currentText())
-            table_list_item = TableListItem(self.row_option.currentText(), self)
+            logger.debug('Adding %s row to table' %
+                         self.row_option.currentText())
+            table_list_item = TableListItem(
+                self.row_option.currentText(), self)
             self.row_list.addItem(table_list_item.item)
             self.row_list.setItemWidget(table_list_item.item,
                                         table_list_item.widget)
@@ -148,16 +150,15 @@ class TableWindow(QMainWindow):
                                          row.grad_from.text(),
                                          row.grad_to.text()))
                     row_data.append(self.get_gradients(row.data.currentText(),
-                                                       float(
-                                                           row.grad_from.text()),
-                                                       float(row.grad_to.text())))
+                                                       row.grad_from.get_float(),
+                                                       row.grad_to.get_float()))
                 if row.type == 'time to':
                     row_titles.append('Time (%s) to %s of %s'
                                       % (tunit,
                                          row.data.currentText(),
                                          row.time_to.text()))
                     row_data.append(self.get_time_to(row.data.currentText(),
-                                                     float(row.time_to.text())))
+                                                     row.time_to.get_float()))
                 if row.type == 'average of condition':
                     row_titles.append('Average of %s between %s and %s %s'
                                       % (row.condition.currentText(),
@@ -166,8 +167,8 @@ class TableWindow(QMainWindow):
                                          tunit))
                     row_data.append(self.get_averages(
                         row.condition.currentText(),
-                        float(row.start_t.text()),
-                        float(row.end_t.text())))
+                        row.start_t.get_float(),
+                        row.end_t.get_float()))
                 if row.type == 'condition at time':
                     row_titles.append('%s at time %s %s'
                                       % (row.condition.currentText(),
@@ -175,17 +176,20 @@ class TableWindow(QMainWindow):
                                          tunit))
                     row_data.append(self.get_condition_at(
                         row.condition.currentText(),
-                        float(row.time.text())))
+                        row.time.get_float()))
                 if row.type == 'fit parameter':
-                    row_titles.append('%s fit of %s, parameter %s'
+                    row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
                                       % (row.fit.currentText(),
                                          row.data.currentText(),
+                                         row.fit_from.text(),
+                                         row.fit_to.text(),
+                                         tunit,
                                          row.param.currentText()))
                     row_data.append(self.get_fit(row.data.currentText(),
                                                  row.fit.currentText(),
                                                  row.param.currentText(),
-                                                 float(row.fit_from.text()),
-                                                 float(row.fit_to.text())))
+                                                 row.fit_from.get_float(),
+                                                 row.fit_to.get_float()))
             self.header = column_headings
             self.titles = row_titles
             self.data = row_data
@@ -357,7 +361,7 @@ class TableWindow(QMainWindow):
             for col, dat in enumerate(self.data[row]):
                 if dat is not None:
                     self.table.setItem(
-                        row+1, col+1, QTableWidgetItem(str(dat)))
+                        row+1, col+1, QTableWidgetItem('.*f' % (config.sig_figs, dat)))
                 else:
                     self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
 

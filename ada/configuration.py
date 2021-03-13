@@ -73,18 +73,26 @@ condition_only_extra = False
 # Style config
 style = ''
 font_style = ''
-title_size = -1
-legend_size = -1
-label_size = -1
-line_width = -1
+title_size = 14
+legend_size = 12
+label_size = 12
+line_width = 2
 axis_colour = -1
 grid = False
 
 # Stats config
 std_err = False
+sig_figs = 2
 show_fit_text = False
 show_fit_result = False
 show_fit_errors = False
+
+# Advanced configuration
+sg_window_size = 61
+sg_order = 0
+sg_deriv = 0
+sg_rate = 1
+outlier_threshold = 20
 
 # Fitting configuration
 do_fit = False

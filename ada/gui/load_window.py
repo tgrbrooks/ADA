@@ -104,7 +104,7 @@ class LoadWindow(QMainWindow):
         self.details_file_list.hide()
 
         # Option to downsample conditions data
-        self.downsample = TextEntry('Downsample conditions:', self)
+        self.downsample = TextEntry('Downsample conditions:', self, config.downsample)
         self.downsample.setToolTip('Only read in every X data points')
         layout.addWidget(self.downsample)
         self.downsample.hide()
@@ -209,9 +209,7 @@ class LoadWindow(QMainWindow):
             self.data.add_replicate(algem_data, self.row)
 
     def load_algem_ht24_txt(self, file_name):
-        downsample = -1
-        if isint(self.downsample.text()):
-            downsample = int(self.downsample.text())
+        downsample = self.downsample.get_int()
 
         logger.info('Loading a partial HT-24 file %s, downsample: %i' %
                     (file_name, downsample))

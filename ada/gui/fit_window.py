@@ -52,10 +52,10 @@ class FitWindow(QMainWindow):
         self.fit_option = DropDown('Fit:', config.fit_options, self)
         fit_layout.addWidget(self.fit_option)
 
-        self.fit_from = TextEntry('From:', self)
+        self.fit_from = TextEntry('From:', self, config.fit_from)
         fit_layout.addWidget(self.fit_from)
 
-        self.fit_to = TextEntry('To:', self)
+        self.fit_to = TextEntry('To:', self, config.fit_to)
         fit_layout.addWidget(self.fit_to)
 
         self.set_bounds = CheckBox('Set parameter bounds', self)
@@ -111,14 +111,8 @@ class FitWindow(QMainWindow):
         config.fit_type = self.fit_option.currentText()
         logger.debug('Fitting %s with %s' %
                      (config.fit_curve, config.fit_type))
-        if isfloat(self.fit_from.text()):
-            config.fit_from = float(self.fit_from.text())
-        else:
-            config.fit_from = 0
-        if isfloat(self.fit_to.text()):
-            config.fit_to = float(self.fit_to.text())
-        else:
-            config.fit_to = 0
+        config.fit_from = self.fit_from.get_float()
+        config.fit_to = self.fit_to.get_float()
         config.fit_start = []
         config.fit_min = []
         config.fit_max = []

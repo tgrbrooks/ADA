@@ -18,17 +18,19 @@ def process_data(xdata, ydata):
         xdata = xdata - xdata[0]
 
     if config.y_alignment != -1:
-        xdata = align_to_y(xdata, ydata)
+        xdata = align_to_y(xdata, ydata, config.y_alignment)
 
     # remove outliers
     if (config.remove_above >= 0 or
         config.remove_below >= 0 or
             config.auto_remove):
-        xdata, ydata = remove_outliers(xdata, ydata)
+        xdata, ydata = remove_outliers(xdata, ydata, config.remove_below,
+                                       config.remove_above, config.auto_remove, config.outlier_threshold)
 
     # Smooth the data
     if(config.smooth):
-        ydata = savitzky_golay(ydata, 61, 0)
+        ydata = savitzky_golay(ydata, config.sg_window_size,
+                               config.sg_order, config.sg_deriv, config.sg_rate)
     return xdata, ydata
 
 
@@ -46,12 +48,12 @@ def remove_zeros(xdata, ydata):
 
 
 # Function to align all plots to the same y value
-def align_to_y(xdata, ydata):
-    logger.debug('Aligning data to y = %.2f' % config.y_alignment)
+def align_to_y(xdata, ydata, y_alignment):
+    logger.debug('Aligning data to y = %.2f' % y_alignment)
     # Find the first y index greater than the alignment point
     index = 0
     for i, y in enumerate(ydata):
-        if y >= config.y_alignment:
+        if y >= y_alignment:
             index = i
             break
     xdata = xdata - xdata[index]
@@ -59,22 +61,20 @@ def align_to_y(xdata, ydata):
 
 
 # Function to remove outliers in the data
-def remove_outliers(xdata, ydata):
+def remove_outliers(xdata, ydata, min, max, auto, threshold):
     data_index = 0
     while data_index < len(ydata):
-        if (config.remove_above >= 0 and
-                ydata[data_index] > config.remove_above):
+        if (max >= 0 and ydata[data_index] > max):
             ydata = np.delete(ydata, data_index)
             xdata = np.delete(xdata, data_index)
             data_index = data_index - 1
-        if (config.remove_below >= 0 and
-                ydata[data_index] < config.remove_below):
+        if (min >= 0 and ydata[data_index] < min):
             ydata = np.delete(ydata, data_index)
             xdata = np.delete(xdata, data_index)
             data_index = data_index - 1
         data_index = data_index + 1
     # Apply automatic outlier detection
-    if(config.auto_remove):
+    if(auto):
         logger.debug('Auto-removing outliers')
         # Do this iteratively until no points are removed
         removed_points = 1
@@ -91,7 +91,7 @@ def remove_outliers(xdata, ydata):
             # If the difference to the next point is over 20x the mean,
             # delete the next point
             while data_index < len(ydata)-1:
-                if abs(ydata[data_index] - ydata[data_index+1]) > 20.*mean_diff:
+                if abs(ydata[data_index] - ydata[data_index+1]) > threshold * mean_diff:
                     removed_points += 1
                     ydata = np.delete(ydata, data_index+1)
                     xdata = np.delete(xdata, data_index+1)
@@ -186,23 +186,27 @@ def time_average(xdata, ydata, window, show_err=False):
 def get_exponent(value):
     return np.floor(np.log10(np.abs(value))).astype(int)
 
+
 # Function to write big numbers prettily
 def exponent_text(value):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%1.2f' % (value)
+        text = '%.*f' % (config.sig_figs, value)
         return text
     value = value/(1.*10.**exponent)
-    text = r'%1.2f$\times10^{%i}$' % (value, exponent)
+    text = r'%.*f$\times10^{%i}$' % (config.sig_figs, value, exponent)
     return text
+
 
 # Function to write big numbers prettily (with errors!)
 def exponent_text_errors(value, error):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%1.2f ($\pm$%1.2f)' % (value, error)
+        text = '%.*f ($\pm$%.*f)' % (config.sig_figs,
+                                     value, config.sig_figs, error)
         return text
     value = value/(1.*10.**exponent)
     error = error/(1.*10.**exponent)
-    text = r'%1.2f ($\pm$%1.2f)$\times10^{%i}$' % (value, error, exponent)
+    text = r'%.*f ($\pm$%.*f)$\times10^{%i}$' % (config.sig_figs,
+                                                 value, config.sig_figs, error, exponent)
     return text
