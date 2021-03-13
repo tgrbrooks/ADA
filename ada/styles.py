@@ -30,6 +30,15 @@ QTabBar::tab:selected {
 scroll_style = """
 QListWidget {
     border: 0.08em solid #1e8235;
+    background-color: white;
+}
+QListWidget::item
+{
+    background: white; 
+}
+QListWidget::item:selected
+{
+    background: white;
 }
 QScrollBar:vertical {
     width: 0.3em;
@@ -144,6 +153,21 @@ QSpinBox::down-arrow {
 }
 """
 
+list_style = """
+QListWidget {
+    background-color: white;
+}
+QListWidget::item
+{
+    background: white; 
+}
+QListWidget::item:selected
+{
+    background: white;
+}
+"""
+list_item_style = 'border-bottom: 0.2em black;'
+
 default_font = 'font-size: 14pt;\
                 font-family: Sans;\
                 color: #1e8235;'
@@ -236,6 +260,3 @@ add_button_style = default_button_font +\
                     text-align: right;\
                     vertical-align: middle;\
                     padding: 0em 0.14em 0.2em 0.2em;'
-
-list_style = 'QListWidget {' + white_background + '}'
-list_item_style = 'border-bottom: 0.2em black;'

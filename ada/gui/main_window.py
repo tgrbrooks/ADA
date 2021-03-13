@@ -824,8 +824,12 @@ class App(QMainWindow):
         config.condition_legend = \
             self.condition_legend_toggle.isChecked()
         config.legend_title = self.legend_title.text()
+        if(config.legend_title.lower() == 'none'):
+            config.legend_title = ''
         config.condition_legend_title = self.condition_legend_title.text()
-        config.label_names = self.legend_name.get_list()
+        if(config.condition_legend_title.lower() == 'none'):
+            config.condition_legend_title = ''
+        config.label_names = self.legend_names.get_list()
         config.condition_label_names = self.condition_legend_names.get_list()
         config.extra_info = self.extra_info.currentText()
         config.condition_extra_info = \

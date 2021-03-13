@@ -43,9 +43,11 @@ class TableListItem():
                 for sig in parent.parent.data.data_files[0].signals:
                     self.data.addItem(sig.name)
             layout.addWidget(self.data)
-            self.grad_from = TextEntry('Between:', self.widget)
+            self.grad_from = TextEntry('Between:', self.widget, -1)
+            self.grad_from.setPlaceholderText('Y = ')
             layout.addWidget(self.grad_from)
-            self.grad_to = TextEntry('And:', self.widget)
+            self.grad_to = TextEntry('And:', self.widget, -1)
+            self.grad_to.setPlaceholderText('Y = ')
             layout.addWidget(self.grad_to)
 
         # Time to needs a Y point to reach
@@ -55,7 +57,8 @@ class TableListItem():
                 for sig in parent.parent.data.data_files[0].signals:
                     self.data.addItem(sig.name)
             layout.addWidget(self.data)
-            self.time_to = TextEntry('To reach:', self.widget)
+            self.time_to = TextEntry('To reach:', self.widget, -1)
+            self.time_to.setPlaceholderText('Y = ')
             layout.addWidget(self.time_to)
 
         # Average of a condition needs condition and start and end time
@@ -65,9 +68,11 @@ class TableListItem():
                 for sig in parent.parent.condition_data.data_files[0].signals:
                     self.condition.addItem(sig.name)
             layout.addWidget(self.condition)
-            self.start_t = TextEntry('Between time:', self.widget)
+            self.start_t = TextEntry('Between:', self.widget, -1)
+            self.start_t.setPlaceholderText(config.xvar)
             layout.addWidget(self.start_t)
-            self.end_t = TextEntry('And:', self.widget)
+            self.end_t = TextEntry('And:', self.widget, -1)
+            self.end_t.setPlaceholderText(config.xvar)
             layout.addWidget(self.end_t)
 
         # Condition at time needs condition and time
@@ -77,7 +82,8 @@ class TableListItem():
                 for sig in parent.parent.condition_data.data_files[0].signals:
                     self.condition.addItem(sig.name)
             layout.addWidget(self.condition)
-            self.time = TextEntry('At time:', self.widget)
+            self.time = TextEntry('At:', self.widget, -1)
+            self.time.setPlaceholderText(config.xvar)
             layout.addWidget(self.time)
 
         # Value of fit parameter needs fit and parameter
@@ -93,14 +99,18 @@ class TableListItem():
             model = get_model(self.fit.currentText(), '', '')
             self.param = DropDown('Parameter:', model.params, self.widget)
             layout.addWidget(self.param)
-            self.fit_from = TextEntry('From:', self.widget)
+            self.fit_from = TextEntry('From:', self.widget, -1)
+            self.fit_from.setPlaceholderText(config.xvar)
             layout.addWidget(self.fit_from)
-            self.fit_to = TextEntry('To:', self.widget)
+            self.fit_to = TextEntry('To:', self.widget, -1)
+            self.fit_to.setPlaceholderText(config.xvar)
             layout.addWidget(self.fit_to)
 
         # Pad out the row
         layout.addStretch()
         layout.setSizeConstraint(QLayout.SetFixedSize)
+        layout.setSpacing(5)
+        layout.setContentsMargins(10, 10, 5, 5)
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())

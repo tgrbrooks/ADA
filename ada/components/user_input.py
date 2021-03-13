@@ -35,8 +35,6 @@ class TextEntry(QWidget):
         return self.entry.currentText()
 
     def text(self):
-        if self.entry.text() == 'none':
-            return ''
         return self.entry.text()
 
     def setPlaceholderText(self, text):
@@ -109,6 +107,8 @@ class SpinBox(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        self.start = start
+
         text = LeftLabel(text, True)
         layout.addWidget(text)
 
@@ -131,6 +131,11 @@ class SpinBox(QWidget):
 
     def text(self):
         return self.entry.text()
+
+    def get_float(self):
+        if isfloat(self.entry.text()):
+            return float(self.entry.text())
+        return self.start
 
 
 class DropDown(QWidget):
