@@ -82,6 +82,7 @@ grid = False
 
 # Stats config
 std_err = False
+sig_figs = 2
 show_fit_text = False
 show_fit_result = False
 show_fit_errors = False

@@ -137,6 +137,11 @@ class SpinBox(QWidget):
             return float(self.entry.text())
         return self.start
 
+    def get_int(self):
+        if isint(self.entry.text()):
+            return int(self.entry.text())
+        return self.start
+
 
 class DropDown(QWidget):
     def __init__(self, text, options, parent=None, *args, **kwargs):

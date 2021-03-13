@@ -512,6 +512,10 @@ class App(QMainWindow):
                                 'Unchecked = show standard deviation')
         stats_box_layout.addRow(' ', self.std_err)
 
+        self.sig_figs = SpinBox(
+            'Significant figures:', config.sig_figs, 0, 20, self)
+        stats_box_layout.addRow(self.sig_figs)
+
         self.show_fit_text = CheckBox('Show fit model text', self)
         self.show_fit_text.setToolTip('Checked = display equation for fitted model\n'
                                       "Unchecked = don't display equation")
@@ -853,6 +857,7 @@ class App(QMainWindow):
         config.show_fit_text = self.show_fit_text.isChecked()
         config.show_fit_result = self.show_fit_result.isChecked()
         config.show_fit_errors = self.show_fit_errors.isChecked()
+        config.sig_figs = self.sig_figs.get_int()
 
         # Advanced config
         config.sg_window_size = self.sg_window_size.get_float()

@@ -191,10 +191,10 @@ def get_exponent(value):
 def exponent_text(value):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%1.2f' % (value)
+        text = '%.*f' % (config.sig_figs, value)
         return text
     value = value/(1.*10.**exponent)
-    text = r'%1.2f$\times10^{%i}$' % (value, exponent)
+    text = r'%.*f$\times10^{%i}$' % (config.sig_figs, value, exponent)
     return text
 
 
@@ -202,9 +202,11 @@ def exponent_text(value):
 def exponent_text_errors(value, error):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%1.2f ($\pm$%1.2f)' % (value, error)
+        text = '%.*f ($\pm$%.*f)' % (config.sig_figs,
+                                     value, config.sig_figs, error)
         return text
     value = value/(1.*10.**exponent)
     error = error/(1.*10.**exponent)
-    text = r'%1.2f ($\pm$%1.2f)$\times10^{%i}$' % (value, error, exponent)
+    text = r'%.*f ($\pm$%.*f)$\times10^{%i}$' % (config.sig_figs,
+                                                 value, config.sig_figs, error, exponent)
     return text
