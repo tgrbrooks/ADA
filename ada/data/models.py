@@ -29,6 +29,18 @@ class GrowthModel:
                 text += '\n'
         return text
 
+    def get_latex_param(self, param_name):
+        for i, param in enumerate(self.params):
+            if param == param_name:
+                return self.latex_params[i]
+        return ''
+
+    def get_units(self, param_name):
+        for i, param in enumerate(self.params):
+            if param == param_name:
+                return self.units[i]
+        return ''
+
 
 class FlatLine(GrowthModel):
     def __init__(self, x_unit, y_unit):
@@ -93,7 +105,7 @@ class Zweitering(GrowthModel):
         return return_func
 
 
-def get_model(name, x_unit, y_unit):
+def get_model(name, x_unit='', y_unit=''):
     if name == 'flat line':
         return FlatLine(x_unit, y_unit)
     if name == 'linear':

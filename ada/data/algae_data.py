@@ -13,6 +13,7 @@ class AlgaeData():
         self.time = time(0, 0, 0)
         self.title = ''
         self.reactor = ''
+        self.sub_reactor = ''
         self.profile = ''
         # Data information
         self.xaxis = self.XAxis()
@@ -38,6 +39,12 @@ class AlgaeData():
         for sig in self.signals:
             if sig.name == name:
                 return sig.data
+        raise RuntimeError('Signal %s not found' % (name))
+
+    def get_signal_unit(self, name):
+        for sig in self.signals:
+            if sig.name == name:
+                return sig.unit
         raise RuntimeError('Signal %s not found' % (name))
 
     def get_xdata(self, time_unit):

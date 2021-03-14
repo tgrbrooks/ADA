@@ -37,12 +37,16 @@ class CorrelationCanvas(FigureCanvasQTAgg):
                                         QSizePolicy.Expanding,
                                         QSizePolicy.Expanding)
         FigureCanvasQTAgg.updateGeometry(self)
-        self.plot([], [])
+        self.plot()
 
-    def plot(self, xdata, ydata):
+    def plot(self, xdata=[], ydata=[], x_error=None, y_error=None, title='', x_title='', y_title=''):
         logger.debug('Creating correlation plot')
 
-        self.axes.plot(xdata, ydata, '-')
+        self.axes.clear()
+        self.axes.errorbar(xdata, ydata, y_error, x_error, '.')
+        self.axes.set_title(title)
+        self.axes.set_xlabel(x_title)
+        self.axes.set_ylabel(y_title)
         self.draw()
         return
 

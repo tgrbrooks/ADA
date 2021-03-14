@@ -35,6 +35,8 @@ def get_condition_xy_data(condition_data, data, i, cond_name):
     for cond in condition_data.data_files:
         if data.data_files[i].reactor != cond.reactor:
             continue
+        if data.data_files[i].sub_reactor != cond.sub_reactor:
+            continue
         if data.data_files[i].date != cond.date:
             continue
         if data.data_files[i].time != cond.time:
@@ -97,6 +99,7 @@ def get_averages(condition_data, data, cond_name, start_t, end_t):
     logger.debug('Getting average of %s between time %.2f and %.2f' %
                  (cond_name, start_t, end_t))
     averages = []
+    errors = []
     for i, _ in enumerate(data.data_files):
         xdata, ydata = get_condition_xy_data(
             condition_data, data, i, cond_name)
@@ -106,7 +109,11 @@ def get_averages(condition_data, data, cond_name, start_t, end_t):
                 dat = np.append(dat, ydata[i])
         mean = np.mean(dat)
         averages.append(mean)
-    return averages
+        if config.std_err:
+            errors.append(np.std(dat, ddof=1)/np.sqrt(dat.size))
+        else:
+            errors.append(np.std(dat, ddof=1))
+    return averages, errors
 
 
 def get_condition_at(condition_data, data, cond_name, time):
@@ -123,6 +130,7 @@ def get_fit(data, signal_name, fit_name, fit_param, fit_from, fit_to):
     logger.debug('Fitting %s with %s from %.2f to %.2f and recording %s' % (
         signal_name, fit_name, fit_from, fit_to, fit_param))
     values = []
+    errors = []
     for i, _ in enumerate(data.data_files):
         fit_x, fit_y, fit_sigma = get_xy_data(data, i, signal_name)
 
@@ -133,17 +141,19 @@ def get_fit(data, signal_name, fit_name, fit_param, fit_from, fit_to):
             fit_x = fit_x[from_index:to_index]
             fit_y = fit_y[from_index:to_index]
 
-        model = get_model(fit_name, '', '')
+        model = get_model(fit_name)
         func = model.func()
 
         # If there are replicate files then average the data
         if fit_sigma is not None:
             fit_sigma = fit_sigma[from_index:to_index]
-            fit_result, _ = curve_fit(func, fit_x, fit_y, sigma=fit_sigma)
+            fit_result, covm = curve_fit(func, fit_x, fit_y, sigma=fit_sigma)
         else:
-            fit_result, _ = curve_fit(func, fit_x, fit_y)
+            fit_result, covm = curve_fit(func, fit_x, fit_y)
+        param_errors = np.sqrt(np.diag(covm))
 
         for i, param in enumerate(model.params):
             if param == fit_param:
                 values.append(fit_result[i])
-    return values
+                errors.append(param_errors[i])
+    return values, errors

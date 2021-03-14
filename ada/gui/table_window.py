@@ -172,7 +172,7 @@ class TableWindow(QMainWindow):
                     row_data.append(get_averages(self.parent.condition_data, self.parent.data,
                                                  row.condition.currentText(),
                                                  row.start_t.get_float(),
-                                                 row.end_t.get_float()))
+                                                 row.end_t.get_float())[0])
                 if row.type == 'condition at time':
                     row_titles.append('%s at time %s %s'
                                       % (row.condition.currentText(),
@@ -193,7 +193,7 @@ class TableWindow(QMainWindow):
                                             row.fit.currentText(),
                                             row.param.currentText(),
                                             row.fit_from.get_float(),
-                                            row.fit_to.get_float()))
+                                            row.fit_to.get_float())[0])
             self.header = column_headings
             self.titles = row_titles
             self.data = row_data

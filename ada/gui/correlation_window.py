@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
 # Local application imports
 from ada.plotter.correlation_plot import CorrelationCanvas
 from ada.data.models import get_model
+from ada.data.measurements import (get_averages, get_fit)
 from ada.components.user_input import TextEntry, DropDown
 from ada.components.button import Button, BigButton
 from ada.gui.error_window import ErrorWindow
@@ -25,7 +26,7 @@ class CorrelationWindow(QMainWindow):
         # Default dimensions
         self.left = 10 * config.wr
         self.top = 60 * config.wr
-        self.width = 500 * config.wr
+        self.width = 800 * config.wr
         self.height = 350 * config.wr
         logger.debug('Creating correlation window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
@@ -45,8 +46,10 @@ class CorrelationWindow(QMainWindow):
         config_layout = QVBoxLayout()
         config_layout.setContentsMargins(
             5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        config_layout.setSpacing(5*config.wr)
+        config_layout.setSpacing(0*config.wr)
 
+        self.figure_title = TextEntry('Figure title:', self)
+        config_layout.addWidget(self.figure_title)
         # X axis selection = condition variable
         # Dropdown of condition variables OR take from main plot
         self.condition = DropDown('X-axis: Average of', [], self)
@@ -65,6 +68,8 @@ class CorrelationWindow(QMainWindow):
         average_widget = QWidget()
         average_widget.setLayout(average_layout)
         config_layout.addWidget(average_widget)
+        self.x_title = TextEntry('X-axis title:', self)
+        config_layout.addWidget(self.x_title)
 
         # Y axis selection = growth related measurement
         # Dropdown of y variables (OD/CD) OR take from main plot
@@ -95,6 +100,8 @@ class CorrelationWindow(QMainWindow):
         range_widget = QWidget()
         range_widget.setLayout(range_layout)
         config_layout.addWidget(range_widget)
+        self.y_title = TextEntry('Y-axis title:', self)
+        config_layout.addWidget(self.y_title)
 
         # Plot button
         plot_button = Button('Plot', self)
@@ -135,17 +142,46 @@ class CorrelationWindow(QMainWindow):
 
     def update_param_list(self, fit_name):
         self.param.clear()
-        model = get_model(fit_name, "", "")
+        model = get_model(fit_name)
         self.param.addItems(model.params)
 
     # Function: Update the correlation plot
     def update_plot(self):
         logger.debug('Updating the correlation plot')
         # Process the data here
-        x_data = []
-        y_data = []
+        x_data, x_error = get_averages(self.parent.condition_data, self.parent.data,
+                                   self.condition.currentText(),
+                                   self.start_t.get_float(),
+                                   self.end_t.get_float())
+        y_data, y_error = get_fit(self.parent.data, self.data.currentText(),
+                                self.fit.currentText(),
+                                self.param.currentText(),
+                                self.fit_from.get_float(),
+                                self.fit_to.get_float())
+        tunit = 's'
+        if config.xvar == 'minutes':
+            tunit = 'min'
+        if config.xvar == 'hours':
+            tunit = 'hr'
+        if config.xvar == 'days':
+            tunit = 'day'
+
+        x_title = self.x_title.text()
+        if x_title == '':
+            condition_unit = self.parent.condition_data.data_files[0].get_signal_unit(self.condition.currentText())
+            x_title = ('Average %s [%s]'
+                              % (self.condition.currentText(),
+                                 condition_unit))
+        y_title = self.y_title.text()
+        if y_title == '':
+            data_unit = self.parent.data.data_files[0].get_signal_unit(self.data.currentText())
+            model = get_model(self.fit.currentText(), tunit, data_unit)
+            y_title = ('%s [%s] (%s)'
+                              % (model.get_latex_param(self.param.currentText()),
+                                 model.get_units(self.param.currentText()),
+                                 self.data.currentText()))
         try:
-            self.plot.plot(x_data, y_data)
+            self.plot.plot(x_data, y_data, x_error, y_error, self.figure_title.text(), x_title, y_title)
         except Exception as e:
             logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
