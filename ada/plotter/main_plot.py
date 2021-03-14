@@ -240,9 +240,9 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.x_title = dat.get_xtitle(
                 config.xvar, config.xname, config.xunit)
             # Get the y axis data for plotting
-            ydata = dat.get_ydata(config.yvar, self.parent.calibration)
+            ydata = dat.get_ydata(config.yvar, data.calibration)
             self.y_title = dat.get_ytitle(
-                config.yvar, config.yname, config.yunit, self.parent.calibration, config.ynormlog)
+                config.yvar, config.yname, config.yunit, data.calibration, config.ynormlog)
 
             # Apply alignment, outlier removal, and smoothing
             xdata, ydata = process_data(xdata, ydata)
@@ -262,7 +262,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                     rep_xdata = data.replicate_files[i][j].get_xdata(
                         config.xvar)
                     rep_ydata = data.replicate_files[i][j].get_ydata(
-                        config.yvar, self.parent.calibration)
+                        config.yvar, data.calibration)
                     rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)

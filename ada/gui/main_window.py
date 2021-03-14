@@ -48,7 +48,6 @@ class App(QMainWindow):
         self.data = DataHolder()
         # Container for condition data
         self.condition_data = DataHolder()
-        self.calibration = None
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
@@ -613,7 +612,7 @@ class App(QMainWindow):
             self.calibration_file.clear()
             calib_file_name = get_file_names()
             self.calibration_file.setText(calib_file_name[0])
-            self.calibration = read_calibration(calib_file_name[0])
+            self.data.calibration = read_calibration(calib_file_name[0])
             self.update_data_list()
         except Exception as e:
             logger.error(str(e))
@@ -623,7 +622,7 @@ class App(QMainWindow):
     def remove_calibration_file(self):
         logger.debug('Removing calibration curve')
         self.calibration_file.clear()
-        self.calibration = None
+        self.data.calibration = None
 
     def on_context_menu(self, point):
         # show context menu
@@ -677,7 +676,7 @@ class App(QMainWindow):
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
-            if contains_od and not contains_cd and self.calibration is not None:
+            if contains_od and not contains_cd and self.data.calibration is not None:
                 self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options

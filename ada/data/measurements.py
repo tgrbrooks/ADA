@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 from ada.data.processor import (process_data, average_data,
-                                   time_average)
+                                time_average)
 from ada.data.models import get_model
 
 import ada.configuration as config
@@ -10,33 +10,51 @@ import ada.styles as styles
 from ada.logger import logger
 
 
-def get_headings(self):
-    logger.debug('Getting the table row headings')
-    headings = ['File']
-    for data in self.parent.data.data_files:
-        headings.append(data.label)
-    return headings
+def get_xy_data(data, i, signal_name):
+    xdatas = []
+    ydatas = []
+    for rep in data.replicate_files[i]:
+        xdata = rep.get_xdata(config.xvar)
+        ydata = rep.get_ydata(signal_name, data.calibration)
+        xdata, ydata = process_data(xdata, ydata)
+        xdatas.append(xdata)
+        ydatas.append(ydata)
+    if len(xdatas) > 1:
+        xdata, ydata, yerr = average_data(xdatas, ydatas, config.std_err)
+        if config.ynormlog:
+            yerr = yerr/ydata
+            ydata = np.log(ydata/ydata[0])
+        return xdata, ydata, yerr
+    elif len(xdatas) == 1:
+        return xdatas[0], ydatas[0], None
+    else:
+        raise RuntimeError('No data found')
 
-def get_profiles(self):
-    logger.debug('Getting the data profile names')
-    profiles = []
-    for data in self.parent.data.data_files:
-        profiles.append(data.profile)
-    return profiles
 
-def get_reactors(self):
-    logger.debug('Getting the reactor names')
-    reactors = []
-    for data in self.parent.data.data_files:
-        reactors.append(data.reactor)
-    return reactors
+def get_condition_xy_data(condition_data, data, i, cond_name):
+    for cond in condition_data.data_files:
+        if data.data_files[i].reactor != cond.reactor:
+            continue
+        if data.data_files[i].date != cond.date:
+            continue
+        if data.data_files[i].time != cond.time:
+            continue
+        xdata = cond.get_xdata(config.xvar)
+        ydata = cond.get_signal(cond_name)
+        if config.condition_average != -1:
+            xdata, ydata, _ = time_average(
+                xdata, ydata, config.condition_average)
+        return xdata, ydata
+    raise RuntimeError('No condition data found for %s'
+                       % (data.data_files[i].name))
 
-def get_gradients(self, data_name, grad_from, grad_to):
+
+def get_gradients(data, signal_name, grad_from, grad_to):
     logger.debug('Getting gradient of %s from %.2f to %.2f' %
-                 (data_name, grad_from, grad_to))
+                 (signal_name, grad_from, grad_to))
     gradients = []
-    for i, _ in enumerate(self.parent.data.data_files):
-        xdata, ydata, _ = self.get_xy_data(i, data_name)
+    for i, _ in enumerate(data.data_files):
+        xdata, ydata, _ = get_xy_data(data, i, signal_name)
         # Calculate the gradient
         x1 = None
         y1 = None
@@ -57,13 +75,14 @@ def get_gradients(self, data_name, grad_from, grad_to):
             gradients.append((y2-y1)/(x2-x1))
     return gradients
 
-def get_time_to(self, data_name, time_to):
+
+def get_time_to(data, signal_name, time_to):
     logger.debug('Getting the time to reach %s of %.2f' %
-                 (data_name, time_to))
+                 (signal_name, time_to))
     times = []
-    for i, _ in enumerate(self.parent.data.data_files):
+    for i, _ in enumerate(data.data_files):
         found = False
-        xdata, ydata, _ = self.get_xy_data(i, data_name)
+        xdata, ydata, _ = get_xy_data(data, i, signal_name)
         for i, ydat in enumerate(ydata):
             if ydat >= time_to:
                 times.append(xdata[i])
@@ -73,32 +92,14 @@ def get_time_to(self, data_name, time_to):
             times.append(None)
     return times
 
-def get_xy_data(self, i, data_name):
-    xdatas = []
-    ydatas = []
-    for rep in self.parent.data.replicate_files[i]:
-        xdata = rep.get_xdata(config.xvar)
-        ydata = rep.get_ydata(data_name, self.parent.calibration)
-        xdata, ydata = process_data(xdata, ydata)
-        xdatas.append(xdata)
-        ydatas.append(ydata)
-    if len(xdatas) > 1:
-        xdata, ydata, yerr = average_data(xdatas, ydatas, config.std_err)
-        if config.ynormlog:
-            yerr = yerr/ydata
-            ydata = np.log(ydata/ydata[0])
-        return xdata, ydata, yerr
-    elif len(xdatas) == 1:
-        return xdatas[0], ydatas[0], None
-    else:
-        raise RuntimeError('No data found')
 
-def get_averages(self, cond_name, start_t, end_t):
+def get_averages(condition_data, data, cond_name, start_t, end_t):
     logger.debug('Getting average of %s between time %.2f and %.2f' %
                  (cond_name, start_t, end_t))
     averages = []
-    for i, _ in enumerate(self.parent.data.data_files):
-        xdata, ydata = self.get_condition_xy_data(i, cond_name)
+    for i, _ in enumerate(data.data_files):
+        xdata, ydata = get_condition_xy_data(
+            condition_data, data, i, cond_name)
         dat = np.array([])
         for i, x in enumerate(xdata):
             if x >= start_t and x <= end_t:
@@ -107,37 +108,23 @@ def get_averages(self, cond_name, start_t, end_t):
         averages.append(mean)
     return averages
 
-def get_condition_at(self, cond_name, time):
+
+def get_condition_at(condition_data, data, cond_name, time):
     logger.debug('Getting condition %s at time %.2f' % (cond_name, time))
     values = []
-    for i, _ in enumerate(self.parent.data.data_files):
-        xdata, ydata = self.get_condition_xy_data(i, cond_name)
+    for i, _ in enumerate(data.data_files):
+        xdata, ydata = get_condition_xy_data(
+            condition_data, data, i, cond_name)
         values.append(np.interp(time, xdata, ydata))
     return values
 
-def get_condition_xy_data(self, i, cond_name):
-    for cond in self.parent.condition_data.data_files:
-        if self.parent.data.data_files[i].reactor != cond.reactor:
-            continue
-        if self.parent.data.data_files[i].date != cond.date:
-            continue
-        if self.parent.data.data_files[i].time != cond.time:
-            continue
-        xdata = cond.get_xdata(config.xvar)
-        ydata = cond.get_signal(cond_name)
-        if config.condition_average != -1:
-            xdata, ydata, _ = time_average(
-                xdata, ydata, config.condition_average)
-        return xdata, ydata
-    raise RuntimeError('No condition data found for %s'
-                       % (self.parent.data.data_files[i].name))
 
-def get_fit(self, data_name, fit_name, fit_param, fit_from, fit_to):
+def get_fit(data, signal_name, fit_name, fit_param, fit_from, fit_to):
     logger.debug('Fitting %s with %s from %.2f to %.2f and recording %s' % (
-        data_name, fit_name, fit_from, fit_to, fit_param))
+        signal_name, fit_name, fit_from, fit_to, fit_param))
     values = []
-    for i, _ in enumerate(self.parent.data.data_files):
-        fit_x, fit_y, fit_sigma = self.get_xy_data(i, data_name)
+    for i, _ in enumerate(data.data_files):
+        fit_x, fit_y, fit_sigma = get_xy_data(data, i, signal_name)
 
         # Only fit the data in the given range
         if fit_from != fit_to:
