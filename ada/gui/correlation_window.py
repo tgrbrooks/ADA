@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
 from ada.plotter.correlation_plot import CorrelationCanvas
 from ada.data.models import get_model
 from ada.data.measurements import (get_averages, get_fit)
-from ada.components.user_input import TextEntry, DropDown
+from ada.components.user_input import TextEntry, DropDown, CheckBox
 from ada.components.button import Button, BigButton
 from ada.gui.error_window import ErrorWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
@@ -16,6 +16,14 @@ import ada.configuration as config
 import ada.styles as styles
 from ada.logger import logger
 
+
+class PlotConfig():
+    def __init__(self):
+        self.title = ''
+        self.x_title = None
+        self.y_title = None
+        self.labels = []
+        self.correlation_coeff = None
 
 class CorrelationWindow(QMainWindow):
 
@@ -26,10 +34,11 @@ class CorrelationWindow(QMainWindow):
         # Default dimensions
         self.left = 10 * config.wr
         self.top = 60 * config.wr
-        self.width = 800 * config.wr
+        self.width = 600 * config.wr
         self.height = 350 * config.wr
         logger.debug('Creating correlation window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
+        self.plot_config = PlotConfig()
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
@@ -48,8 +57,6 @@ class CorrelationWindow(QMainWindow):
             5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         config_layout.setSpacing(0*config.wr)
 
-        self.figure_title = TextEntry('Figure title:', self)
-        config_layout.addWidget(self.figure_title)
         # X axis selection = condition variable
         # Dropdown of condition variables OR take from main plot
         self.condition = DropDown('X-axis: Average of', [], self)
@@ -57,19 +64,6 @@ class CorrelationWindow(QMainWindow):
             for sig in self.parent.condition_data.data_files[0].signals:
                 self.condition.addItem(sig.name)
         config_layout.addWidget(self.condition)
-        # Average between times
-        average_layout = QHBoxLayout()
-        self.start_t = TextEntry('Between:', self, -1)
-        self.start_t.setPlaceholderText(config.xvar)
-        average_layout.addWidget(self.start_t)
-        self.end_t = TextEntry('And:', self, -1)
-        self.end_t.setPlaceholderText(config.xvar)
-        average_layout.addWidget(self.end_t)
-        average_widget = QWidget()
-        average_widget.setLayout(average_layout)
-        config_layout.addWidget(average_widget)
-        self.x_title = TextEntry('X-axis title:', self)
-        config_layout.addWidget(self.x_title)
 
         # Y axis selection = growth related measurement
         # Dropdown of y variables (OD/CD) OR take from main plot
@@ -91,17 +85,35 @@ class CorrelationWindow(QMainWindow):
         config_layout.addWidget(fit_widget)
 
         range_layout = QHBoxLayout()
-        self.fit_from = TextEntry('From:', self, -1)
-        self.fit_from.setPlaceholderText(config.xvar)
-        range_layout.addWidget(self.fit_from)
-        self.fit_to = TextEntry('To:', self, -1)
-        self.fit_to.setPlaceholderText(config.xvar)
-        range_layout.addWidget(self.fit_to)
+        self.start_t = TextEntry('Between:', self, -1)
+        self.start_t.setPlaceholderText(config.xvar)
+        range_layout.addWidget(self.start_t)
+        self.end_t = TextEntry('And:', self, -1)
+        self.end_t.setPlaceholderText(config.xvar)
+        range_layout.addWidget(self.end_t)
         range_widget = QWidget()
         range_widget.setLayout(range_layout)
         config_layout.addWidget(range_widget)
+
+        self.figure_title = TextEntry('Figure title:', self)
+        config_layout.addWidget(self.figure_title)
+        title_layout = QHBoxLayout()
+        self.x_title = TextEntry('X-axis title:', self)
+        title_layout.addWidget(self.x_title)
         self.y_title = TextEntry('Y-axis title:', self)
-        config_layout.addWidget(self.y_title)
+        title_layout.addWidget(self.y_title)
+        title_widget = QWidget()
+        title_widget.setLayout(title_layout)
+        config_layout.addWidget(title_widget)
+
+        options_layout = QHBoxLayout()
+        self.label = CheckBox('Label', self)
+        options_layout.addWidget(self.label)
+        self.calc_correlation = CheckBox('Calculate correlation', self)
+        options_layout.addWidget(self.calc_correlation)
+        options_widget = QWidget()
+        options_widget.setLayout(options_layout)
+        config_layout.addWidget(options_widget)
 
         # Plot button
         plot_button = Button('Plot', self)
@@ -156,8 +168,8 @@ class CorrelationWindow(QMainWindow):
         y_data, y_error = get_fit(self.parent.data, self.data.currentText(),
                                 self.fit.currentText(),
                                 self.param.currentText(),
-                                self.fit_from.get_float(),
-                                self.fit_to.get_float())
+                                self.start_t.get_float(),
+                                self.end_t.get_float())
         tunit = 's'
         if config.xvar == 'minutes':
             tunit = 'min'
@@ -172,6 +184,8 @@ class CorrelationWindow(QMainWindow):
             x_title = ('Average %s [%s]'
                               % (self.condition.currentText(),
                                  condition_unit))
+        self.plot_config.x_title = x_title
+
         y_title = self.y_title.text()
         if y_title == '':
             data_unit = self.parent.data.data_files[0].get_signal_unit(self.data.currentText())
@@ -180,8 +194,20 @@ class CorrelationWindow(QMainWindow):
                               % (model.get_latex_param(self.param.currentText()),
                                  model.get_units(self.param.currentText()),
                                  self.data.currentText()))
+        self.plot_config.y_title = y_title
+        self.plot_config.title = self.figure_title.text()
+        if self.label.isChecked():
+            labels = []
+            for dat in self.parent.data.data_files:
+                labels.append('Name: %s\nReactor: %s\nProfile: %s' % (dat.title, dat.reactor, dat.profile))
+            self.plot_config.labels = labels
+        if self.calc_correlation.isChecked():
+            corr_coef = np.corrcoef(x_data, y_data)
+            self.plot_config.correlation_coeff = corr_coef[1][0]
+        else:
+            self.plot_config.correlation_coeff = None
         try:
-            self.plot.plot(x_data, y_data, x_error, y_error, self.figure_title.text(), x_title, y_title)
+            self.plot.plot(x_data, y_data, x_error, y_error, self.plot_config)
         except Exception as e:
             logger.error(str(e))
             self.error = ErrorWindow(str(e), self)

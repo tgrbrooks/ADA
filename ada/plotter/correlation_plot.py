@@ -39,14 +39,57 @@ class CorrelationCanvas(FigureCanvasQTAgg):
         FigureCanvasQTAgg.updateGeometry(self)
         self.plot()
 
-    def plot(self, xdata=[], ydata=[], x_error=None, y_error=None, title='', x_title='', y_title=''):
+    def plot(self, xdata=[], ydata=[], x_error=None, y_error=None, plot_config=None):
         logger.debug('Creating correlation plot')
 
         self.axes.clear()
-        self.axes.errorbar(xdata, ydata, y_error, x_error, '.')
-        self.axes.set_title(title)
-        self.axes.set_xlabel(x_title)
-        self.axes.set_ylabel(y_title)
+        self.scatter = self.axes.scatter(xdata, ydata, alpha=0)
+        self.errbar = self.axes.errorbar(xdata, ydata, y_error, x_error, '.')
+        if plot_config is not None:
+            self.axes.set_title(plot_config.title)
+            self.axes.set_xlabel(plot_config.x_title)
+            self.axes.set_ylabel(plot_config.y_title)
+
+            bounding_box = dict(boxstyle="round", ec=(
+                1., 0.5, 0.5), fc=(1., 0.8, 0.8))
+            if plot_config.correlation_coeff is not None:
+                text = ('$\\rho$ = %.*f' % (config.sig_figs, plot_config.correlation_coeff))
+                self.axes.text(0.25, 0.95, text,
+                           transform=self.axes.transAxes,
+                           bbox=bounding_box, picker=True)
+
+            self.label_annotation = self.axes.annotate('',
+                                                   xy=(0, 0),
+                                                   xytext=(0.2, 0.2),
+                                                   textcoords='axes fraction',
+                                                   bbox=dict(
+                                                       boxstyle="round", fc="w"),
+                                                   arrowprops=dict(arrowstyle="->"))
+            self.label_annotation.set_visible(False)
+
+            def update_annotation(ind):
+                label_pos = self.scatter.get_offsets()[ind["ind"][0]]
+                self.label_annotation.xy = label_pos
+                label_text = plot_config.labels[ind["ind"][0]]
+                self.label_annotation.set_text(label_text)
+
+            def onhover(event):
+                vis = self.label_annotation.get_visible()
+                cont = None
+                if event.inaxes == self.axes:
+                    cont, ind = self.scatter.contains(event)
+                if cont:
+                    update_annotation(ind)
+                    self.label_annotation.set_visible(True)
+                    self.draw_idle()
+                else:
+                    if vis:
+                        self.label_annotation.set_visible(False)
+                        self.draw_idle()
+
+            if len(plot_config.labels) > 0:
+                self.mpl_connect('motion_notify_event', onhover)
+
         self.draw()
         return
 
