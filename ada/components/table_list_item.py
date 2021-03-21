@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
 
 from ada.components.button import DeleteButton
 from ada.components.label import Label, RoundLabel
-from ada.components.user_input import DropDown, TextEntry
+from ada.components.user_input import DropDown, TextEntry, CheckBox
 from ada.data.models import get_model
 import ada.configuration as config
 import ada.styles as styles
@@ -105,6 +105,8 @@ class TableListItem():
             self.fit_to = TextEntry('To:', self.widget, -1)
             self.fit_to.setPlaceholderText(config.xvar)
             layout.addWidget(self.fit_to)
+            self.show_error = CheckBox("Show error")
+            layout.addWidget(self.show_error)
 
         # Pad out the row
         layout.addStretch()
