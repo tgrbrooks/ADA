@@ -110,9 +110,8 @@ class TableListItem():
 
         # Pad out the row
         layout.addStretch()
-        layout.setSizeConstraint(QLayout.SetFixedSize)
         layout.setSpacing(5)
-        layout.setContentsMargins(10, 10, 5, 5)
+        layout.setContentsMargins(10, 10, 50, 5)
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
