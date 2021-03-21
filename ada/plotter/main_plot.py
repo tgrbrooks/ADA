@@ -240,7 +240,6 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.x_title = dat.get_xtitle(
                 config.xvar, config.xname, config.xunit)
             # Get the y axis data for plotting
-            print(data.calibration)
             ydata = dat.get_ydata(config.yvar, data.calibration)
             self.y_title = dat.get_ytitle(
                 config.yvar, config.yname, config.yunit, data.calibration, config.ynormlog)

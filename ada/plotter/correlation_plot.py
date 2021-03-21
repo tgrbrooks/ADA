@@ -14,7 +14,7 @@ import matplotlib.style
 
 # Local imports
 from ada.data.processor import (process_data, average_data,
-                                   time_average, exponent_text)
+                                time_average, exponent_text)
 from ada.data.models import get_model
 from ada.gui.file_handler import save_file
 
@@ -39,12 +39,17 @@ class CorrelationCanvas(FigureCanvasQTAgg):
         FigureCanvasQTAgg.updateGeometry(self)
         self.plot()
 
-    def plot(self, xdata=[], ydata=[], x_error=None, y_error=None, plot_config=None):
+    def plot(self, plot_config=None):
         logger.debug('Creating correlation plot')
 
         self.axes.clear()
-        self.scatter = self.axes.scatter(xdata, ydata, alpha=0)
-        self.errbar = self.axes.errorbar(xdata, ydata, y_error, x_error, '.')
+        if plot_config is None:
+            return
+
+        self.scatter = self.axes.scatter(
+            plot_config.x_data, plot_config.y_data, alpha=0)
+        self.errbar = self.axes.errorbar(
+            plot_config.x_data, plot_config.y_data, plot_config.y_error, plot_config.x_error, '.')
         if plot_config is not None:
             self.axes.set_title(plot_config.title)
             self.axes.set_xlabel(plot_config.x_title)
@@ -53,18 +58,19 @@ class CorrelationCanvas(FigureCanvasQTAgg):
             bounding_box = dict(boxstyle="round", ec=(
                 1., 0.5, 0.5), fc=(1., 0.8, 0.8))
             if plot_config.correlation_coeff is not None:
-                text = ('$\\rho$ = %.*f' % (config.sig_figs, plot_config.correlation_coeff))
+                text = ('$\\rho$ = %.*f' %
+                        (config.sig_figs, plot_config.correlation_coeff))
                 self.axes.text(0.25, 0.95, text,
-                           transform=self.axes.transAxes,
-                           bbox=bounding_box, picker=True)
+                               transform=self.axes.transAxes,
+                               bbox=bounding_box, picker=True)
 
             self.label_annotation = self.axes.annotate('',
-                                                   xy=(0, 0),
-                                                   xytext=(0.2, 0.2),
-                                                   textcoords='axes fraction',
-                                                   bbox=dict(
-                                                       boxstyle="round", fc="w"),
-                                                   arrowprops=dict(arrowstyle="->"))
+                                                       xy=(0, 0),
+                                                       xytext=(0.2, 0.2),
+                                                       textcoords='axes fraction',
+                                                       bbox=dict(
+                                                           boxstyle="round", fc="w"),
+                                                       arrowprops=dict(arrowstyle="->"))
             self.label_annotation.set_visible(False)
 
             def update_annotation(ind):

@@ -44,7 +44,7 @@ class GrowthModel:
 
 class FlatLine(GrowthModel):
     def __init__(self, x_unit, y_unit):
-        super().__init__('$y = p$', ['p'], ['$p$'], [y_unit])
+        super().__init__('$y = p$', ['Y intercept (p)'], ['$p$'], [y_unit])
 
     def func(self):
         def return_func(x, p):
@@ -55,7 +55,7 @@ class FlatLine(GrowthModel):
 class Linear(GrowthModel):
     def __init__(self, x_unit, y_unit):
         super().__init__('$y = p_1 \cdot x + p_0$',
-                         ['p0', 'p1'],
+                         ['Y intercept (p0)', 'Gradient (p1)'],
                          ['$p_0$', '$p_1$'],
                          [y_unit, y_unit + '/' + x_unit])
 
@@ -68,7 +68,7 @@ class Linear(GrowthModel):
 class Quadratic(GrowthModel):
     def __init__(self, x_unit, y_unit):
         super().__init__('$y = p_2 \cdot x^2 + p_1 \cdot x + p_0$',
-                         ['p0', 'p1', 'p2'],
+                         ['Constant (p0)', 'Linear (p1)', 'Quadratic (p2)'],
                          ['$p_0$', '$p_1$', '$p_2$'],
                          [y_unit, y_unit + '/' + x_unit, y_unit + '/' + x_unit + '$^2$'])
 
@@ -81,7 +81,7 @@ class Quadratic(GrowthModel):
 class Exponential(GrowthModel):
     def __init__(self, x_unit, y_unit):
         super().__init__('$y = p_0 \cdot \exp(p_1 \cdot x)$',
-                         ['p0', 'p1'],
+                         ['Scale (p0)', 'Exponent (p1)'],
                          ['$p_0$', '$p_1$'],
                          [y_unit, x_unit + '$^{-1}$'])
 
@@ -94,7 +94,7 @@ class Exponential(GrowthModel):
 class Zweitering(GrowthModel):
     def __init__(self, x_unit, y_unit):
         super().__init__('$y = y_0 + (A - y_0)/(1 + \exp((4\mu/A)\cdot(\lambda - x) + 2))$',
-                         ['y0', 'A', 'mu', 'lambda'],
+                         ['starting absorbance (y0)', 'Biomass yield (A)', 'Max growth rate (mu)', 'Lag time (lambda)'],
                          ['$y_0$', '$A$', '$\mu$', '$\lambda$'],
                          [y_unit, y_unit, y_unit + '/' + x_unit, x_unit])
 

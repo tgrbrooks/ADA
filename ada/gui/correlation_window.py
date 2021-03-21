@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
@@ -19,11 +20,19 @@ from ada.logger import logger
 
 class PlotConfig():
     def __init__(self):
+        self.clear()
+
+    def clear(self):
         self.title = ''
         self.x_title = None
         self.y_title = None
+        self.x_data = []
+        self.y_data = []
+        self.x_error = []
+        self.y_error = []
         self.labels = []
         self.correlation_coeff = None
+
 
 class CorrelationWindow(QMainWindow):
 
@@ -160,16 +169,17 @@ class CorrelationWindow(QMainWindow):
     # Function: Update the correlation plot
     def update_plot(self):
         logger.debug('Updating the correlation plot')
+        self.plot_config.clear()
         # Process the data here
         x_data, x_error = get_averages(self.parent.condition_data, self.parent.data,
-                                   self.condition.currentText(),
-                                   self.start_t.get_float(),
-                                   self.end_t.get_float())
+                                       self.condition.currentText(),
+                                       self.start_t.get_float(),
+                                       self.end_t.get_float())
         y_data, y_error = get_fit(self.parent.data, self.data.currentText(),
-                                self.fit.currentText(),
-                                self.param.currentText(),
-                                self.start_t.get_float(),
-                                self.end_t.get_float())
+                                  self.fit.currentText(),
+                                  self.param.currentText(),
+                                  self.start_t.get_float(),
+                                  self.end_t.get_float())
         tunit = 's'
         if config.xvar == 'minutes':
             tunit = 'min'
@@ -178,36 +188,57 @@ class CorrelationWindow(QMainWindow):
         if config.xvar == 'days':
             tunit = 'day'
 
+        # Create the X axis title
         x_title = self.x_title.text()
         if x_title == '':
-            condition_unit = self.parent.condition_data.data_files[0].get_signal_unit(self.condition.currentText())
+            condition_unit = self.parent.condition_data.data_files[0].get_signal_unit(
+                self.condition.currentText())
             x_title = ('Average %s [%s]'
-                              % (self.condition.currentText(),
-                                 condition_unit))
+                       % (self.condition.currentText(),
+                          condition_unit))
         self.plot_config.x_title = x_title
 
+        # Create the Y axis title
         y_title = self.y_title.text()
         if y_title == '':
-            data_unit = self.parent.data.data_files[0].get_signal_unit(self.data.currentText())
+            data_unit = self.parent.data.data_files[0].get_signal_unit(
+                self.data.currentText())
             model = get_model(self.fit.currentText(), tunit, data_unit)
             y_title = ('%s [%s] (%s)'
-                              % (model.get_latex_param(self.param.currentText()),
-                                 model.get_units(self.param.currentText()),
-                                 self.data.currentText()))
+                       % (model.get_latex_param(self.param.currentText()),
+                          model.get_units(self.param.currentText()),
+                          self.data.currentText()))
         self.plot_config.y_title = y_title
+
         self.plot_config.title = self.figure_title.text()
-        if self.label.isChecked():
-            labels = []
-            for dat in self.parent.data.data_files:
-                labels.append('Name: %s\nReactor: %s\nProfile: %s' % (dat.title, dat.reactor, dat.profile))
-            self.plot_config.labels = labels
+        labels = []
+        for dat in self.parent.data.data_files:
+            labels.append('Name: %s\nReactor: %s\nProfile: %s' %
+                          (dat.label, dat.reactor, dat.profile))
+
+        # Remove any broken fits
+        for i, yerr in enumerate(y_error):
+            logger.debug('Fit %i: x=%.2f (%.2f), y=%.2f (%.2f)' %
+                         (i, x_data[i], x_error[i], y_data[i], y_error[i]))
+            if y_data[i] == 1 and yerr > 50:
+                logger.warning('Fit ' + str(i) + ' failed')
+            else:
+                self.plot_config.x_data.append(x_data[i])
+                self.plot_config.y_data.append(y_data[i])
+                self.plot_config.x_error.append(x_error[i])
+                self.plot_config.y_error.append(y_error[i])
+                if self.label.isChecked():
+                    self.plot_config.labels.append(labels[i])
+
+        # Work out correlation coefficient
         if self.calc_correlation.isChecked():
-            corr_coef = np.corrcoef(x_data, y_data)
+            corr_coef = np.corrcoef(
+                self.plot_config.x_data, self.plot_config.y_data)
             self.plot_config.correlation_coeff = corr_coef[1][0]
         else:
             self.plot_config.correlation_coeff = None
         try:
-            self.plot.plot(x_data, y_data, x_error, y_error, self.plot_config)
+            self.plot.plot(self.plot_config)
         except Exception as e:
             logger.error(str(e))
             self.error = ErrorWindow(str(e), self)
