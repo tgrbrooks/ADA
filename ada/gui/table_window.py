@@ -143,44 +143,48 @@ class TableWindow(QMainWindow):
                 # Determine the type of data
                 if row.type == 'profile':
                     row_titles.append('Profile')
-                    row_data.append(self.parent.data.get_profiles())
+                    row_data.append([self.parent.data.get_profiles()])
                 if row.type == 'reactor':
                     row_titles.append('Reactor')
-                    row_data.append(self.parent.data.get_reactors())
+                    row_data.append([self.parent.data.get_reactors()])
                 if row.type == 'gradient':
                     row_titles.append('Gradient of %s at between %s and %s'
                                       % (row.data.currentText(),
                                          row.grad_from.text(),
                                          row.grad_to.text()))
-                    row_data.append(get_gradients(self.parent.data,
-                                                  row.data.currentText(),
-                                                  row.grad_from.get_float(),
-                                                  row.grad_to.get_float()))
+                    gradients = get_gradients(self.parent.data,
+                                              row.data.currentText(),
+                                              row.grad_from.get_float(),
+                                              row.grad_to.get_float())
+                    row_data.append([gradients])
                 if row.type == 'time to':
                     row_titles.append('Time (%s) to %s of %s'
                                       % (tunit,
                                          row.data.currentText(),
                                          row.time_to.text()))
-                    row_data.append(get_time_to(self.parent.data, row.data.currentText(),
-                                                row.time_to.get_float()))
+                    time_to = get_time_to(self.parent.data, row.data.currentText(),
+                                          row.time_to.get_float())
+                    row_data.append([time_to])
                 if row.type == 'average of condition':
                     row_titles.append('Average of %s between %s and %s %s'
                                       % (row.condition.currentText(),
                                          row.start_t.text(),
                                          row.end_t.text(),
                                          tunit))
-                    row_data.append(get_averages(self.parent.condition_data, self.parent.data,
-                                                 row.condition.currentText(),
-                                                 row.start_t.get_float(),
-                                                 row.end_t.get_float())[0])
+                    average, _ = get_averages(self.parent.condition_data, self.parent.data,
+                                              row.condition.currentText(),
+                                              row.start_t.get_float(),
+                                              row.end_t.get_float())
+                    row_data.append([average])
                 if row.type == 'condition at time':
                     row_titles.append('%s at time %s %s'
                                       % (row.condition.currentText(),
                                          row.time.text(),
                                          tunit))
-                    row_data.append(get_condition_at(self.parent.condition_data, self.parent.data,
-                                                     row.condition.currentText(),
-                                                     row.time.get_float()))
+                    condition = get_condition_at(self.parent.condition_data, self.parent.data,
+                                                 row.condition.currentText(),
+                                                 row.time.get_float())
+                    row_data.append([condition])
                 if row.type == 'fit parameter':
                     row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
                                       % (row.fit.currentText(),
@@ -189,11 +193,15 @@ class TableWindow(QMainWindow):
                                          row.fit_to.text(),
                                          tunit,
                                          row.param.currentText()))
-                    row_data.append(get_fit(self.parent.data, row.data.currentText(),
-                                            row.fit.currentText(),
-                                            row.param.currentText(),
-                                            row.fit_from.get_float(),
-                                            row.fit_to.get_float())[0])
+                    fit_result, fit_error = get_fit(self.parent.data, row.data.currentText(),
+                                                    row.fit.currentText(),
+                                                    row.param.currentText(),
+                                                    row.fit_from.get_float(),
+                                                    row.fit_to.get_float())
+                    if row.show_error.isChecked():
+                        row_data.append([fit_result, fit_error])
+                    else:
+                        row_data.append([fit_result])
             self.header = column_headings
             self.titles = row_titles
             self.data = row_data
@@ -218,9 +226,12 @@ class TableWindow(QMainWindow):
             self.table.setItem(0, col, QTableWidgetItem(str(head)))
         for row, title in enumerate(self.titles):
             self.table.setItem(row+1, 0, QTableWidgetItem(str(title)))
-            for col, dat in enumerate(self.data[row]):
+            for col, dat in enumerate(self.data[row][0]):
                 if dat is not None:
-                    if isfloat(dat):
+                    if len(self.data[row]) == 2:
+                        self.table.setItem(
+                            row+1, col+1, QTableWidgetItem('%.*f (%.*f)' % (config.sig_figs, dat, config.sig_figs, self.data[row][1][col])))
+                    elif isfloat(dat):
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem('%.*f' % (config.sig_figs, dat)))
                     else:
