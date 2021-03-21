@@ -8,7 +8,7 @@ from dateutil.parser import parse
 import ezodf as ods
 
 # Local import
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Loop over text files and read them in

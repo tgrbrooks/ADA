@@ -17,11 +17,11 @@ from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
-from ada.reader.data_holder import DataHolder
+from ada.data.data_holder import DataHolder
 from ada.plotter.cursor import Cursor, SnapToCursor
-from ada.plotter.functions import (process_data, average_data,
+from ada.data.processor import (process_data, average_data,
                                    time_average, exponent_text)
-from ada.plotter.models import get_model
+from ada.data.models import get_model
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -114,7 +114,6 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         self.set_plot_styles()
         self.set_legends()
-        DragHandler(self)
 
         # Show the plot
         self.draw()
@@ -241,9 +240,9 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.x_title = dat.get_xtitle(
                 config.xvar, config.xname, config.xunit)
             # Get the y axis data for plotting
-            ydata = dat.get_ydata(config.yvar, self.parent.calibration)
+            ydata = dat.get_ydata(config.yvar, data.calibration)
             self.y_title = dat.get_ytitle(
-                config.yvar, config.yname, config.yunit, self.parent.calibration, config.ynormlog)
+                config.yvar, config.yname, config.yunit, data.calibration, config.ynormlog)
 
             # Apply alignment, outlier removal, and smoothing
             xdata, ydata = process_data(xdata, ydata)
@@ -263,7 +262,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                     rep_xdata = data.replicate_files[i][j].get_xdata(
                         config.xvar)
                     rep_ydata = data.replicate_files[i][j].get_ydata(
-                        config.yvar, self.parent.calibration)
+                        config.yvar, data.calibration)
                     rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)

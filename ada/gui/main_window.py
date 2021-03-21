@@ -10,7 +10,7 @@ from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
-from ada.reader.data_holder import DataHolder
+from ada.data.data_holder import DataHolder
 from ada.reader.read_calibration import read_calibration
 from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
 from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
@@ -24,6 +24,7 @@ from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
+from ada.gui.correlation_window import CorrelationWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 from ada.type_functions import isfloat, isint, set_float, set_int
 import ada.configuration as config
@@ -47,7 +48,6 @@ class App(QMainWindow):
         self.data = DataHolder()
         # Container for condition data
         self.condition_data = DataHolder()
-        self.calibration = None
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
@@ -78,7 +78,7 @@ class App(QMainWindow):
             blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_layout.addWidget(self.plot, 0, 0, 5, 5)
+        plot_layout.addWidget(self.plot, 0, 0, 5, 6)
 
         # Saving options
         save_button = Button('Save Plot', self, 'Save the figure')
@@ -110,6 +110,13 @@ class App(QMainWindow):
         table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         plot_layout.addWidget(table_button, 5, 4)
+
+        # Correlations output button
+        correlation_button = Button('Correlations', self,
+                                    'Create additional plots showing correlations between growth and condition variables')
+        correlation_button.clicked.connect(self.update_config)
+        correlation_button.clicked.connect(self.open_correlation)
+        plot_layout.addWidget(correlation_button, 5, 5)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -605,7 +612,7 @@ class App(QMainWindow):
             self.calibration_file.clear()
             calib_file_name = get_file_names()
             self.calibration_file.setText(calib_file_name[0])
-            self.calibration = read_calibration(calib_file_name[0])
+            self.data.calibration = read_calibration(calib_file_name[0])
             self.update_data_list()
         except Exception as e:
             logger.error(str(e))
@@ -615,7 +622,7 @@ class App(QMainWindow):
     def remove_calibration_file(self):
         logger.debug('Removing calibration curve')
         self.calibration_file.clear()
-        self.calibration = None
+        self.data.calibration = None
 
     def on_context_menu(self, point):
         # show context menu
@@ -669,7 +676,7 @@ class App(QMainWindow):
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
-            if contains_od and not contains_cd and self.calibration is not None:
+            if contains_od and not contains_cd and self.data.calibration is not None:
                 self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options
@@ -780,6 +787,12 @@ class App(QMainWindow):
         logger.debug('Opening export window')
         self.export = ExportWindow(self)
         self.export.show()
+
+    # Open window for evaluating correlations
+    def open_correlation(self):
+        logger.debug('Opening correlation window')
+        self.correlation = CorrelationWindow(self)
+        self.correlation.show()
 
     # Function: Update the global configuration
     def update_config(self):

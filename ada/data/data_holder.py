@@ -1,5 +1,5 @@
 # Local includes
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Class to store data files in
@@ -9,6 +9,7 @@ class DataHolder():
         self.empty = True
         self.data_files = []
         self.replicate_files = []
+        self.calibration = None
 
     def clear(self):
         self.empty = True
@@ -35,3 +36,15 @@ class DataHolder():
         if index >= 0 and index < len(self.replicate_files):
             if rindex >= 0 and rindex < len(self.replicate_files[index]):
                 self.replicate_files[index].pop(rindex)
+
+    def get_profiles(self):
+        profiles = []
+        for data in self.data_files:
+            profiles.append(data.profile)
+        return profiles
+
+    def get_reactors(self):
+        reactors = []
+        for data in self.data_files:
+            reactors.append(data.reactor)
+        return reactors

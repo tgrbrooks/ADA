@@ -6,7 +6,7 @@ import numpy as np
 from dateutil.parser import parse
 
 # Local import
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Loop over ADA csv files and read them in

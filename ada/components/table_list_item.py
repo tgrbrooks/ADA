@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
 from ada.components.button import DeleteButton
 from ada.components.label import Label, RoundLabel
 from ada.components.user_input import DropDown, TextEntry
-from ada.plotter.models import get_model
+from ada.data.models import get_model
 import ada.configuration as config
 import ada.styles as styles
 
