@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QTableWidgetItem, QSizePolicy)
 from PyQt5.QtCore import QPoint
 
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_save_file_name
 from ada.components.table_list_item import TableListItem
 from ada.components.button import Button
@@ -91,19 +91,16 @@ class TableWindow(QMainWindow):
         self.setCentralWidget(tabs)
 
     # Add a new row to the table
+    @error_wrapper
     def add_row(self):
-        try:
-            logger.debug('Adding %s row to table' %
-                         self.row_option.currentText())
-            table_list_item = TableListItem(
-                self.row_option.currentText(), self)
-            self.row_list.addItem(table_list_item.item)
-            self.row_list.setItemWidget(table_list_item.item,
-                                        table_list_item.widget)
-            self.rows.append(table_list_item)
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        logger.debug('Adding %s row to table' %
+                     self.row_option.currentText())
+        table_list_item = TableListItem(
+            self.row_option.currentText(), self)
+        self.row_list.addItem(table_list_item.item)
+        self.row_list.setItemWidget(table_list_item.item,
+                                    table_list_item.widget)
+        self.rows.append(table_list_item)
 
     # Remove a row from the table
     def remove_item(self):
@@ -189,11 +186,11 @@ class TableWindow(QMainWindow):
                 row.time.get_float())
             row_data = [condition]
         if row.type == 'fit parameter':
-            fit_result, fit_error = data_manager.get_fit(row.data.currentText(),
-                                                         row.fit.currentText(),
-                                                         row.param.currentText(),
-                                                         row.fit_from.get_float(),
-                                                         row.fit_to.get_float())
+            fit_result, fit_error = data_manager.get_all_fit_params(row.data.currentText(),
+                                                                    row.fit.currentText(),
+                                                                    row.fit_from.get_float(),
+                                                                    row.fit_to.get_float(),
+                                                                    row.param.currentText())
             if row.show_error.isChecked():
                 row_data = [fit_result, fit_error]
             else:
@@ -201,6 +198,7 @@ class TableWindow(QMainWindow):
         return row_data
 
     # Create table and write to file
+    @error_wrapper
     def make_table(self):
         logger.debug('Creating the table')
         # Get the column headings from the data file names
@@ -234,10 +232,11 @@ class TableWindow(QMainWindow):
             self.table.setItem(row+1, 0, QTableWidgetItem(str(title)))
             for col, dat in enumerate(self.data[row][0]):
                 if dat is not None:
+                    logger.debug(dat)
                     if len(self.data[row]) == 2:
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem('%.*f (%.*f)' % (config.sig_figs, dat, config.sig_figs, self.data[row][1][col])))
-                    elif isfloat(dat):
+                    elif isfloat(dat) and title != 'Reactor':
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem('%.*f' % (config.sig_figs, dat)))
                     else:
@@ -246,24 +245,21 @@ class TableWindow(QMainWindow):
                 else:
                     self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
 
+    @error_wrapper
     def save_table(self):
-        try:
-            file_name = get_save_file_name()
-            if not file_name.endswith('.csv'):
-                file_name = file_name + '.csv'
-            logger.info('Saving the table as %s' % file_name)
-            with open(file_name, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(self.header)
-                for i, title in enumerate(self.titles):
-                    row = [title]
-                    for dat in self.data[i]:
-                        if dat is not None:
-                            row.append(str(dat))
-                        else:
-                            row.append('none')
-                    writer.writerow(row)
-            self.close()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        file_name = get_save_file_name()
+        if not file_name.endswith('.csv'):
+            file_name = file_name + '.csv'
+        logger.info('Saving the table as %s' % file_name)
+        with open(file_name, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(self.header)
+            for i, title in enumerate(self.titles):
+                row = [title]
+                for dat in self.data[i]:
+                    if dat is not None:
+                        row.append(str(dat))
+                    else:
+                        row.append('none')
+                writer.writerow(row)
+        self.close()

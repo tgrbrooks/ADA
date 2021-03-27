@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
 from ada.data.data_manager import data_manager
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_save_directory_name
 from ada.components.button import Button
 from ada.components.user_input import CheckBox
@@ -45,20 +45,14 @@ class ExportWindow(QMainWindow):
         layout.addWidget(self.conditions)
 
         export_button = Button("Export", self)
-        export_button.clicked.connect(self.export_handler)
+        export_button.clicked.connect(self.export)
         layout.addWidget(export_button)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    def export_handler(self):
-        try:
-            self.export()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
-
+    @error_wrapper
     def export(self):
         path = self.test_path
         if self.test_path == 'none':

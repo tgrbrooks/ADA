@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
 from PyQt5.QtCore import QPoint, Qt
 
 from ada.data.data_manager import data_manager
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names
 from ada.type_functions import isint
 from ada.components.label import Label
@@ -115,7 +115,7 @@ class LoadWindow(QMainWindow):
 
         # Button to load the data
         load_button = Button("Load", self)
-        load_button.clicked.connect(self.load_handler)
+        load_button.clicked.connect(self.load)
         layout.addWidget(load_button)
 
         self.update_options()
@@ -168,32 +168,23 @@ class LoadWindow(QMainWindow):
             display_list.addItem(list_item.item)
             display_list.setItemWidget(list_item.item, list_item.widget)
 
+    @error_wrapper
     def select_data(self):
         logger.debug('Selecting data files')
-        try:
-            self.files = self.files + get_file_names()
-            self.fill_list(self.files, self.file_list)
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.files = self.files + get_file_names()
+        self.fill_list(self.files, self.file_list)
 
+    @error_wrapper
     def select_details(self):
         logger.debug('Selecting details files')
-        try:
-            self.details = get_file_names()
-            self.fill_list(self.details, self.details_file_list)
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.details = get_file_names()
+        self.fill_list(self.details, self.details_file_list)
 
+    @error_wrapper
     def select_conditions(self):
         logger.debug('Selecting conditions files')
-        try:
-            self.condition_files = get_file_names()
-            self.fill_list(self.condition_files, self.conditions_file_list)
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.condition_files = get_file_names()
+        self.fill_list(self.condition_files, self.conditions_file_list)
 
     def load_algem_pro(self, file_name):
         logger.info('Loading an Algem-Pro file %s' % file_name)
@@ -315,13 +306,7 @@ class LoadWindow(QMainWindow):
                 else:
                     data_manager.condition_data.add_data(replicate[0])
 
-    def load_handler(self):
-        try:
-            self.load()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
-
+    @error_wrapper
     def load(self):
         logger.debug('Loading files into ADA')
         file_type = self.file_type.currentText()

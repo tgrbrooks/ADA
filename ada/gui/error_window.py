@@ -38,3 +38,12 @@ class ErrorWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+def error_wrapper(func):
+    def inner(self):
+        try:
+            func(self)
+        except Exception as e:
+            self.error = ErrorWindow(e, self)
+            self.error.show()
+    return inner

@@ -19,7 +19,7 @@ from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
 from ada.components.data_list_item import (DataListItem, ConditionListItem,
                                            DelListItem)
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
@@ -78,7 +78,6 @@ class App(QMainWindow):
 
         # Saving options
         save_button = Button('Save Plot', self, 'Save the figure')
-        save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         plot_layout.addWidget(save_button, 5, 0)
 
@@ -91,7 +90,6 @@ class App(QMainWindow):
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
-        measure_button.clicked.connect(self.update_plot)
         plot_layout.addWidget(measure_button, 5, 2)
 
         # Fit curves
@@ -103,14 +101,12 @@ class App(QMainWindow):
         table_button = Button('To Table', self,
                               'Create a table of growth rates for all curves'
                               '\nConfigure in options tab')
-        table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         plot_layout.addWidget(table_button, 5, 4)
 
         # Correlations output button
         correlation_button = Button('Correlations', self,
                                     'Create additional plots showing correlations between growth and condition variables')
-        correlation_button.clicked.connect(self.update_config)
         correlation_button.clicked.connect(self.open_correlation)
         plot_layout.addWidget(correlation_button, 5, 5)
 
@@ -124,9 +120,7 @@ class App(QMainWindow):
         # Add data button
         self.data_button = Button('Add Data', self,
                                   'Import data for plotting')
-        self.data_button.clicked.connect(self.update_config)
         self.data_button.clicked.connect(self.open_data_files)
-        self.data_button.clicked.connect(self.update_data_list)
         data_entry_layout.addWidget(self.data_button)
         self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
         self.data_button.customContextMenuRequested.connect(
@@ -163,7 +157,6 @@ class App(QMainWindow):
 
         # Plot button
         plot_button = BigButton('Plot!', self, 'Plot the data!')
-        plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
         data_entry_layout.addWidget(plot_button)
 
@@ -590,34 +583,33 @@ class App(QMainWindow):
     #                           MEMBER FUNCTIONS
     # -------------------------------------------------------------------------
 
-    # Function: Open and read in data files
+    # Open the load window to read in data files
+    @error_wrapper
     def open_data_files(self):
+        self.update_config()
         logger.debug('Opening data files')
-        try:
-            self.load = LoadWindow(self)
-            self.load.show()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.load = LoadWindow(self)
+        self.load.show()
 
-    # Function: Open and read in calibration
+    # Open the file explorer and read in calibration file
+    @error_wrapper
     def open_calibration_file(self):
         logger.debug('Loading calibration curve from file')
-        try:
-            self.calibration_file.clear()
-            calib_file_name = get_file_names()
-            self.calibration_file.setText(calib_file_name[0])
-            data_manager.calibration = read_calibration(calib_file_name[0])
-            self.update_data_list()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.calibration_file.clear()
+        calib_file_name = get_file_names()
+        self.calibration_file.setText(calib_file_name[0])
+        data_manager.calibration = read_calibration(calib_file_name[0])
+        self.update_data_list()
 
+    # Remove the calibration file
+    @error_wrapper
     def remove_calibration_file(self):
         logger.debug('Removing calibration curve')
         self.calibration_file.clear()
         data_manager.calibration = None
 
+    # Define right click behaviour
+    @error_wrapper
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
@@ -628,25 +620,20 @@ class App(QMainWindow):
             self.update_data_list()
             self.update_condition_data_list()
 
-    # Function: Update the main plot
+    # Update the main plot
+    @error_wrapper
     def update_plot(self):
+        self.update_config()
         logger.debug('Updating the main plot')
-        try:
-            self.plot.plot()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.plot.plot()
 
-    # Function: Save the main plot
+    # Save the main plot
+    @error_wrapper
     def save_plot(self):
         logger.info('Saving the plot')
-        try:
-            self.plot.save()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.plot.save()
 
-    # Function: Update the list of data files and associated options
+    # Update the list of data files and associated options
     def update_data_list(self):
         logger.debug('Updating the list of data files')
         self.data_list.clear()
@@ -742,6 +729,7 @@ class App(QMainWindow):
         self.load = LoadWindow(self, row)
         self.load.show()
 
+    @error_wrapper
     def download_template(self):
         logger.debug('Downloading ADA data template')
         template = ['Name,,Title,,Reactor,,Profile,\n',
@@ -754,11 +742,14 @@ class App(QMainWindow):
                 csvfile.write(row)
 
     # Function: Toggle cursor on and off
+    @error_wrapper
     def toggle_cursor(self):
         config.do_fit = False
         config.cursor = not config.cursor
+        self.update_plot()
 
     # Open window for fitting data
+    @error_wrapper
     def fit_curve(self):
         if not config.do_fit:
             logger.debug('Opening fit window')
@@ -769,19 +760,24 @@ class App(QMainWindow):
             self.update_plot()
 
     # Open window for creating a data table
+    @error_wrapper
     def create_table(self):
+        self.update_config()
         logger.debug('Opening table window')
         self.table = TableWindow(self)
         self.table.show()
 
     # Function: Open window for exporting data to csv format
+    @error_wrapper
     def export_files(self):
         logger.debug('Opening export window')
         self.export = ExportWindow(self)
         self.export.show()
 
     # Open window for evaluating correlations
+    @error_wrapper
     def open_correlation(self):
+        self.update_config()
         logger.debug('Opening correlation window')
         self.correlation = CorrelationWindow(self)
         self.correlation.show()

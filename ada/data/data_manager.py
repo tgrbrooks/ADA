@@ -271,8 +271,6 @@ class DataManager():
     def get_fit_data(self, index, signal_name=None, fit_from=None, fit_to=None):
         if signal_name is None:
             signal_name = config.yvar
-        if fit_name is None:
-            fit_name = config.fit_type
         if fit_from is None:
             fit_from = config.fit_from
         if fit_to is None:

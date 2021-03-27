@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QLabel, QWidget,
                              QPushButton, QComboBox, QLineEdit, QHBoxLayout)
 
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.components.label import Label
 from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
@@ -86,7 +86,7 @@ class FitWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-
+    @error_wrapper
     def render_bounds(self):
         self.bounds = []
         for i in reversed(range(self.bound_layout.count())): 
@@ -106,6 +106,7 @@ class FitWindow(QMainWindow):
 
 
     # Add the fit info to the configuration
+    @error_wrapper
     def fit(self):
         config.do_fit = True
         config.fit_curve = self.curve_option.currentText()

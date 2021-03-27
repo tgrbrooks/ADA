@@ -11,7 +11,7 @@ from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 from ada.components.user_input import TextEntry, DropDown, CheckBox
 from ada.components.button import Button, BigButton
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
 import ada.styles as styles
@@ -127,7 +127,6 @@ class CorrelationWindow(QMainWindow):
 
         # Plot button
         plot_button = Button('Plot', self)
-        plot_button.clicked.connect(self.parent.update_config)
         plot_button.clicked.connect(self.update_plot)
         config_layout.addWidget(plot_button)
 
@@ -168,7 +167,9 @@ class CorrelationWindow(QMainWindow):
         self.param.addItems(model.params)
 
     # Function: Update the correlation plot
+    @error_wrapper
     def update_plot(self):
+        self.parent.update_config()
         logger.debug('Updating the correlation plot')
         self.plot_config.clear()
         # Process the data here
@@ -176,11 +177,11 @@ class CorrelationWindow(QMainWindow):
                                        self.condition.currentText(),
                                        self.start_t.get_float(),
                                        self.end_t.get_float())
-        y_data, y_error = data_manager.get_fit(self.data.currentText(),
+        y_data, y_error = data_manager.get_all_fit_params(self.data.currentText(),
                                   self.fit.currentText(),
-                                  self.param.currentText(),
                                   self.start_t.get_float(),
-                                  self.end_t.get_float())
+                                  self.end_t.get_float(),
+                                  self.param.currentText())
         tunit = 's'
         if config.xvar == 'minutes':
             tunit = 'min'
@@ -236,17 +237,11 @@ class CorrelationWindow(QMainWindow):
             self.plot_config.correlation_coeff = corr_coef[1][0]
         else:
             self.plot_config.correlation_coeff = None
-        try:
-            self.plot.plot(self.plot_config)
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+
+        self.plot.plot(self.plot_config)
 
     # Function: Save the correlation plot
+    @error_wrapper
     def save_plot(self):
         logger.info('Saving the correlation plot')
-        try:
-            self.plot.save()
-        except Exception as e:
-            self.error = ErrorWindow(e, self)
-            self.error.show()
+        self.plot.save()
