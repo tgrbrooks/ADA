@@ -14,11 +14,7 @@ from ada.components.table_list_item import TableListItem
 from ada.components.button import Button
 from ada.components.list import List
 from ada.components.user_input import DropDown
-from ada.data.processor import (process_data, average_data,
-                                time_average)
-from ada.data.measurements import (
-    get_gradients, get_time_to, get_averages, get_condition_at, get_fit)
-from ada.data.models import get_model
+from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 
 import ada.configuration as config
@@ -107,8 +103,7 @@ class TableWindow(QMainWindow):
                                         table_list_item.widget)
             self.rows.append(table_list_item)
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()
 
     # Remove a row from the table
@@ -125,91 +120,86 @@ class TableWindow(QMainWindow):
     # Create table and write to file
     def make_table(self):
         logger.debug('Creating the table')
-        try:
-            # Get the column headings from the data file names
-            column_headings = self.get_headings()
-            # Record the titles and data for each row
-            row_titles = []
-            row_data = []
-            tunit = 's'
-            if config.xvar == 'minutes':
-                tunit = 'min'
-            if config.xvar == 'hours':
-                tunit = 'hr'
-            if config.xvar == 'days':
-                tunit = 'day'
-            # Loop over the rows
-            for row in self.rows:
-                # Determine the type of data
-                if row.type == 'profile':
-                    row_titles.append('Profile')
-                    row_data.append([self.parent.data.get_profiles()])
-                if row.type == 'reactor':
-                    row_titles.append('Reactor')
-                    row_data.append([self.parent.data.get_reactors()])
-                if row.type == 'gradient':
-                    row_titles.append('Gradient of %s at between %s and %s'
-                                      % (row.data.currentText(),
-                                         row.grad_from.text(),
-                                         row.grad_to.text()))
-                    gradients = get_gradients(self.parent.data,
-                                              row.data.currentText(),
-                                              row.grad_from.get_float(),
-                                              row.grad_to.get_float())
-                    row_data.append([gradients])
-                if row.type == 'time to':
-                    row_titles.append('Time (%s) to %s of %s'
-                                      % (tunit,
-                                         row.data.currentText(),
-                                         row.time_to.text()))
-                    time_to = get_time_to(self.parent.data, row.data.currentText(),
-                                          row.time_to.get_float())
-                    row_data.append([time_to])
-                if row.type == 'average of condition':
-                    row_titles.append('Average of %s between %s and %s %s'
-                                      % (row.condition.currentText(),
-                                         row.start_t.text(),
-                                         row.end_t.text(),
-                                         tunit))
-                    average, _ = get_averages(self.parent.condition_data, self.parent.data,
-                                              row.condition.currentText(),
-                                              row.start_t.get_float(),
-                                              row.end_t.get_float())
-                    row_data.append([average])
-                if row.type == 'condition at time':
-                    row_titles.append('%s at time %s %s'
-                                      % (row.condition.currentText(),
-                                         row.time.text(),
-                                         tunit))
-                    condition = get_condition_at(self.parent.condition_data, self.parent.data,
-                                                 row.condition.currentText(),
-                                                 row.time.get_float())
-                    row_data.append([condition])
-                if row.type == 'fit parameter':
-                    row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
-                                      % (row.fit.currentText(),
-                                         row.data.currentText(),
-                                         row.fit_from.text(),
-                                         row.fit_to.text(),
-                                         tunit,
-                                         row.param.currentText()))
-                    fit_result, fit_error = get_fit(self.parent.data, row.data.currentText(),
-                                                    row.fit.currentText(),
-                                                    row.param.currentText(),
-                                                    row.fit_from.get_float(),
-                                                    row.fit_to.get_float())
-                    if row.show_error.isChecked():
-                        row_data.append([fit_result, fit_error])
-                    else:
-                        row_data.append([fit_result])
-            self.header = column_headings
-            self.titles = row_titles
-            self.data = row_data
-            self.show_table()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        # Get the column headings from the data file names
+        column_headings = self.get_headings()
+        # Record the titles and data for each row
+        row_titles = []
+        row_data = []
+        tunit = 's'
+        if config.xvar == 'minutes':
+            tunit = 'min'
+        if config.xvar == 'hours':
+            tunit = 'hr'
+        if config.xvar == 'days':
+            tunit = 'day'
+        # Loop over the rows
+        for row in self.rows:
+            # Determine the type of data
+            if row.type == 'profile':
+                row_titles.append('Profile')
+                row_data.append([self.parent.data.get_profiles()])
+            if row.type == 'reactor':
+                row_titles.append('Reactor')
+                row_data.append([self.parent.data.get_reactors()])
+            if row.type == 'gradient':
+                row_titles.append('Gradient of %s at between %s and %s'
+                                  % (row.data.currentText(),
+                                     row.grad_from.text(),
+                                     row.grad_to.text()))
+                gradients = data_manager.get_gradients(
+                    row.data.currentText(),
+                    row.grad_from.get_float(),
+                    row.grad_to.get_float())
+                row_data.append([gradients])
+            if row.type == 'time to':
+                row_titles.append('Time (%s) to %s of %s'
+                                  % (tunit,
+                                     row.data.currentText(),
+                                     row.time_to.text()))
+                time_to = data_manager.get_time_to(row.data.currentText(),
+                                                   row.time_to.get_float())
+                row_data.append([time_to])
+            if row.type == 'average of condition':
+                row_titles.append('Average of %s between %s and %s %s'
+                                  % (row.condition.currentText(),
+                                     row.start_t.text(),
+                                     row.end_t.text(),
+                                     tunit))
+                average, _ = data_manager.get_averages(
+                    row.condition.currentText(),
+                    row.start_t.get_float(),
+                    row.end_t.get_float())
+                row_data.append([average])
+            if row.type == 'condition at time':
+                row_titles.append('%s at time %s %s'
+                                  % (row.condition.currentText(),
+                                     row.time.text(),
+                                     tunit))
+                condition = data_manager.get_condition_at(
+                    row.condition.currentText(),
+                    row.time.get_float())
+                row_data.append([condition])
+            if row.type == 'fit parameter':
+                row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
+                                  % (row.fit.currentText(),
+                                     row.data.currentText(),
+                                     row.fit_from.text(),
+                                     row.fit_to.text(),
+                                     tunit,
+                                     row.param.currentText()))
+                fit_result, fit_error = data_manager.get_fit(row.data.currentText(),
+                                                             row.fit.currentText(),
+                                                             row.param.currentText(),
+                                                             row.fit_from.get_float(),
+                                                             row.fit_to.get_float())
+                if row.show_error.isChecked():
+                    row_data.append([fit_result, fit_error])
+                else:
+                    row_data.append([fit_result])
+        self.header = column_headings
+        self.titles = row_titles
+        self.data = row_data
+        self.show_table()
 
     def get_headings(self):
         logger.debug('Getting the table row headings')
@@ -259,6 +249,5 @@ class TableWindow(QMainWindow):
                     writer.writerow(row)
             self.close()
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()

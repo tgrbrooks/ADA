@@ -7,14 +7,15 @@ from ada.logger import logger
 
 class ErrorWindow(QMainWindow):
 
-    def __init__(self, message, parent=None):
+    def __init__(self, error, parent=None):
         super(ErrorWindow, self).__init__(parent)
         self.title = 'Error'
         self.width = 250*config.wr
         self.height = 100*config.hr
         logger.debug('Creating error window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
-        self.message = message
+        logger.exception(error)
+        self.message = str(error)
         self.initUI()
 
     def initUI(self):

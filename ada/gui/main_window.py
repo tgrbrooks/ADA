@@ -10,7 +10,7 @@ from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
-from ada.data.data_holder import DataHolder
+from ada.data.data_manager import data_manager
 from ada.reader.read_calibration import read_calibration
 from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
 from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
@@ -44,10 +44,6 @@ class App(QMainWindow):
         self.height = 600 * config.wr
         logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
-        # Container for data
-        self.data = DataHolder()
-        # Container for condition data
-        self.condition_data = DataHolder()
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
@@ -598,11 +594,10 @@ class App(QMainWindow):
     def open_data_files(self):
         logger.debug('Opening data files')
         try:
-            self.load = LoadWindow(self, self.data, self.condition_data)
+            self.load = LoadWindow(self)
             self.load.show()
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()
 
     # Function: Open and read in calibration
@@ -612,36 +607,34 @@ class App(QMainWindow):
             self.calibration_file.clear()
             calib_file_name = get_file_names()
             self.calibration_file.setText(calib_file_name[0])
-            self.data.calibration = read_calibration(calib_file_name[0])
+            data_manager.calibration = read_calibration(calib_file_name[0])
             self.update_data_list()
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()
 
     def remove_calibration_file(self):
         logger.debug('Removing calibration curve')
         self.calibration_file.clear()
-        self.data.calibration = None
+        data_manager.calibration = None
 
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
         if action == self.clear_action:
             logger.debug('Clearing all data')
-            self.data.clear()
+            data_manager.clear()
+            self.remove_calibration_file()
             self.update_data_list()
-            self.condition_data.clear()
             self.update_condition_data_list()
 
     # Function: Update the main plot
     def update_plot(self):
         logger.debug('Updating the main plot')
         try:
-            self.plot.plot(self.data, self.condition_data)
+            self.plot.plot()
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()
 
     # Function: Save the main plot
@@ -650,8 +643,7 @@ class App(QMainWindow):
         try:
             self.plot.save()
         except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
+            self.error = ErrorWindow(e, self)
             self.error.show()
 
     # Function: Update the list of data files and associated options
@@ -660,7 +652,7 @@ class App(QMainWindow):
         self.data_list.clear()
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
-        for i, data in enumerate(self.data.data_files):
+        for i, data in enumerate(data_manager.get_growth_data_files()):
             data_list_item = DataListItem(data.label, i, self)
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
@@ -676,7 +668,7 @@ class App(QMainWindow):
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
-            if contains_od and not contains_cd and self.data.calibration is not None:
+            if contains_od and not contains_cd and data_manager.calibration is not None:
                 self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options
@@ -685,7 +677,7 @@ class App(QMainWindow):
         self.condition_data_list.clear()
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
-        for i, data in enumerate(self.condition_data.data_files):
+        for i, data in enumerate(data_manager.get_condition_data_files()):
             data_list_item = ConditionListItem(data.label, self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
@@ -716,10 +708,10 @@ class App(QMainWindow):
     def remove_item(self):
         row = self.get_data_row()
         logger.debug('Removing data list item %i' % row)
-        for i, _ in enumerate(self.data.data_files):
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_data(i)
+            data_manager.growth_data.delete_data(i)
         self.update_data_list()
 
     # Function: Remove file from list of data
@@ -727,27 +719,27 @@ class App(QMainWindow):
         row = self.get_data_row()
         logger.debug('Removing replicate %i from data list item %i' %
                      (index, row))
-        for i, _ in enumerate(self.data.data_files):
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_replicate(i, index)
+            data_manager.growth_data.delete_replicate(i, index)
         self.update_data_list()
 
     # Function: Remove file from list of condition data
     def remove_condition_item(self):
         row = self.get_condition_row()
         logger.debug('Removing condition data list item %i' % row)
-        for i, _ in enumerate(self.condition_data.data_files):
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
             if i != row:
                 continue
-            self.condition_data.delete_data(i)
+            data_manager.condition_data.delete_data(i)
         self.update_condition_data_list()
 
     def add_to_item(self):
         row = self.get_data_row()
         logger.debug('Adding replicate to data list item %i' % row)
         # Open file with file handler
-        self.load = LoadWindow(self, self.data, self.condition_data, row)
+        self.load = LoadWindow(self, row)
         self.load.show()
 
     def download_template(self):

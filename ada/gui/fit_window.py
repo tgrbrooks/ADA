@@ -10,6 +10,7 @@ from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
 from ada.components.spacer import Spacer
 from ada.data.models import get_model
+from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 import ada.configuration as config
 import ada.styles as styles
@@ -22,7 +23,7 @@ class FitWindow(QMainWindow):
     def __init__(self, parent=None):
         super(FitWindow, self).__init__(parent)
         self.title = 'Fit Curve'
-        self.width = 250*config.wr
+        self.width = 200*config.wr
         self.height = 150*config.hr
         logger.debug('Creating fit window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
@@ -45,7 +46,7 @@ class FitWindow(QMainWindow):
 
         # List of row options
         self.curve_option = DropDown('Data:', [], self)
-        for data in self.parent.data.data_files:
+        for data in data_manager.get_growth_data_files():
             self.curve_option.addItem(data.label)
         fit_layout.addWidget(self.curve_option)
 

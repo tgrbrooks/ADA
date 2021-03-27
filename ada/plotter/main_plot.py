@@ -17,11 +17,10 @@ from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
-from ada.data.data_holder import DataHolder
 from ada.plotter.cursor import Cursor, SnapToCursor
-from ada.data.processor import (process_data, average_data,
-                                   time_average, exponent_text)
 from ada.data.models import get_model
+from ada.data.data_manager import data_manager
+from ada.data.processor import (process_data, time_average, average_data)
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -53,15 +52,10 @@ class PlotCanvas(FigureCanvasQTAgg):
                                         QSizePolicy.Expanding,
                                         QSizePolicy.Expanding)
         FigureCanvasQTAgg.updateGeometry(self)
-        empty_data = DataHolder()
-        empty_condition = DataHolder()
-        self.plot(empty_data, empty_condition)
+        self.plot()
 
-    def plot(self, data, condition_data):
+    def plot(self):
         logger.debug('Creating plot')
-
-        self.data = data
-        self.condition_data = condition_data
 
         # Reset the plot and configure the base style
         logger.debug('Resetting plot and configuring style')
@@ -71,21 +65,21 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.set_axes_style()
 
         # Return an empty plot if there's no data
-        if(data.empty and condition_data.empty):
+        if(data_manager.growth_data.empty and data_manager.condition_data.empty):
             logger.debug('No data present')
             self.axes.set_title('Empty plot')
             self.draw()
             return
 
         # Plot the condition data on a separate axis if it exists
-        if not condition_data.empty:
+        if not data_manager.condition_data.empty:
             logger.debug('Plotting condition data')
             self.create_condition_axis()
 
-        self.plot_condition_data(condition_data)
+        self.plot_condition_data()
 
         # Configure the axis range
-        if not condition_data.empty:
+        if not data_manager.condition_data.empty:
             self.set_condition_range()
 
         self.x_title = ''
@@ -93,15 +87,15 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.xdata_list = []
         self.ydata_list = []
         self.yerr_list = []
-        self.plot_data(data)
+        self.plot_data()
 
         logger.debug('Creating events')
-        self.create_events(data)
+        self.create_events()
 
         # If we're fitting the data
         if config.do_fit:
             logger.debug('Fitting the data')
-            self.fit_data(data)
+            self.fit_data()
 
         # Switch grid on/off
         self.axes.grid(config.grid)
@@ -182,9 +176,9 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.condition_axes.yaxis.label.set_color(caxis_colour)
         return
 
-    def plot_condition_data(self, condition_data):
+    def plot_condition_data(self):
         # Loop over the condition data files
-        for i, cdata in enumerate(condition_data.data_files):
+        for i, cdata in enumerate(data_manager.get_condition_data_files()):
             # Get the x data in the right time units
             condition_xdata = cdata.get_xdata(config.xvar)
 
@@ -233,16 +227,16 @@ class PlotCanvas(FigureCanvasQTAgg):
                                              label=legend_label)
                 self.plot_list.append([condition_plot[0]])
 
-    def plot_data(self, data):
-        for i, dat in enumerate(data.data_files):
+    def plot_data(self):
+        for i, data in enumerate(data_manager.get_growth_data_files()):
             # Convert the units of time if needed
-            xdata = dat.get_xdata(config.xvar)
-            self.x_title = dat.get_xtitle(
+            xdata = data.get_xdata(config.xvar)
+            self.x_title = data.get_xtitle(
                 config.xvar, config.xname, config.xunit)
             # Get the y axis data for plotting
-            ydata = dat.get_ydata(config.yvar, data.calibration)
-            self.y_title = dat.get_ytitle(
-                config.yvar, config.yname, config.yunit, data.calibration, config.ynormlog)
+            ydata = data.get_ydata(config.yvar, data_manager.calibration)
+            self.y_title = data.get_ytitle(
+                config.yvar, config.yname, config.yunit, data_manager.calibration, config.ynormlog)
 
             # Apply alignment, outlier removal, and smoothing
             xdata, ydata = process_data(xdata, ydata)
@@ -250,19 +244,16 @@ class PlotCanvas(FigureCanvasQTAgg):
             legend_label = config.label_names[i]
             if(config.extra_info != 'none' and not config.only_extra):
                 legend_label = (legend_label + ' ('
-                                + dat.get_header_info(config.extra_info) + ')')
+                                + data.get_header_info(config.extra_info) + ')')
             elif(config.extra_info != 'none' and config.only_extra):
-                legend_label = dat.get_header_info(config.extra_info)
+                legend_label = data.get_header_info(config.extra_info)
 
             # If there are replicate files then average the data
-            if(len(data.replicate_files[i]) > 1):
+            if(data_manager.num_replicates(i) > 1):
                 xdatas = [xdata]
                 ydatas = [ydata]
-                for j in range(1, len(data.replicate_files[i]), 1):
-                    rep_xdata = data.replicate_files[i][j].get_xdata(
-                        config.xvar)
-                    rep_ydata = data.replicate_files[i][j].get_ydata(
-                        config.yvar, data.calibration)
+                for j in range(1, data_manager.num_replicates(i), 1):
+                    rep_xdata, rep_ydata = data_manager.get_replicate_data(i, j, config.xvar, config.yvar)
                     rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
                     xdatas.append(rep_xdata)
                     ydatas.append(rep_ydata)
@@ -291,7 +282,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.xdata_list.append(xdata)
             self.ydata_list.append(ydata)
 
-    def create_events(self, data):
+    def create_events(self):
         # Show event information
         self.event_annotation = self.axes.annotate('',
                                                    xy=(0, 0),
@@ -305,7 +296,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         annotation_xpos = []
         annotation_ypos = []
         if config.show_events:
-            for i, data in enumerate(data.data_files):
+            for i, data in enumerate(data_manager.get_growth_data_files()):
                 for data_event in data.events:
                     event_label = data_event.datetime.strftime(
                         '%d/%m/%Y %H:%M:%S')
@@ -323,12 +314,12 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                    c='black')
         return
 
-    def fit_data(self, data):
+    def fit_data(self):
         logger.debug('Fitting %s with %s' %
                      (config.fit_curve, config.fit_type))
         # Find the curve to fit
         fit_index = -1
-        for i, dat in enumerate(data.data_files):
+        for i, dat in enumerate(data_manager.get_growth_data_files()):
             if config.fit_curve == dat.label:
                 fit_index = i
         fit_x = self.xdata_list[fit_index]
@@ -337,13 +328,6 @@ class PlotCanvas(FigureCanvasQTAgg):
         # If the data hasn't been found
         if fit_index == -1:
             return
-
-        # Only fit the data in the given range
-        if config.fit_from != config.fit_to:
-            from_index = np.abs(fit_x - config.fit_from).argmin()
-            to_index = np.abs(fit_x - config.fit_to).argmin()
-            fit_x = fit_x[from_index:to_index]
-            fit_y = fit_y[from_index:to_index]
 
         x_unit = ''
         if(len(self.x_title.split('[')) > 1):
@@ -355,16 +339,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         model = get_model(config.fit_type, x_unit, y_unit)
         func = model.func()
 
-        # If there are replicate files then average the data
-        if(len(data.replicate_files[fit_index]) > 1):
-            fit_sigma = self.yerr_list[fit_index]
-            fit_sigma = fit_sigma[from_index:to_index]
-            fit_result, covm = curve_fit(func, fit_x, fit_y, p0=config.fit_start, sigma=fit_sigma, bounds=(
-                config.fit_min, config.fit_max))
-        else:
-            fit_result, covm = curve_fit(
-                func, fit_x, fit_y, bounds=(config.fit_min, config.fit_max))
-
+        fit_result, covm = data_manager.get_fit(fit_index, config.yvar, config.fit_type, config.fit_from, config.fit_to)
         self.axes.plot(fit_x, func(fit_x, *fit_result),
                        '-', color='r', label='Fit')
 
