@@ -32,7 +32,6 @@ class TableWindow(QMainWindow):
         self.height = 330*config.hr
         logger.debug('Creating table window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
-        self.parent = parent
         self.rows = []
         self.initUI()
 
@@ -117,6 +116,90 @@ class TableWindow(QMainWindow):
         self.row_list.takeItem(row)
         self.rows.pop(row)
 
+    def get_row_title(self, row):
+        tunit = 's'
+        if config.xvar == 'minutes':
+            tunit = 'min'
+        if config.xvar == 'hours':
+            tunit = 'hr'
+        if config.xvar == 'days':
+            tunit = 'day'
+        row_title = ''
+        # Determine the type of data
+        if row.type == 'profile':
+            row_title = 'Profile'
+        if row.type == 'reactor':
+            row_title = 'Reactor'
+        if row.type == 'gradient':
+            row_title = ('Gradient of %s at between %s and %s'
+                         % (row.data.currentText(),
+                            row.grad_from.text(),
+                            row.grad_to.text()))
+        if row.type == 'time to':
+            row_title = ('Time (%s) to %s of %s'
+                         % (tunit,
+                            row.data.currentText(),
+                            row.time_to.text()))
+        if row.type == 'average of condition':
+            row_title = ('Average of %s between %s and %s %s'
+                         % (row.condition.currentText(),
+                            row.start_t.text(),
+                            row.end_t.text(),
+                            tunit))
+        if row.type == 'condition at time':
+            row_title = ('%s at time %s %s'
+                         % (row.condition.currentText(),
+                            row.time.text(),
+                            tunit))
+        if row.type == 'fit parameter':
+            row_title = ('%s fit of %s between %s and %s %s, parameter %s'
+                         % (row.fit.currentText(),
+                            row.data.currentText(),
+                            row.fit_from.text(),
+                            row.fit_to.text(),
+                            tunit,
+                            row.param.currentText()))
+        return row_title
+
+    def get_row_data(self, row):
+        row_data = []
+        if row.type == 'profile':
+            row_data = [data_manager.growth_data.get_profiles()]
+        if row.type == 'reactor':
+            row_data = [data_manager.growth_data.get_reactors()]
+        if row.type == 'gradient':
+            gradients = data_manager.get_gradients(
+                row.data.currentText(),
+                row.grad_from.get_float(),
+                row.grad_to.get_float())
+            row_data = [gradients]
+        if row.type == 'time to':
+            time_to = data_manager.get_time_to(row.data.currentText(),
+                                               row.time_to.get_float())
+            row_data = [time_to]
+        if row.type == 'average of condition':
+            average, _ = data_manager.get_averages(
+                row.condition.currentText(),
+                row.start_t.get_float(),
+                row.end_t.get_float())
+            row_data = [average]
+        if row.type == 'condition at time':
+            condition = data_manager.get_condition_at(
+                row.condition.currentText(),
+                row.time.get_float())
+            row_data = [condition]
+        if row.type == 'fit parameter':
+            fit_result, fit_error = data_manager.get_fit(row.data.currentText(),
+                                                         row.fit.currentText(),
+                                                         row.param.currentText(),
+                                                         row.fit_from.get_float(),
+                                                         row.fit_to.get_float())
+            if row.show_error.isChecked():
+                row_data = [fit_result, fit_error]
+            else:
+                row_data = [fit_result]
+        return row_data
+
     # Create table and write to file
     def make_table(self):
         logger.debug('Creating the table')
@@ -125,77 +208,10 @@ class TableWindow(QMainWindow):
         # Record the titles and data for each row
         row_titles = []
         row_data = []
-        tunit = 's'
-        if config.xvar == 'minutes':
-            tunit = 'min'
-        if config.xvar == 'hours':
-            tunit = 'hr'
-        if config.xvar == 'days':
-            tunit = 'day'
         # Loop over the rows
         for row in self.rows:
-            # Determine the type of data
-            if row.type == 'profile':
-                row_titles.append('Profile')
-                row_data.append([self.parent.data.get_profiles()])
-            if row.type == 'reactor':
-                row_titles.append('Reactor')
-                row_data.append([self.parent.data.get_reactors()])
-            if row.type == 'gradient':
-                row_titles.append('Gradient of %s at between %s and %s'
-                                  % (row.data.currentText(),
-                                     row.grad_from.text(),
-                                     row.grad_to.text()))
-                gradients = data_manager.get_gradients(
-                    row.data.currentText(),
-                    row.grad_from.get_float(),
-                    row.grad_to.get_float())
-                row_data.append([gradients])
-            if row.type == 'time to':
-                row_titles.append('Time (%s) to %s of %s'
-                                  % (tunit,
-                                     row.data.currentText(),
-                                     row.time_to.text()))
-                time_to = data_manager.get_time_to(row.data.currentText(),
-                                                   row.time_to.get_float())
-                row_data.append([time_to])
-            if row.type == 'average of condition':
-                row_titles.append('Average of %s between %s and %s %s'
-                                  % (row.condition.currentText(),
-                                     row.start_t.text(),
-                                     row.end_t.text(),
-                                     tunit))
-                average, _ = data_manager.get_averages(
-                    row.condition.currentText(),
-                    row.start_t.get_float(),
-                    row.end_t.get_float())
-                row_data.append([average])
-            if row.type == 'condition at time':
-                row_titles.append('%s at time %s %s'
-                                  % (row.condition.currentText(),
-                                     row.time.text(),
-                                     tunit))
-                condition = data_manager.get_condition_at(
-                    row.condition.currentText(),
-                    row.time.get_float())
-                row_data.append([condition])
-            if row.type == 'fit parameter':
-                row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
-                                  % (row.fit.currentText(),
-                                     row.data.currentText(),
-                                     row.fit_from.text(),
-                                     row.fit_to.text(),
-                                     tunit,
-                                     row.param.currentText()))
-                fit_result, fit_error = data_manager.get_fit(row.data.currentText(),
-                                                             row.fit.currentText(),
-                                                             row.param.currentText(),
-                                                             row.fit_from.get_float(),
-                                                             row.fit_to.get_float())
-                if row.show_error.isChecked():
-                    row_data.append([fit_result, fit_error])
-                else:
-                    row_data.append([fit_result])
+            row_titles.append(self.get_row_title(row))
+            row_data.append(self.get_row_data(row))
         self.header = column_headings
         self.titles = row_titles
         self.data = row_data
@@ -204,7 +220,7 @@ class TableWindow(QMainWindow):
     def get_headings(self):
         logger.debug('Getting the table row headings')
         headings = ['File']
-        for data in self.parent.data.data_files:
+        for data in data_manager.growth_data.data_files:
             headings.append(data.label)
         return headings
 

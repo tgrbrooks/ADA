@@ -71,7 +71,7 @@ class CorrelationWindow(QMainWindow):
         self.condition = DropDown('X-axis: Average of', [], self)
         if len(data_manager.get_condition_data_files()) > 0:
             for sig in data_manager.get_condition_variables():
-                self.condition.addItem(sig.name)
+                self.condition.addItem(sig)
         config_layout.addWidget(self.condition)
 
         # Y axis selection = growth related measurement
@@ -79,7 +79,7 @@ class CorrelationWindow(QMainWindow):
         self.data = DropDown('Y-axis:', [], self)
         if len(data_manager.get_growth_data_files()) > 0:
             for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig.name)
+                self.data.addItem(sig)
         config_layout.addWidget(self.data)
 
         # Choice of fit and fit parameter

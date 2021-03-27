@@ -40,7 +40,9 @@ class DataManager():
         if len(self.growth_data.data_files) == 0:
             return variables
         for sig in self.growth_data.data_files[0].signals:
-            variables.append(sig)
+            variables.append(sig.name)
+        if self.calibration is not None and 'CD' not in variables:
+            variables.append('CD')
         return variables
 
     def get_condition_variables(self):
@@ -48,7 +50,7 @@ class DataManager():
         if len(self.condition_data.data_files) == 0:
             return variables
         for sig in self.condition_data.data_files[0].signals:
-            variables.append(sig)
+            variables.append(sig.name)
         return variables
 
     def get_growth_unit(self, name):
