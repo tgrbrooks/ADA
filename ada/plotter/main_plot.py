@@ -20,7 +20,6 @@ import matplotlib as mpl
 from ada.plotter.cursor import Cursor, SnapToCursor
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
-from ada.data.processor import (process_data, time_average, average_data)
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
@@ -75,18 +74,14 @@ class PlotCanvas(FigureCanvasQTAgg):
         if not data_manager.condition_data.empty:
             logger.debug('Plotting condition data')
             self.create_condition_axis()
-
-        self.plot_condition_data()
-
-        # Configure the axis range
-        if not data_manager.condition_data.empty:
+            self.plot_condition_data()
+            # Configure the axis range
             self.set_condition_range()
 
         self.x_title = ''
         self.y_title = ''
         self.xdata_list = []
         self.ydata_list = []
-        self.yerr_list = []
         self.plot_data()
 
         logger.debug('Creating events')
@@ -178,94 +173,40 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def plot_condition_data(self):
         # Loop over the condition data files
-        for i, cdata in enumerate(data_manager.get_condition_data_files()):
-            # Get the x data in the right time units
-            condition_xdata = cdata.get_xdata(config.xvar)
-
-            # Get the desired condition data and configure title
-            condition_ydata = cdata.get_signal(config.condition_yvar)
-            condition_y_title = cdata.get_ytitle(
-                config.condition_yvar, config.condition_yname, config.condition_yunit)
-            self.condition_axes.set_ylabel(condition_y_title)
-
-            # Get the legend label with any extra info specified in
-            # the configuration
-            legend_label = config.condition_label_names[i]
-            if (config.condition_extra_info != 'none' and not
-                    config.condition_only_extra):
-                legend_label = \
-                    (legend_label + ' ('
-                     + cdata.get_header_info(config.condition_extra_info)
-                     + ')')
-            elif (config.condition_extra_info != 'none' and
-                    config.condition_only_extra):
-                legend_label = \
-                    cdata.get_header_info(config.condition_extra_info)
+        for i in range(data_manager.num_condition_files()):
+            # Get the condition data in the right time units. averaging if required
+            xdata, ydata, yerr = data_manager.get_condition_data(i)
+            ytitle = data_manager.get_condition_ytitle(i)
+            self.condition_axes.set_ylabel(ytitle)
+            legend_label = data_manager.get_condition_legend(i)
 
             # Plot the condition data with different colour cycle
             col = 'r'
-            if(i < len(config.conf_colors)):
+            if i < len(config.conf_colors):
                 col = config.conf_colors[i]
 
-            # Average condition data over time
-            if(config.condition_average != -1):
-                # Do something
-                condition_xdata, condition_ydata, condition_yerr = \
-                    time_average(condition_xdata, condition_ydata,
-                                 config.condition_average, config.std_err)
+            if yerr is not None:
                 condition_plot = \
-                    self.condition_axes.errorbar(condition_xdata,
-                                                 condition_ydata,
-                                                 condition_yerr, fmt='--',
+                    self.condition_axes.errorbar(xdata,
+                                                 ydata,
+                                                 yerr, fmt='--',
                                                  capsize=2, color=col,
                                                  label=legend_label)
                 self.plot_list.append([condition_plot[0]])
             else:
                 condition_plot = \
-                    self.condition_axes.plot(condition_xdata, condition_ydata,
+                    self.condition_axes.plot(xdata, ydata,
                                              '--', color=col,
                                              label=legend_label)
                 self.plot_list.append([condition_plot[0]])
 
     def plot_data(self):
-        for i, data in enumerate(data_manager.get_growth_data_files()):
-            # Convert the units of time if needed
-            xdata = data.get_xdata(config.xvar)
-            self.x_title = data.get_xtitle(
-                config.xvar, config.xname, config.xunit)
-            # Get the y axis data for plotting
-            ydata = data.get_ydata(config.yvar, data_manager.calibration)
-            self.y_title = data.get_ytitle(
-                config.yvar, config.yname, config.yunit, data_manager.calibration, config.ynormlog)
+        for i in range(data_manager.num_growth_files()):
+            xdata, ydata, yerr = data_manager.get_xy_data(i, config.yvar)
+            self.x_title, self.y_title = data_manager.get_titles(i)
+            legend_label = data_manager.get_growth_legend(i)
 
-            # Apply alignment, outlier removal, and smoothing
-            xdata, ydata = process_data(xdata, ydata)
-
-            legend_label = config.label_names[i]
-            if(config.extra_info != 'none' and not config.only_extra):
-                legend_label = (legend_label + ' ('
-                                + data.get_header_info(config.extra_info) + ')')
-            elif(config.extra_info != 'none' and config.only_extra):
-                legend_label = data.get_header_info(config.extra_info)
-
-            # If there are replicate files then average the data
-            if(data_manager.num_replicates(i) > 1):
-                xdatas = [xdata]
-                ydatas = [ydata]
-                for j in range(1, data_manager.num_replicates(i), 1):
-                    rep_xdata, rep_ydata = data_manager.get_replicate_data(i, j, config.xvar, config.yvar)
-                    rep_xdata, rep_ydata = process_data(rep_xdata, rep_ydata)
-                    xdatas.append(rep_xdata)
-                    ydatas.append(rep_ydata)
-
-                xdata, ydata, yerr = average_data(xdatas, ydatas,
-                                                  config.std_err)
-
-                if config.ynormlog:
-                    yerr = yerr/ydata
-                    ydata = np.log(ydata/ydata[0])
-                self.yerr_list.append(yerr)
-
+            if yerr is not None:
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr,
@@ -322,24 +263,17 @@ class PlotCanvas(FigureCanvasQTAgg):
         for i, dat in enumerate(data_manager.get_growth_data_files()):
             if config.fit_curve == dat.label:
                 fit_index = i
-        fit_x = self.xdata_list[fit_index]
-        fit_y = self.ydata_list[fit_index]
-
         # If the data hasn't been found
         if fit_index == -1:
             return
 
-        x_unit = ''
-        if(len(self.x_title.split('[')) > 1):
-            x_unit = (self.x_title.split('[')[1]).split(']')[0]
-        y_unit = ''
-        if(len(self.y_title.split('[')) > 1):
-            y_unit = (self.y_title.split('[')[1]).split(']')[0]
+        fit_x, fit_y = data_manager.get_fit_data(fit_index)
+        x_unit, y_unit = data_manager.get_units(fit_index)
 
         model = get_model(config.fit_type, x_unit, y_unit)
         func = model.func()
 
-        fit_result, covm = data_manager.get_fit(fit_index, config.yvar, config.fit_type, config.fit_from, config.fit_to)
+        fit_result, covm = data_manager.get_fit(fit_index)
         self.axes.plot(fit_x, func(fit_x, *fit_result),
                        '-', color='r', label='Fit')
 
@@ -445,7 +379,8 @@ class PlotCanvas(FigureCanvasQTAgg):
             def onpick(event):
                 if isinstance(event.artist, Text):
                     self.dragged = event.artist
-                    self.pick_pos = (event.mouseevent.xdata, event.mouseevent.ydata)
+                    self.pick_pos = (event.mouseevent.xdata,
+                                     event.mouseevent.ydata)
                 return True
 
             def onpress(event):
@@ -458,11 +393,13 @@ class PlotCanvas(FigureCanvasQTAgg):
                 return True
 
             def on_release_event(event):
-                if self.dragged is not None :
+                if self.dragged is not None:
                     old_pos = self.dragged.get_position()
                     inv = self.axes.transAxes.inverted()
-                    pick_pos = inv.transform(self.axes.transData.transform((self.pick_pos[0], self.pick_pos[1])))
-                    event_pos = inv.transform(self.axes.transData.transform((event.xdata, event.ydata)))
+                    pick_pos = inv.transform(self.axes.transData.transform(
+                        (self.pick_pos[0], self.pick_pos[1])))
+                    event_pos = inv.transform(
+                        self.axes.transData.transform((event.xdata, event.ydata)))
                     new_pos = (old_pos[0] + event_pos[0] - pick_pos[0],
                                old_pos[1] + event_pos[1] - pick_pos[1])
                     self.dragged.set_position(new_pos)

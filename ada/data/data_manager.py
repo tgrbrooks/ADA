@@ -26,8 +26,14 @@ class DataManager():
     def get_growth_data_files(self):
         return self.growth_data.data_files
 
+    def num_growth_files(self):
+        return len(self.get_growth_data_files())
+
     def get_condition_data_files(self):
         return self.condition_data.data_files
+
+    def num_condition_files(self):
+        return len(self.get_condition_data_files())
 
     def get_growth_variables(self):
         variables = []
@@ -65,7 +71,8 @@ class DataManager():
 
     def get_replicate_data(self, i, j, xvar, yvar):
         xdata = self.growth_data.replicate_files[i][j].get_xdata(xvar)
-        ydata = self.growth_data.replicate_files[i][j].get_ydata(yvar, self.calibration)
+        ydata = self.growth_data.replicate_files[i][j].get_ydata(
+            yvar, self.calibration)
         return xdata, ydata
 
     def get_xy_data(self, i, signal_name):
@@ -88,6 +95,36 @@ class DataManager():
         else:
             raise RuntimeError('No data found')
 
+    def get_xtitle(self, i):
+        return self.growth_data.data_files[i].get_xtitle(config.xvar, config.xname, config.xunit)
+
+    def get_ytitle(self, i):
+        return self.growth_data.data_files[i].get_ytitle(
+            config.yvar, config.yname, config.yunit, self.calibration, config.ynormlog)
+
+    def get_titles(self, i):
+        return self.get_xtitle(i), self.get_ytitle(i)
+
+    def get_units(self, i):
+        xtitle, ytitle = self.get_titles(i)
+        x_unit = ''
+        if(len(xtitle.split('[')) > 1):
+            x_unit = (xtitle.split('[')[1]).split(']')[0]
+        y_unit = ''
+        if(len(ytitle.split('[')) > 1):
+            y_unit = (ytitle.split('[')[1]).split(']')[0]
+        return x_unit, y_unit
+
+    def get_growth_legend(self, i):
+        legend_label = config.label_names[i]
+        if(config.extra_info != 'none' and not config.only_extra):
+            legend_label = (legend_label + ' ('
+                            + self.growth_data.data_files[i].get_header_info(config.extra_info) + ')')
+        elif(config.extra_info != 'none' and config.only_extra):
+            legend_label = self.growth_data.data_files[i].get_header_info(
+                config.extra_info)
+        return legend_label
+
     def get_condition_xy_data(self, i, cond_name):
         for cond in self.condition_data.data_files:
             if self.growth_data.data_files[i].reactor != cond.reactor:
@@ -105,11 +142,46 @@ class DataManager():
                     xdata, ydata, config.condition_average)
             return xdata, ydata
         raise RuntimeError('No condition data found for %s'
-                        % (self.growth_data.data_files[i].name))
+                           % (self.growth_data.data_files[i].name))
+
+    def get_condition_data(self, i):
+        xdata = self.condition_data.data_files[i].get_xdata(config.xvar)
+        ydata = self.condition_data.data_files[i].get_signal(
+            config.condition_yvar)
+        yerr = None
+        # Average condition data over time
+        if(config.condition_average != -1):
+            # Do something
+            xdata, ydata, yerr = \
+                time_average(
+                    xdata, ydata, config.condition_average, config.std_err)
+        return xdata, ydata, yerr
+
+    def get_condition_ytitle(self, i):
+        ytitle = self.condition_data.data_files[i].get_ytitle(
+            config.condition_yvar, config.condition_yname, config.condition_yunit)
+        return ytitle
+
+    def get_condition_legend(self, i):
+        # Get the legend label with any extra info specified in
+        # the configuration
+        legend_label = config.condition_label_names[i]
+        if (config.condition_extra_info != 'none' and not
+                config.condition_only_extra):
+            legend_label = \
+                (legend_label + ' ('
+                 + self.condition_data.data_files[i].get_header_info(config.condition_extra_info)
+                 + ')')
+        elif (config.condition_extra_info != 'none' and
+                config.condition_only_extra):
+            legend_label = \
+                self.condition_data.data_files[i].get_header_info(
+                    config.condition_extra_info)
+        return legend_label
 
     def get_gradients(self, signal_name, grad_from, grad_to):
         logger.debug('Getting gradient of %s from %.2f to %.2f' %
-                    (signal_name, grad_from, grad_to))
+                     (signal_name, grad_from, grad_to))
         gradients = []
         for i, _ in enumerate(self.growth_data.data_files):
             xdata, ydata, _ = self.get_xy_data(i, signal_name)
@@ -135,7 +207,7 @@ class DataManager():
 
     def get_time_to(self, signal_name, time_to):
         logger.debug('Getting the time to reach %s of %.2f' %
-                    (signal_name, time_to))
+                     (signal_name, time_to))
         times = []
         for i, _ in enumerate(self.growth_data.data_files):
             found = False
@@ -151,7 +223,7 @@ class DataManager():
 
     def get_averages(self, cond_name, start_t, end_t):
         logger.debug('Getting average of %s between time %.2f and %.2f' %
-                    (cond_name, start_t, end_t))
+                     (cond_name, start_t, end_t))
         averages = []
         errors = []
         for i, _ in enumerate(self.growth_data.data_files):
@@ -182,7 +254,8 @@ class DataManager():
         values = []
         errors = []
         for i, _ in enumerate(self.growth_data.data_files):
-            fit_result, covm = self.get_fit(i, signal_name, fit_name, fit_from, fit_to)
+            fit_result, covm = self.get_fit(
+                i, signal_name, fit_name, fit_from, fit_to)
             param_errors = np.sqrt(np.diag(covm))
 
             model = get_model(fit_name)
@@ -193,7 +266,16 @@ class DataManager():
                     errors.append(param_errors[i])
         return values, errors
 
-    def get_fit(self, index, signal_name, fit_name, fit_from, fit_to):
+    def get_fit_data(self, index, signal_name=None, fit_from=None, fit_to=None):
+        if signal_name is None:
+            signal_name = config.yvar
+        if fit_name is None:
+            fit_name = config.fit_type
+        if fit_from is None:
+            fit_from = config.fit_from
+        if fit_to is None:
+            fit_to = config.fit_to
+
         fit_x, fit_y, fit_sigma = self.get_xy_data(index, signal_name)
 
         # Only fit the data in the given range
@@ -203,12 +285,29 @@ class DataManager():
             fit_x = fit_x[from_index:to_index]
             fit_y = fit_y[from_index:to_index]
 
+        if fit_sigma is not None:
+            fit_sigma = fit_sigma[from_index:to_index]
+
+        return fit_x, fit_y, fit_sigma
+
+    def get_fit(self, index, signal_name=None, fit_name=None, fit_from=None, fit_to=None):
+        if signal_name is None:
+            signal_name = config.yvar
+        if fit_name is None:
+            fit_name = config.fit_type
+        if fit_from is None:
+            fit_from = config.fit_from
+        if fit_to is None:
+            fit_to = config.fit_to
+
+        fit_x, fit_y, fit_sigma = self.get_fit_data(
+            index, signal_name, fit_from, fit_to)
+
         model = get_model(fit_name)
         func = model.func()
 
         # If there are replicate files then average the data
         if fit_sigma is not None:
-            fit_sigma = fit_sigma[from_index:to_index]
             fit_result, covm = curve_fit(func, fit_x, fit_y, sigma=fit_sigma)
         else:
             fit_result, covm = curve_fit(func, fit_x, fit_y)
