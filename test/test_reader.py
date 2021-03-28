@@ -123,7 +123,8 @@ class ReaderTest(unittest.TestCase):
         self.assertEqual(data.label, 'IP_T-Iso', 'Incorrect label read')
         self.assertEqual(data.date, date(2020, 10, 28), 'Incorrect date read')
         self.assertEqual(data.time, time(13, 39, 00), 'Incorrect time read')
-        self.assertEqual(data.reactor, 'IP-1250-0046', 'Incorrect reactor read')
+        self.assertEqual(data.reactor, 'IP-1250-0046',
+                         'Incorrect reactor read')
         # Data information
         self.assertEqual(data.xaxis.name, 'Time', 'Incorrect x name read')
         self.assertEqual(data.xaxis.unit, 's', 'Incorrect x unit read')
@@ -131,8 +132,10 @@ class ReaderTest(unittest.TestCase):
         self.assertEqual(len(data.events), 200, 'Incorrect data events read')
         self.assertEqual(len(data.signals), 1, 'Incorrect y data read')
         # Condition information
-        self.assertEqual(conditions.xaxis.data.size, 18640, 'Incorrect condition x data read')
-        self.assertEqual(len(conditions.signals), 6, 'Incorrect condition y data read')
+        self.assertEqual(conditions.xaxis.data.size, 18640,
+                         'Incorrect condition x data read')
+        self.assertEqual(len(conditions.signals), 6,
+                         'Incorrect condition y data read')
 
     # ====== reader/read_psi.py ========
     def test_read_psi(self):
@@ -141,8 +144,10 @@ class ReaderTest(unittest.TestCase):
         self.assertEqual(data.label, 'PSI_bioreactor', 'Incorrect label read')
         self.assertEqual(data.date, date(2020, 8, 1), 'Incorrect date read')
         self.assertEqual(data.time, time(10, 16, 57), 'Incorrect time read')
-        self.assertEqual(data.reactor, 'Photobioreactor-041', 'Incorrect reactor read')
-        self.assertEqual(data.profile, 'BG11 Synechocystis WT', 'Incorrect profile read')
+        self.assertEqual(data.reactor, 'Photobioreactor-041',
+                         'Incorrect reactor read')
+        self.assertEqual(data.profile, 'BG11 Synechocystis WT',
+                         'Incorrect profile read')
         # Data information
         self.assertEqual(data.xaxis.name, 'Time', 'Incorrect x name read')
         self.assertEqual(data.xaxis.unit, 's', 'Incorrect x unit read')
@@ -150,15 +155,21 @@ class ReaderTest(unittest.TestCase):
         self.assertEqual(len(data.events), 1, 'Incorrect data events read')
         self.assertEqual(len(data.signals), 2, 'Incorrect y data read')
         # Condition information
-        self.assertEqual(conditions.xaxis.data.size, 6003, 'Incorrect condition x data read')
-        self.assertEqual(len(conditions.signals), 6, 'Incorrect condition y data read')
+        self.assertEqual(conditions.xaxis.data.size, 6003,
+                         'Incorrect condition x data read')
+        self.assertEqual(len(conditions.signals), 6,
+                         'Incorrect condition y data read')
 
     # ====== reader/read_calibration.py ========
     def test_read_calibration(self):
         calibration = read_calibration('test/files/calibration.csv')
-        self.assertEqual(calibration.label, 'calibration', 'Incorrect label read')
-        self.assertEqual(len(calibration.true), 7, 'Incorrect true measurements')
-        self.assertEqual(len(calibration.measured), 7, 'Incorrect measured measurements')
+        self.assertEqual(calibration.label, 'calibration',
+                         'Incorrect label read')
+        self.assertEqual(len(calibration.true), 7,
+                         'Incorrect true measurements')
+        self.assertEqual(len(calibration.measured), 7,
+                         'Incorrect measured measurements')
+
 
 if __name__ == '__main__':
     print(sys.path)
