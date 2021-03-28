@@ -10,7 +10,7 @@ from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
-from ada.data.data_holder import DataHolder
+from ada.data.data_manager import data_manager
 from ada.reader.read_calibration import read_calibration
 from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
 from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
@@ -19,7 +19,7 @@ from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
 from ada.components.data_list_item import (DataListItem, ConditionListItem,
                                            DelListItem)
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
@@ -44,10 +44,6 @@ class App(QMainWindow):
         self.height = 600 * config.wr
         logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
-        # Container for data
-        self.data = DataHolder()
-        # Container for condition data
-        self.condition_data = DataHolder()
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
@@ -82,7 +78,6 @@ class App(QMainWindow):
 
         # Saving options
         save_button = Button('Save Plot', self, 'Save the figure')
-        save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         plot_layout.addWidget(save_button, 5, 0)
 
@@ -95,7 +90,6 @@ class App(QMainWindow):
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
-        measure_button.clicked.connect(self.update_plot)
         plot_layout.addWidget(measure_button, 5, 2)
 
         # Fit curves
@@ -107,14 +101,12 @@ class App(QMainWindow):
         table_button = Button('To Table', self,
                               'Create a table of growth rates for all curves'
                               '\nConfigure in options tab')
-        table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         plot_layout.addWidget(table_button, 5, 4)
 
         # Correlations output button
         correlation_button = Button('Correlations', self,
                                     'Create additional plots showing correlations between growth and condition variables')
-        correlation_button.clicked.connect(self.update_config)
         correlation_button.clicked.connect(self.open_correlation)
         plot_layout.addWidget(correlation_button, 5, 5)
 
@@ -128,9 +120,7 @@ class App(QMainWindow):
         # Add data button
         self.data_button = Button('Add Data', self,
                                   'Import data for plotting')
-        self.data_button.clicked.connect(self.update_config)
         self.data_button.clicked.connect(self.open_data_files)
-        self.data_button.clicked.connect(self.update_data_list)
         data_entry_layout.addWidget(self.data_button)
         self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
         self.data_button.customContextMenuRequested.connect(
@@ -167,7 +157,6 @@ class App(QMainWindow):
 
         # Plot button
         plot_button = BigButton('Plot!', self, 'Plot the data!')
-        plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
         data_entry_layout.addWidget(plot_button)
 
@@ -594,73 +583,63 @@ class App(QMainWindow):
     #                           MEMBER FUNCTIONS
     # -------------------------------------------------------------------------
 
-    # Function: Open and read in data files
+    # Open the load window to read in data files
+    @error_wrapper
     def open_data_files(self):
+        self.update_config()
         logger.debug('Opening data files')
-        try:
-            self.load = LoadWindow(self, self.data, self.condition_data)
-            self.load.show()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.load = LoadWindow(self)
+        self.load.show()
 
-    # Function: Open and read in calibration
+    # Open the file explorer and read in calibration file
+    @error_wrapper
     def open_calibration_file(self):
         logger.debug('Loading calibration curve from file')
-        try:
-            self.calibration_file.clear()
-            calib_file_name = get_file_names()
-            self.calibration_file.setText(calib_file_name[0])
-            self.data.calibration = read_calibration(calib_file_name[0])
-            self.update_data_list()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.calibration_file.clear()
+        calib_file_name = get_file_names()
+        self.calibration_file.setText(calib_file_name[0])
+        data_manager.calibration = read_calibration(calib_file_name[0])
+        self.update_data_list()
 
+    # Remove the calibration file
+    @error_wrapper
     def remove_calibration_file(self):
         logger.debug('Removing calibration curve')
         self.calibration_file.clear()
-        self.data.calibration = None
+        data_manager.calibration = None
 
+    # Define right click behaviour
+    @error_wrapper
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
         if action == self.clear_action:
             logger.debug('Clearing all data')
-            self.data.clear()
+            data_manager.clear()
+            self.remove_calibration_file()
             self.update_data_list()
-            self.condition_data.clear()
             self.update_condition_data_list()
 
-    # Function: Update the main plot
+    # Update the main plot
+    @error_wrapper
     def update_plot(self):
+        self.update_config()
         logger.debug('Updating the main plot')
-        try:
-            self.plot.plot(self.data, self.condition_data)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.plot.plot()
 
-    # Function: Save the main plot
+    # Save the main plot
+    @error_wrapper
     def save_plot(self):
         logger.info('Saving the plot')
-        try:
-            self.plot.save()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.plot.save()
 
-    # Function: Update the list of data files and associated options
+    # Update the list of data files and associated options
     def update_data_list(self):
         logger.debug('Updating the list of data files')
         self.data_list.clear()
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
-        for i, data in enumerate(self.data.data_files):
+        for i, data in enumerate(data_manager.get_growth_data_files()):
             data_list_item = DataListItem(data.label, i, self)
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
@@ -676,7 +655,7 @@ class App(QMainWindow):
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
-            if contains_od and not contains_cd and self.data.calibration is not None:
+            if contains_od and not contains_cd and data_manager.calibration is not None:
                 self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options
@@ -685,7 +664,7 @@ class App(QMainWindow):
         self.condition_data_list.clear()
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
-        for i, data in enumerate(self.condition_data.data_files):
+        for i, data in enumerate(data_manager.get_condition_data_files()):
             data_list_item = ConditionListItem(data.label, self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
@@ -716,10 +695,10 @@ class App(QMainWindow):
     def remove_item(self):
         row = self.get_data_row()
         logger.debug('Removing data list item %i' % row)
-        for i, _ in enumerate(self.data.data_files):
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_data(i)
+            data_manager.growth_data.delete_data(i)
         self.update_data_list()
 
     # Function: Remove file from list of data
@@ -727,29 +706,30 @@ class App(QMainWindow):
         row = self.get_data_row()
         logger.debug('Removing replicate %i from data list item %i' %
                      (index, row))
-        for i, _ in enumerate(self.data.data_files):
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_replicate(i, index)
+            data_manager.growth_data.delete_replicate(i, index)
         self.update_data_list()
 
     # Function: Remove file from list of condition data
     def remove_condition_item(self):
         row = self.get_condition_row()
         logger.debug('Removing condition data list item %i' % row)
-        for i, _ in enumerate(self.condition_data.data_files):
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
             if i != row:
                 continue
-            self.condition_data.delete_data(i)
+            data_manager.condition_data.delete_data(i)
         self.update_condition_data_list()
 
     def add_to_item(self):
         row = self.get_data_row()
         logger.debug('Adding replicate to data list item %i' % row)
         # Open file with file handler
-        self.load = LoadWindow(self, self.data, self.condition_data, row)
+        self.load = LoadWindow(self, row)
         self.load.show()
 
+    @error_wrapper
     def download_template(self):
         logger.debug('Downloading ADA data template')
         template = ['Name,,Title,,Reactor,,Profile,\n',
@@ -762,11 +742,14 @@ class App(QMainWindow):
                 csvfile.write(row)
 
     # Function: Toggle cursor on and off
+    @error_wrapper
     def toggle_cursor(self):
         config.do_fit = False
         config.cursor = not config.cursor
+        self.update_plot()
 
     # Open window for fitting data
+    @error_wrapper
     def fit_curve(self):
         if not config.do_fit:
             logger.debug('Opening fit window')
@@ -777,19 +760,24 @@ class App(QMainWindow):
             self.update_plot()
 
     # Open window for creating a data table
+    @error_wrapper
     def create_table(self):
+        self.update_config()
         logger.debug('Opening table window')
         self.table = TableWindow(self)
         self.table.show()
 
     # Function: Open window for exporting data to csv format
+    @error_wrapper
     def export_files(self):
         logger.debug('Opening export window')
         self.export = ExportWindow(self)
         self.export.show()
 
     # Open window for evaluating correlations
+    @error_wrapper
     def open_correlation(self):
+        self.update_config()
         logger.debug('Opening correlation window')
         self.correlation = CorrelationWindow(self)
         self.correlation.show()

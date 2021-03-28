@@ -4,7 +4,8 @@ import numpy as np
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
 from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
 
-from ada.gui.error_window import ErrorWindow
+from ada.data.data_manager import data_manager
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_save_directory_name
 from ada.components.button import Button
 from ada.components.user_input import CheckBox
@@ -44,27 +45,20 @@ class ExportWindow(QMainWindow):
         layout.addWidget(self.conditions)
 
         export_button = Button("Export", self)
-        export_button.clicked.connect(self.export_handler)
+        export_button.clicked.connect(self.export)
         layout.addWidget(export_button)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    def export_handler(self):
-        try:
-            self.export()
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
-
+    @error_wrapper
     def export(self):
         path = self.test_path
         if self.test_path == 'none':
             path = get_save_directory_name()
         logger.info('Exporting files to %s' % path)
-        for data in self.parent.data.data_files:
+        for data in data_manager.get_growth_data_files():
             filename = data.label + '.csv'
             if self.rename.isChecked():
                 filename = path + '/' + data.profile + '_ada.csv'
@@ -76,7 +70,7 @@ class ExportWindow(QMainWindow):
             # Get the condition data if that option is checked
             conditions = None
             if self.conditions.isChecked():
-                for cond_data in self.parent.condition_data.data_files:
+                for cond_data in data_manager.get_condition_data_files():
                     if data.reactor != cond_data.reactor:
                         continue
                     if data.date != cond_data.date:

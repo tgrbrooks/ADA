@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit, QVBoxLayout)
 from PyQt5.QtCore import QPoint, Qt
 
-from ada.gui.error_window import ErrorWindow
+from ada.data.data_manager import data_manager
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names
 from ada.type_functions import isint
 from ada.components.label import Label
@@ -29,7 +30,7 @@ from ada.logger import logger
 
 class LoadWindow(QMainWindow):
 
-    def __init__(self, parent, data, condition, row=-1):
+    def __init__(self, parent, row=-1):
         super(LoadWindow, self).__init__(parent)
         self.title = 'Load Files'
         self.width = 350*config.wr
@@ -37,8 +38,6 @@ class LoadWindow(QMainWindow):
         logger.debug('Creating load window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
         self.parent = parent
-        self.data = data
-        self.condition = condition
         self.details = []
         self.condition_files = []
         self.files = []
@@ -116,7 +115,7 @@ class LoadWindow(QMainWindow):
 
         # Button to load the data
         load_button = Button("Load", self)
-        load_button.clicked.connect(self.load_handler)
+        load_button.clicked.connect(self.load)
         layout.addWidget(load_button)
 
         self.update_options()
@@ -169,44 +168,32 @@ class LoadWindow(QMainWindow):
             display_list.addItem(list_item.item)
             display_list.setItemWidget(list_item.item, list_item.widget)
 
+    @error_wrapper
     def select_data(self):
         logger.debug('Selecting data files')
-        try:
-            self.files = self.files + get_file_names()
-            self.fill_list(self.files, self.file_list)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.files = self.files + get_file_names()
+        self.fill_list(self.files, self.file_list)
 
+    @error_wrapper
     def select_details(self):
         logger.debug('Selecting details files')
-        try:
-            self.details = get_file_names()
-            self.fill_list(self.details, self.details_file_list)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.details = get_file_names()
+        self.fill_list(self.details, self.details_file_list)
 
+    @error_wrapper
     def select_conditions(self):
         logger.debug('Selecting conditions files')
-        try:
-            self.condition_files = get_file_names()
-            self.fill_list(self.condition_files, self.conditions_file_list)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.condition_files = get_file_names()
+        self.fill_list(self.condition_files, self.conditions_file_list)
 
     def load_algem_pro(self, file_name):
         logger.info('Loading an Algem-Pro file %s' % file_name)
         # Read in files from Algem Pro
         algem_data = read_algem_pro(file_name)
         if self.row == -1:
-            self.data.add_data(algem_data)
+            data_manager.growth_data.add_data(algem_data)
         else:
-            self.data.add_replicate(algem_data, self.row)
+            data_manager.growth_data.add_replicate(algem_data, self.row)
 
     def load_algem_ht24_txt(self, file_name):
         downsample = self.downsample.get_int()
@@ -216,19 +203,19 @@ class LoadWindow(QMainWindow):
         algem_data_list, rep_algem_data_list, cond_data_list,\
             rep_cond_data_list = read_algem_ht24_txt(file_name, downsample)
         for algem_data in algem_data_list:
-            self.data.add_data(algem_data)
+            data_manager.growth_data.add_data(algem_data)
         for replicate in rep_algem_data_list:
             if self.merge_replicates.isChecked():
-                self.data.add_replicate(replicate[0], replicate[1])
+                data_manager.growth_data.add_replicate(replicate[0], replicate[1])
             else:
-                self.data.add_data(replicate[0])
+                data_manager.growth_data.add_data(replicate[0])
         for condition_data in cond_data_list:
-            self.condition.add_data(condition_data)
+            data_manager.condition_data.add_data(condition_data)
         for replicate in rep_cond_data_list:
             if self.merge_replicates.isChecked():
-                self.condition.add_replicate(replicate[0], replicate[1])
+                data_manager.condition_data.add_replicate(replicate[0], replicate[1])
             else:
-                self.condition.add_data(replicate[0])
+                data_manager.condition_data.add_data(replicate[0])
 
     def load_algem_ht24(self, file_name):
         logger.info('Loading HT-24 file %s' % file_name)
@@ -236,19 +223,19 @@ class LoadWindow(QMainWindow):
         if len(self.details) == 0:
             algem_data_list = read_algem_ht24(file_name)
             for algem_data in algem_data_list:
-                self.data.add_data(algem_data)
+                data_manager.growth_data.add_data(algem_data)
 
         # Read in files from Algem HT24 with details file
         else:
             algem_data_list, replicate_data_list = read_algem_ht24_details(
                 file_name, self.details[0])
             for algem_data in algem_data_list:
-                self.data.add_data(algem_data)
+                data_manager.growth_data.add_data(algem_data)
             for replicate in replicate_data_list:
                 if self.merge_replicates.isChecked():
-                    self.data.add_replicate(replicate[0], replicate[1])
+                    data_manager.growth_data.add_replicate(replicate[0], replicate[1])
                 else:
-                    self.data.add_data(replicate[0])
+                    data_manager.growth_data.add_data(replicate[0])
 
     def load_ip(self, file_name):
         logger.info('Loading IP file %s' % file_name)
@@ -259,10 +246,10 @@ class LoadWindow(QMainWindow):
             raise RuntimeError(
                 'Error reading file '+file_name+'\n'+str(e))
         if self.row == -1:
-            self.data.add_data(ip_data)
-            self.condition.add_data(condition_data)
+            data_manager.growth_data.add_data(ip_data)
+            data_manager.condition_data.add_data(condition_data)
         else:
-            self.data.add_replicate(ip_data, self.row)
+            data_manager.growth_data.add_replicate(ip_data, self.row)
 
     def load_psi(self, file_name):
         logger.info('Loading PSI file %s' % file_name)
@@ -273,27 +260,27 @@ class LoadWindow(QMainWindow):
             raise RuntimeError(
                 'Error reading file '+file_name+'\n'+str(e))
         if self.row == -1:
-            self.data.add_data(psi_data)
-            self.condition.add_data(condition_data)
+            data_manager.growth_data.add_data(psi_data)
+            data_manager.condition_data.add_data(condition_data)
         else:
-            self.data.add_replicate(psi_data, self.row)
+            data_manager.growth_data.add_replicate(psi_data, self.row)
 
     def load_ada(self, file_name):
         logger.info('Loading ADA file %s' % file_name)
         ada_data, condition_data = read_ada(file_name)
         if self.row == -1:
-            self.data.add_data(ada_data)
+            data_manager.growth_data.add_data(ada_data)
             if condition_data is not None:
-                self.condition.add_data(condition_data)
+                data_manager.condition_data.add_data(condition_data)
         else:
-            self.data.add_replicate(ada_data, self.row)
+            data_manager.growth_data.add_replicate(ada_data, self.row)
 
     def load_algem_pro_conditions(self, file_name, downsample):
         logger.info('Loading Algem-Pro condition file %s, downsample %i' %
                     (file_name, downsample))
         # Read in conditions files from Algem Pro
         algem_conditions = read_algem_pro(file_name, downsample)
-        self.condition.add_data(algem_conditions)
+        data_manager.condition_data.add_data(algem_conditions)
 
     def load_algem_ht24_conditions(self, file_name, downsample):
         logger.info('Loading HT-24 condition file %s, downsample %i' %
@@ -303,7 +290,7 @@ class LoadWindow(QMainWindow):
             algem_conditions_list = read_algem_ht24(file_name,
                                                     downsample)
             for algem_conditions in algem_conditions_list:
-                self.condition.add_data(algem_conditions)
+                data_manager.condition_data.add_data(algem_conditions)
 
         # Read in files from Algem HT24 without details file
         else:
@@ -311,22 +298,15 @@ class LoadWindow(QMainWindow):
                 read_algem_ht24_details(file_name, self.details[0],
                                         downsample)
             for algem_conditions in algem_conditions_list:
-                self.condition.add_data(algem_conditions)
+                data_manager.condition_data.add_data(algem_conditions)
             for replicate in replicate_conditions_list:
                 if self.merge_replicates.isChecked():
-                    self.condition.add_replicate(replicate[0],
+                    data_manager.condition_data.add_replicate(replicate[0],
                                                  replicate[1])
                 else:
-                    self.condition.add_data(replicate[0])
+                    data_manager.condition_data.add_data(replicate[0])
 
-    def load_handler(self):
-        try:
-            self.load()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
-
+    @error_wrapper
     def load(self):
         logger.debug('Loading files into ADA')
         file_type = self.file_type.currentText()
@@ -363,7 +343,7 @@ class LoadWindow(QMainWindow):
                     raise RuntimeError("File %s has the wrong extension" %
                                        (file_name))
 
-       # Update the data lists in the main window
+        # Update the data lists in the main window
         self.parent.update_data_list()
         self.parent.update_condition_data_list()
         self.close()

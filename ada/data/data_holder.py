@@ -9,7 +9,6 @@ class DataHolder():
         self.empty = True
         self.data_files = []
         self.replicate_files = []
-        self.calibration = None
 
     def clear(self):
         self.empty = True

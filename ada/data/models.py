@@ -94,7 +94,7 @@ class Exponential(GrowthModel):
 class Zweitering(GrowthModel):
     def __init__(self, x_unit, y_unit):
         super().__init__('$y = y_0 + (A - y_0)/(1 + \exp((4\mu/A)\cdot(\lambda - x) + 2))$',
-                         ['starting absorbance (y0)', 'Biomass yield (A)', 'Max growth rate (mu)', 'Lag time (lambda)'],
+                         ['Starting absorbance (y0)', 'Biomass yield (A)', 'Max growth rate (mu)', 'Lag time (lambda)'],
                          ['$y_0$', '$A$', '$\mu$', '$\lambda$'],
                          [y_unit, y_unit, y_unit + '/' + x_unit, x_unit])
 

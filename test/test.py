@@ -14,7 +14,6 @@ class ADATestCase(unittest.TestCase):
         app = QApplication(sys.argv)
         self.window = App()
         self.data = read_algem_pro('test/files/Algem-Pro/150.txt')
-        self.window.data.add_data(self.data)
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)

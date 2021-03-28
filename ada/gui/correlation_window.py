@@ -8,10 +8,10 @@ from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
 # Local application imports
 from ada.plotter.correlation_plot import CorrelationCanvas
 from ada.data.models import get_model
-from ada.data.measurements import (get_averages, get_fit)
+from ada.data.data_manager import data_manager
 from ada.components.user_input import TextEntry, DropDown, CheckBox
 from ada.components.button import Button, BigButton
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
 import ada.styles as styles
@@ -69,18 +69,19 @@ class CorrelationWindow(QMainWindow):
         # X axis selection = condition variable
         # Dropdown of condition variables OR take from main plot
         self.condition = DropDown('X-axis: Average of', [], self)
-        if len(self.parent.condition_data.data_files) > 0:
-            for sig in self.parent.condition_data.data_files[0].signals:
-                self.condition.addItem(sig.name)
+        if len(data_manager.get_condition_data_files()) > 0:
+            for sig in data_manager.get_condition_variables():
+                self.condition.addItem(sig)
         config_layout.addWidget(self.condition)
 
         # Y axis selection = growth related measurement
         # Dropdown of y variables (OD/CD) OR take from main plot
         self.data = DropDown('Y-axis:', [], self)
-        if len(self.parent.data.data_files) > 0:
-            for sig in self.parent.data.data_files[0].signals:
-                self.data.addItem(sig.name)
+        if len(data_manager.get_growth_data_files()) > 0:
+            for sig in data_manager.get_growth_variables():
+                self.data.addItem(sig)
         config_layout.addWidget(self.data)
+
         # Choice of fit and fit parameter
         fit_layout = QHBoxLayout()
         self.fit = DropDown('Fit:', config.fit_options, self)
@@ -126,7 +127,6 @@ class CorrelationWindow(QMainWindow):
 
         # Plot button
         plot_button = Button('Plot', self)
-        plot_button.clicked.connect(self.parent.update_config)
         plot_button.clicked.connect(self.update_plot)
         config_layout.addWidget(plot_button)
 
@@ -167,19 +167,21 @@ class CorrelationWindow(QMainWindow):
         self.param.addItems(model.params)
 
     # Function: Update the correlation plot
+    @error_wrapper
     def update_plot(self):
+        self.parent.update_config()
         logger.debug('Updating the correlation plot')
         self.plot_config.clear()
         # Process the data here
-        x_data, x_error = get_averages(self.parent.condition_data, self.parent.data,
+        x_data, x_error = data_manager.get_averages(
                                        self.condition.currentText(),
                                        self.start_t.get_float(),
                                        self.end_t.get_float())
-        y_data, y_error = get_fit(self.parent.data, self.data.currentText(),
+        y_data, y_error = data_manager.get_all_fit_params(self.data.currentText(),
                                   self.fit.currentText(),
-                                  self.param.currentText(),
                                   self.start_t.get_float(),
-                                  self.end_t.get_float())
+                                  self.end_t.get_float(),
+                                  self.param.currentText())
         tunit = 's'
         if config.xvar == 'minutes':
             tunit = 'min'
@@ -191,8 +193,7 @@ class CorrelationWindow(QMainWindow):
         # Create the X axis title
         x_title = self.x_title.text()
         if x_title == '':
-            condition_unit = self.parent.condition_data.data_files[0].get_signal_unit(
-                self.condition.currentText())
+            condition_unit = data_manager.get_condition_unit(self.condition.currentText())
             x_title = ('Average %s [%s]'
                        % (self.condition.currentText(),
                           condition_unit))
@@ -201,8 +202,7 @@ class CorrelationWindow(QMainWindow):
         # Create the Y axis title
         y_title = self.y_title.text()
         if y_title == '':
-            data_unit = self.parent.data.data_files[0].get_signal_unit(
-                self.data.currentText())
+            data_unit = data_manager.get_growth_unit(self.data.currentText())
             model = get_model(self.fit.currentText(), tunit, data_unit)
             y_title = ('%s [%s] (%s)'
                        % (model.get_latex_param(self.param.currentText()),
@@ -212,7 +212,7 @@ class CorrelationWindow(QMainWindow):
 
         self.plot_config.title = self.figure_title.text()
         labels = []
-        for dat in self.parent.data.data_files:
+        for dat in data_manager.get_growth_data_files():
             labels.append('Name: %s\nReactor: %s\nProfile: %s' %
                           (dat.label, dat.reactor, dat.profile))
 
@@ -237,19 +237,11 @@ class CorrelationWindow(QMainWindow):
             self.plot_config.correlation_coeff = corr_coef[1][0]
         else:
             self.plot_config.correlation_coeff = None
-        try:
-            self.plot.plot(self.plot_config)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+
+        self.plot.plot(self.plot_config)
 
     # Function: Save the correlation plot
+    @error_wrapper
     def save_plot(self):
         logger.info('Saving the correlation plot')
-        try:
-            self.plot.save()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.plot.save()

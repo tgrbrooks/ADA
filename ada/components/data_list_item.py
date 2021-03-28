@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout
 from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
 
+from ada.data.data_manager import data_manager
 from ada.components.button import AddButton, DeleteButton
 from ada.components.spacer import Spacer
 import ada.configuration as config
@@ -30,8 +31,8 @@ class DataListItem():
         hwidget.setLayout(layout)
         vlayout = QVBoxLayout()
         vlayout.addWidget(hwidget)
-        if(len(parent.data.replicate_files[index]) > 1):
-            for j in range(1, len(parent.data.replicate_files[index]), 1):
+        if(data_manager.num_replicates(index) > 1):
+            for j in range(1, data_manager.num_replicates(index), 1):
                 hlayout = QHBoxLayout()
                 hlayout.addWidget(QLabel('-'))
                 sub_del_button = DeleteButton()
@@ -40,7 +41,7 @@ class DataListItem():
                     lambda: parent.remove_replicate(j)
                 )
                 inner_label = QLabel(
-                    parent.data.replicate_files[index][j].label
+                    data_manager.growth_data.replicate_files[index][j].label
                 )
                 inner_label.setStyleSheet(styles.small_font)
                 hlayout.addWidget(inner_label)

@@ -8,17 +8,13 @@ from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
                              QTableWidgetItem, QSizePolicy)
 from PyQt5.QtCore import QPoint
 
-from ada.gui.error_window import ErrorWindow
+from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_save_file_name
 from ada.components.table_list_item import TableListItem
 from ada.components.button import Button
 from ada.components.list import List
 from ada.components.user_input import DropDown
-from ada.data.processor import (process_data, average_data,
-                                time_average)
-from ada.data.measurements import (
-    get_gradients, get_time_to, get_averages, get_condition_at, get_fit)
-from ada.data.models import get_model
+from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 
 import ada.configuration as config
@@ -36,7 +32,6 @@ class TableWindow(QMainWindow):
         self.height = 330*config.hr
         logger.debug('Creating table window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
-        self.parent = parent
         self.rows = []
         self.initUI()
 
@@ -96,20 +91,16 @@ class TableWindow(QMainWindow):
         self.setCentralWidget(tabs)
 
     # Add a new row to the table
+    @error_wrapper
     def add_row(self):
-        try:
-            logger.debug('Adding %s row to table' %
-                         self.row_option.currentText())
-            table_list_item = TableListItem(
-                self.row_option.currentText(), self)
-            self.row_list.addItem(table_list_item.item)
-            self.row_list.setItemWidget(table_list_item.item,
-                                        table_list_item.widget)
-            self.rows.append(table_list_item)
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        logger.debug('Adding %s row to table' %
+                     self.row_option.currentText())
+        table_list_item = TableListItem(
+            self.row_option.currentText(), self)
+        self.row_list.addItem(table_list_item.item)
+        self.row_list.setItemWidget(table_list_item.item,
+                                    table_list_item.widget)
+        self.rows.append(table_list_item)
 
     # Remove a row from the table
     def remove_item(self):
@@ -122,99 +113,112 @@ class TableWindow(QMainWindow):
         self.row_list.takeItem(row)
         self.rows.pop(row)
 
+    def get_row_title(self, row):
+        tunit = 's'
+        if config.xvar == 'minutes':
+            tunit = 'min'
+        if config.xvar == 'hours':
+            tunit = 'hr'
+        if config.xvar == 'days':
+            tunit = 'day'
+        row_title = ''
+        # Determine the type of data
+        if row.type == 'profile':
+            row_title = 'Profile'
+        if row.type == 'reactor':
+            row_title = 'Reactor'
+        if row.type == 'gradient':
+            row_title = ('Gradient of %s at between %s and %s'
+                         % (row.data.currentText(),
+                            row.grad_from.text(),
+                            row.grad_to.text()))
+        if row.type == 'time to':
+            row_title = ('Time (%s) to %s of %s'
+                         % (tunit,
+                            row.data.currentText(),
+                            row.time_to.text()))
+        if row.type == 'average of condition':
+            row_title = ('Average of %s between %s and %s %s'
+                         % (row.condition.currentText(),
+                            row.start_t.text(),
+                            row.end_t.text(),
+                            tunit))
+        if row.type == 'condition at time':
+            row_title = ('%s at time %s %s'
+                         % (row.condition.currentText(),
+                            row.time.text(),
+                            tunit))
+        if row.type == 'fit parameter':
+            row_title = ('%s fit of %s between %s and %s %s, parameter %s'
+                         % (row.fit.currentText(),
+                            row.data.currentText(),
+                            row.fit_from.text(),
+                            row.fit_to.text(),
+                            tunit,
+                            row.param.currentText()))
+        return row_title
+
+    def get_row_data(self, row):
+        row_data = []
+        if row.type == 'profile':
+            row_data = [data_manager.growth_data.get_profiles()]
+        if row.type == 'reactor':
+            row_data = [data_manager.growth_data.get_reactors()]
+        if row.type == 'gradient':
+            gradients = data_manager.get_gradients(
+                row.data.currentText(),
+                row.grad_from.get_float(),
+                row.grad_to.get_float())
+            row_data = [gradients]
+        if row.type == 'time to':
+            time_to = data_manager.get_time_to(row.data.currentText(),
+                                               row.time_to.get_float())
+            row_data = [time_to]
+        if row.type == 'average of condition':
+            average, _ = data_manager.get_averages(
+                row.condition.currentText(),
+                row.start_t.get_float(),
+                row.end_t.get_float())
+            row_data = [average]
+        if row.type == 'condition at time':
+            condition = data_manager.get_condition_at(
+                row.condition.currentText(),
+                row.time.get_float())
+            row_data = [condition]
+        if row.type == 'fit parameter':
+            fit_result, fit_error = data_manager.get_all_fit_params(row.data.currentText(),
+                                                                    row.fit.currentText(),
+                                                                    row.fit_from.get_float(),
+                                                                    row.fit_to.get_float(),
+                                                                    row.param.currentText())
+            if row.show_error.isChecked():
+                row_data = [fit_result, fit_error]
+            else:
+                row_data = [fit_result]
+        return row_data
+
     # Create table and write to file
+    @error_wrapper
     def make_table(self):
         logger.debug('Creating the table')
-        try:
-            # Get the column headings from the data file names
-            column_headings = self.get_headings()
-            # Record the titles and data for each row
-            row_titles = []
-            row_data = []
-            tunit = 's'
-            if config.xvar == 'minutes':
-                tunit = 'min'
-            if config.xvar == 'hours':
-                tunit = 'hr'
-            if config.xvar == 'days':
-                tunit = 'day'
-            # Loop over the rows
-            for row in self.rows:
-                # Determine the type of data
-                if row.type == 'profile':
-                    row_titles.append('Profile')
-                    row_data.append([self.parent.data.get_profiles()])
-                if row.type == 'reactor':
-                    row_titles.append('Reactor')
-                    row_data.append([self.parent.data.get_reactors()])
-                if row.type == 'gradient':
-                    row_titles.append('Gradient of %s at between %s and %s'
-                                      % (row.data.currentText(),
-                                         row.grad_from.text(),
-                                         row.grad_to.text()))
-                    gradients = get_gradients(self.parent.data,
-                                              row.data.currentText(),
-                                              row.grad_from.get_float(),
-                                              row.grad_to.get_float())
-                    row_data.append([gradients])
-                if row.type == 'time to':
-                    row_titles.append('Time (%s) to %s of %s'
-                                      % (tunit,
-                                         row.data.currentText(),
-                                         row.time_to.text()))
-                    time_to = get_time_to(self.parent.data, row.data.currentText(),
-                                          row.time_to.get_float())
-                    row_data.append([time_to])
-                if row.type == 'average of condition':
-                    row_titles.append('Average of %s between %s and %s %s'
-                                      % (row.condition.currentText(),
-                                         row.start_t.text(),
-                                         row.end_t.text(),
-                                         tunit))
-                    average, _ = get_averages(self.parent.condition_data, self.parent.data,
-                                              row.condition.currentText(),
-                                              row.start_t.get_float(),
-                                              row.end_t.get_float())
-                    row_data.append([average])
-                if row.type == 'condition at time':
-                    row_titles.append('%s at time %s %s'
-                                      % (row.condition.currentText(),
-                                         row.time.text(),
-                                         tunit))
-                    condition = get_condition_at(self.parent.condition_data, self.parent.data,
-                                                 row.condition.currentText(),
-                                                 row.time.get_float())
-                    row_data.append([condition])
-                if row.type == 'fit parameter':
-                    row_titles.append('%s fit of %s between %s and %s %s, parameter %s'
-                                      % (row.fit.currentText(),
-                                         row.data.currentText(),
-                                         row.fit_from.text(),
-                                         row.fit_to.text(),
-                                         tunit,
-                                         row.param.currentText()))
-                    fit_result, fit_error = get_fit(self.parent.data, row.data.currentText(),
-                                                    row.fit.currentText(),
-                                                    row.param.currentText(),
-                                                    row.fit_from.get_float(),
-                                                    row.fit_to.get_float())
-                    if row.show_error.isChecked():
-                        row_data.append([fit_result, fit_error])
-                    else:
-                        row_data.append([fit_result])
-            self.header = column_headings
-            self.titles = row_titles
-            self.data = row_data
-            self.show_table()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        # Get the column headings from the data file names
+        column_headings = self.get_headings()
+        # Record the titles and data for each row
+        row_titles = []
+        row_data = []
+        # Loop over the rows
+        for row in self.rows:
+            row_titles.append(self.get_row_title(row))
+            row_data.append(self.get_row_data(row))
+        self.header = column_headings
+        self.titles = row_titles
+        self.data = row_data
+        self.show_table()
 
     def get_headings(self):
         logger.debug('Getting the table row headings')
         headings = ['File']
-        for data in self.parent.data.data_files:
+        for data in data_manager.growth_data.data_files:
             headings.append(data.label)
         return headings
 
@@ -228,10 +232,11 @@ class TableWindow(QMainWindow):
             self.table.setItem(row+1, 0, QTableWidgetItem(str(title)))
             for col, dat in enumerate(self.data[row][0]):
                 if dat is not None:
+                    logger.debug(dat)
                     if len(self.data[row]) == 2:
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem('%.*f (%.*f)' % (config.sig_figs, dat, config.sig_figs, self.data[row][1][col])))
-                    elif isfloat(dat):
+                    elif isfloat(dat) and title != 'Reactor':
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem('%.*f' % (config.sig_figs, dat)))
                     else:
@@ -240,25 +245,21 @@ class TableWindow(QMainWindow):
                 else:
                     self.table.setItem(row+1, col+1, QTableWidgetItem('none'))
 
+    @error_wrapper
     def save_table(self):
-        try:
-            file_name = get_save_file_name()
-            if not file_name.endswith('.csv'):
-                file_name = file_name + '.csv'
-            logger.info('Saving the table as %s' % file_name)
-            with open(file_name, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(self.header)
-                for i, title in enumerate(self.titles):
-                    row = [title]
-                    for dat in self.data[i]:
-                        if dat is not None:
-                            row.append(str(dat))
-                        else:
-                            row.append('none')
-                    writer.writerow(row)
-            self.close()
-        except Exception as e:
-            logger.error(str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        file_name = get_save_file_name()
+        if not file_name.endswith('.csv'):
+            file_name = file_name + '.csv'
+        logger.info('Saving the table as %s' % file_name)
+        with open(file_name, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(self.header)
+            for i, title in enumerate(self.titles):
+                row = [title]
+                for dat in self.data[i]:
+                    if dat is not None:
+                        row.append(str(dat))
+                    else:
+                        row.append('none')
+                writer.writerow(row)
+        self.close()
