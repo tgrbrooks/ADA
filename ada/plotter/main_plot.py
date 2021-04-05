@@ -267,7 +267,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         if fit_index == -1:
             return
 
-        fit_x, fit_y, _ = data_manager.get_fit_data(fit_index)
+        fit_x, _, _ = data_manager.get_fit_data(fit_index)
         x_unit, y_unit = data_manager.get_units(fit_index)
 
         model = get_model(config.fit_type, x_unit, y_unit)

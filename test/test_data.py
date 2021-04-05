@@ -262,6 +262,56 @@ class DataTest(unittest.TestCase):
     def test_get_condition_legend(self):
         self.assertEqual(self.manager.get_condition_legend(0, ['500']), '500')
 
+    def test_get_gradients(self):
+        gradients = self.manager.get_gradients('OD', 0.1, 0.2)
+        self.assertAlmostEqual(gradients[0], 6.85E-7, 2)
+        self.assertEqual(self.manager.get_gradients('OD', 8, 9), [None])
+
+    def test_get_time_to(self):
+        time_to = self.manager.get_time_to('OD', 0.2)
+        self.assertEqual(time_to[0], 138601)
+        self.assertEqual(self.manager.get_time_to('OD', 8), [None])
+
+    def test_get_averages(self):
+        averages, error = self.manager.get_averages('OD', 100000, 200000)
+        self.assertAlmostEqual(averages[0], 0.22, 2)
+        self.assertAlmostEqual(error[0], 0.04, 2)
+        self.assertEqual(self.manager.get_averages('OD', 10000000, 20000000), ([None], [None]))
+
+    def test_get_condition_at(self):
+        condition_at = self.manager.get_condition_at('OD', 200000)
+        self.assertAlmostEqual(condition_at[0], 0.31, 2)
+
+    def test_get_all_fit_params(self):
+        fit_params, error = self.manager.get_all_fit_params('OD', 'linear', 100000, 200000, 'Gradient (p1)')
+        self.assertAlmostEqual(fit_params[0], 1.41E-6, 2)
+        self.assertAlmostEqual(error[0], 3.39E-8, 2)
+
+    def test_get_fit_data(self):
+        fit_x, fit_y, fit_sigma = self.manager.get_fit_data(0, 'OD', 100000, 200000)
+        self.assertEqual(len(fit_x), 55)
+        self.assertEqual(len(fit_y), 55)
+        self.assertEqual(fit_sigma, None)
+
+    def test_get_fit(self):
+        fit_result, _ = self.manager.get_fit(0, 'OD', 'flat line', 100000, 200000)
+        self.assertAlmostEqual(fit_result[0], 0.22, 2)
+        fit_result, _ = self.manager.get_fit(0, 'OD', 'linear', 100000, 200000)
+        self.assertAlmostEqual(fit_result[0], 6.95E-3, 2)
+        self.assertAlmostEqual(fit_result[1], 1.41E-6, 2)
+        fit_result, _ = self.manager.get_fit(0, 'OD', 'quadratic', 100000, 200000)
+        self.assertAlmostEqual(fit_result[0], 0.13, 2)
+        self.assertAlmostEqual(fit_result[1], -2.78E-7, 2)
+        self.assertAlmostEqual(fit_result[2], 5.64E-12, 2)
+        fit_result, _ = self.manager.get_fit(0, 'OD', 'exponential', 0, 200000, fit_start=[1, 0.00001])
+        self.assertAlmostEqual(fit_result[0], 0.09, 2)
+        self.assertAlmostEqual(fit_result[1], 1.00E-3, 2)
+        fit_result, _ = self.manager.get_fit(0, 'OD', 'zweitering')
+        self.assertAlmostEqual(fit_result[0], 0.11, 2)
+        self.assertAlmostEqual(fit_result[1], 1.61, 2)
+        self.assertAlmostEqual(fit_result[2], 1.27, 2)
+        self.assertAlmostEqual(fit_result[3], 2.42, 2)
+
 
 if __name__ == '__main__':
     print(sys.path)

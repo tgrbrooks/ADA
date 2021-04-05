@@ -284,6 +284,10 @@ class DataManager():
             for i, x in enumerate(xdata):
                 if x >= start_t and x <= end_t:
                     dat = np.append(dat, ydata[i])
+            if dat.size == 0:
+                averages.append(None)
+                errors.append(None)
+                continue
             mean = np.mean(dat)
             averages.append(mean)
             if config.std_err:
@@ -340,7 +344,7 @@ class DataManager():
 
         return fit_x, fit_y, fit_sigma
 
-    def get_fit(self, index, signal_name=None, fit_name=None, fit_from=None, fit_to=None):
+    def get_fit(self, index, signal_name=None, fit_name=None, fit_from=None, fit_to=None, fit_start=None, fit_min=None, fit_max=None):
         if signal_name is None:
             signal_name = config.yvar
         if fit_name is None:
@@ -349,6 +353,18 @@ class DataManager():
             fit_from = config.fit_from
         if fit_to is None:
             fit_to = config.fit_to
+        if fit_start is None:
+            fit_start = config.fit_start
+        if fit_min is None:
+            fit_min = config.fit_min
+        if fit_max is None:
+            fit_max = config.fit_max
+            
+        bounds = (-np.inf, np.inf)
+        if fit_min is not None and fit_min != [] and fit_max is not None and fit_max != []:
+            bounds = (fit_min, fit_max)
+        if fit_start == []:
+            fit_start = None
 
         fit_x, fit_y, fit_sigma = self.get_fit_data(
             index, signal_name, fit_from, fit_to)
@@ -358,9 +374,9 @@ class DataManager():
 
         # If there are replicate files then average the data
         if fit_sigma is not None:
-            fit_result, covm = curve_fit(func, fit_x, fit_y, sigma=fit_sigma)
+            fit_result, covm = curve_fit(func, fit_x, fit_y, sigma=fit_sigma, p0=fit_start, bounds=bounds)
         else:
-            fit_result, covm = curve_fit(func, fit_x, fit_y)
+            fit_result, covm = curve_fit(func, fit_x, fit_y, p0=fit_start, bounds=bounds)
 
         return fit_result, covm
 
