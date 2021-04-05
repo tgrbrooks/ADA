@@ -49,10 +49,8 @@ def read_algem_ht24(file_name, downsample=-1):
                 raise RuntimeError('Issue processing header:\n'
                                    'Could not find sensor data')
 
-            # TODO when to load details file
             count = 0
             for row in reader:
-
                 # Check if downsampling is used
                 if downsample != -1:
                     if count % downsample != 0:
@@ -167,6 +165,7 @@ def read_details(file_name, duplicate_name, downsample=-1):
         used_replicates.append(set(replicate))
         algem_data_index += 1
 
+    f.close()
     return new_algem_data_list, replicate_data_list
 
 

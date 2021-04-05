@@ -31,45 +31,49 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                     time = parse(time_str).time()
                 if line.find('ExperimentName=') == 0:
                     title = line.split('"')[1]
+                if line.find('SerialNumber=') == 0:
+                    reactor = line.split('"')[1]
                 if line.find('ReactorDetails') == 0:
                     if line.find('ReactorDetails=') == 0:
                         continue
-                    reactor = line.split('="')[1].split(',')[0]
+                    sub_reactor = line.split('="')[1].split(',')[0]
                     profile = line.split('.algp')[0].split('\\')[-1]
-                    name = file_name.split(
-                        '/')[-1].split('.')[0] + ' (' + reactor + ')'
+                    name = '(' + sub_reactor + ') ' + file_name.split(
+                        '/')[-1].split('.')[0] 
 
                     replicates = line.split(
                         '.algp,')[-1].split(',"')[0].split(',')
-                    replicate_dict[reactor] = [replicates[5], replicates[6]]
+                    replicate_dict[sub_reactor] = [replicates[5], replicates[6]]
 
-                    algem_data = AlgaeData(file_name + ' (' + reactor + ')')
+                    algem_data = AlgaeData(file_name + ' (' + sub_reactor + ')')
                     algem_data.label = name
                     algem_data.profile = profile
                     algem_data.date = date
                     algem_data.time = time
                     algem_data.title = title
                     algem_data.reactor = reactor
+                    algem_data.sub_reactor = sub_reactor
                     algem_data.xaxis.name = 'Time'
                     algem_data.xaxis.unit = 's'
                     algem_data.signals.append(algem_data.Signal())
                     algem_data.signals[0].name = 'OD'
-                    algem_data_dict[reactor] = algem_data
+                    algem_data_dict[sub_reactor] = algem_data
 
                     condition_data = AlgaeData(
-                        file_name + ' (' + reactor + ')')
+                        file_name + ' (' + sub_reactor + ')')
                     condition_data.label = name
                     condition_data.profile = profile
                     condition_data.date = date
                     condition_data.time = time
                     condition_data.title = title
                     condition_data.reactor = reactor
+                    condition_data.sub_reactor = sub_reactor
                     condition_data.xaxis.name = 'Time'
                     condition_data.xaxis.unit = 's'
                     condition_data.signals.append(condition_data.Signal())
                     condition_data.signals[0].name = 'Light'
                     condition_data.signals[0].unit = '$\mu$mol/m$^2$/s'
-                    condition_data_dict[reactor] = condition_data
+                    condition_data_dict[sub_reactor] = condition_data
 
             # Some error checking
             if(len(algem_data_dict) == 0):
@@ -102,18 +106,18 @@ def read_algem_ht24_txt(file_name, downsample=-1):
                             continue
                     light_count = light_count + 1
 
-                reactor = data_str[0]
-                if reactor not in algem_data_dict:
+                sub_reactor = data_str[0]
+                if sub_reactor not in algem_data_dict:
                     continue
 
                 if data_str[1] == 'Light':
-                    condition_data_dict[reactor].xaxis.append(
+                    condition_data_dict[sub_reactor].xaxis.append(
                         float(data_str[2]))
-                    condition_data_dict[reactor].signals[0].append(
+                    condition_data_dict[sub_reactor].signals[0].append(
                         float(data_str[3]))
                 else:
-                    algem_data_dict[reactor].xaxis.append(float(data_str[2]))
-                    algem_data_dict[reactor].signals[0].append(
+                    algem_data_dict[sub_reactor].xaxis.append(float(data_str[2]))
+                    algem_data_dict[sub_reactor].signals[0].append(
                         float(data_str[3]))
 
             # Separate out into replicates

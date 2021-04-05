@@ -21,8 +21,8 @@ def process_data(xdata, ydata):
         xdata = align_to_y(xdata, ydata, config.y_alignment)
 
     # remove outliers
-    if (config.remove_above >= 0 or
-        config.remove_below >= 0 or
+    if (config.remove_above is not None or
+        config.remove_below is not None or
             config.auto_remove):
         xdata, ydata = remove_outliers(xdata, ydata, config.remove_below,
                                        config.remove_above, config.auto_remove, config.outlier_threshold)
@@ -64,11 +64,11 @@ def align_to_y(xdata, ydata, y_alignment):
 def remove_outliers(xdata, ydata, min, max, auto, threshold):
     data_index = 0
     while data_index < len(ydata):
-        if (max >= 0 and ydata[data_index] > max):
+        if (max is not None and ydata[data_index] > max):
             ydata = np.delete(ydata, data_index)
             xdata = np.delete(xdata, data_index)
             data_index = data_index - 1
-        if (min >= 0 and ydata[data_index] < min):
+        if (min is not None and ydata[data_index] < min):
             ydata = np.delete(ydata, data_index)
             xdata = np.delete(xdata, data_index)
             data_index = data_index - 1
@@ -163,19 +163,22 @@ def time_average(xdata, ydata, window, show_err=False):
     w_i = 1
     i = 0
     while(i < len(xdata)):
-        data = np.array([])
+        data_x = np.array([])
+        data_y = np.array([])
         while(i < len(xdata) and xdata[i] < w_i*window):
-            data = np.append(data, ydata[i])
+            data_x = np.append(data_x, ydata[i])
+            data_y = np.append(data_y, ydata[i])
             i = i + 1
-        mean = np.mean(data)
-        std_dev = np.std(data, ddof=1)
+        mean_x = np.mean(data_x)
+        mean_y = np.mean(data_y)
+        std_dev = np.std(data_y, ddof=1)
         if(show_err):
-            std_dev = std_dev/np.sqrt(data.size)
-        if(data.size == 0):
+            std_dev = std_dev/np.sqrt(data_y.size)
+        if(data_y.size == 0):
             continue
-        new_xdata = np.append(new_xdata, (w_i-1)*window + window/2.)
-        new_ydata = np.append(new_ydata, mean)
-        if(data.size == 1):
+        new_xdata = np.append(new_xdata, mean_x)
+        new_ydata = np.append(new_ydata, mean_y)
+        if(data_y.size == 1):
             new_yerr = np.append(new_yerr, 0)
         else:
             new_yerr = np.append(new_yerr, std_dev)

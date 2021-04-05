@@ -22,11 +22,11 @@ class AlgaeData():
 
     def get_header_info(self, info):
         if(info == 'date'):
-            return self.date.strftime('%m/%d/%Y')
+            return self.date.strftime('%d/%m/%Y')
         if(info == 'time'):
             return self.time.strftime('%H:%M:%S')
         if(info == 'date+time'):
-            return (self.date.strftime('%m/%d/%Y') + ', '
+            return (self.date.strftime('%d/%m/%Y') + ', '
                     + self.time.strftime('%H:%M:%S'))
         if(info == 'title'):
             return self.title
@@ -74,12 +74,13 @@ class AlgaeData():
             x_unit = unit_name
 
         if(unit_name == 'none'):
-            x_title = x_title.replace("["+self.xaxis.unit+"]", "")
+            x_title = x_title.replace(" ["+self.xaxis.unit+"]", "")
         else:
             x_title = x_title.replace("["+self.xaxis.unit+"]", "["+x_unit+"]")
         return x_title
         
     def get_ydata(self, yvar, calib=None):
+        found_ydata = False
         for sig in self.signals:
             if sig.name == yvar:
                 # Loaded calibration curve takes precedence
@@ -104,20 +105,20 @@ class AlgaeData():
                 if(name != ''):
                     y_title = y_title.replace(sig.name, name)
                 if(unit_name.lower() == 'none'):
-                    y_title = y_title.replace("["+sig.unit+"]", "")
+                    y_title = y_title.replace(" ["+sig.unit+"]", "")
                 elif(unit_name != ''):
                     y_title = y_title.replace("["+sig.unit+"]", "["+unit_name+"]")
             elif yvar == 'CD' and calib is not None and sig.name == 'OD':
                 y_title = 'CD'
                 if(name != ''):
                     y_title = y_title.replace(y_title, name)
-                elif(unit_name != ''):
+                if(unit_name != ''):
                     y_title = y_title + " ["+unit_name+"]"
         if normlog and name == '':
             y_title = 'ln('+yvar+'/'+yvar+'$_{0}$)'
             if(name != ''):
                 y_title = y_title.replace(y_title, name)
-            elif(unit_name != ''):
+            if(unit_name != ''):
                 y_title = y_title + " ["+unit_name+"]"
         return y_title
 
