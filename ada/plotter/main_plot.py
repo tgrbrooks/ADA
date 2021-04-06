@@ -274,6 +274,9 @@ class PlotCanvas(FigureCanvasQTAgg):
         func = model.func()
 
         fit_result, covm = data_manager.get_fit(fit_index)
+        print(fit_result)
+        print(len(fit_x))
+        print(len(func(fit_x, *fit_result)))
         self.axes.plot(fit_x, func(fit_x, *fit_result),
                        '-', color='r', label='Fit')
 

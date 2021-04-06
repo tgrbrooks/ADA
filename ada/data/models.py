@@ -48,7 +48,7 @@ class FlatLine(GrowthModel):
 
     def func(self):
         def return_func(x, p):
-            return p
+            return np.ones(len(x)) * p
         return return_func
 
 

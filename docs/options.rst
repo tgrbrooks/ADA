@@ -34,6 +34,14 @@ If left blank the label will be read from the header of the growth/condition fil
 '''''''''''''''''
 Set the minimum and maximum point to plot for each axis.
 
+``Log scale``
+'''''''''''''
+Use a logarithmic scale for the axis.
+
+``ln(Y/Y0)``
+'''''''''''''
+Calculates and plots ln(Y/Y0) where Y is the growth measurement, can be useful for identifying and comparing exponential growth as it will be linear in this scale.
+
 Data
 ----
 The data configuration menu provides options for operations that can applied to the growth/condition data.
@@ -153,4 +161,16 @@ Configuration for any statistical things.
 
 ``Standard error``
 ''''''''''''''''''
-Show the standard deviation (unticked) or the standard error on the mean (ticked) in the error bars.
+Show the standard deviation or the standard error on the mean in the error bars.
+
+``Significant figures``
+''''''''''''''''''
+Set the number of significant figures to display in the table and fit results.
+
+``Show fit model text/parameters/errors``
+''''''''''''''''''
+Display fit information on the plot, model text is the mathematical function of the growth model, parameters are the fitted parameters and errors will show the errors on the fitted parameters.
+
+Advanced
+-----
+If you want complete control over the smoothing and auto outlier removal algorithms the parameters can be tweaked here.

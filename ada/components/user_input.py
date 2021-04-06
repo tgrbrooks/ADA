@@ -1,7 +1,8 @@
 import numpy as np
 
 from PyQt5.QtWidgets import (QWidget, QLabel, QHBoxLayout, QSizePolicy,
-                             QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox)
+                             QLineEdit, QGraphicsDropShadowEffect, QSpinBox, QComboBox, QCheckBox,
+                             QRadioButton)
 
 from ada.components.label import LeftLabel
 from ada.type_functions import isfloat, isint
@@ -214,3 +215,32 @@ class CheckBox(QWidget):
 
     def isChecked(self):
         return self.entry.isChecked()
+
+
+class RadioButton(QWidget):
+    def __init__(self, text1, text2, parent=None, *args, **kwargs):
+        super(RadioButton, self).__init__(*args, **kwargs)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self.button1 = QRadioButton(text1, parent)
+        self.button1.setStyleSheet(styles.left_label_style)
+        self.button1.setChecked(True)
+        layout.addWidget(self.button1)
+
+        self.button2 = QRadioButton(text2, parent)
+        self.button2.setStyleSheet(styles.right_label_style)
+        layout.addWidget(self.button2)
+
+        self.setLayout(layout)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+        self.setGraphicsEffect(shadow)
+
+    def isChecked(self):
+        if self.button1.isChecked():
+            return False
+        else:
+            return True
+
