@@ -129,7 +129,7 @@ class DataTest(unittest.TestCase):
             get_model('none')
         model = get_model('flat line', 'xunit', 'yunit')
         func = model.func()
-        self.assertEqual(func(2, 4), 4)
+        self.assertEqual(func([2], 4), 4)
         self.assertEqual(model.param_text([4]), '$p$ = 4.00 yunit')
         self.assertEqual(model.param_text_error(
             [4], [1]), '$p$ = 4.00 ($\pm$1.00) yunit')
@@ -137,16 +137,16 @@ class DataTest(unittest.TestCase):
         self.assertEqual(model.get_units('Y intercept (p)'), 'yunit')
         model = get_model('linear')
         func = model.func()
-        self.assertEqual(func(2, 4, 4), 12)
+        self.assertEqual(func([2], 4, 4), 12)
         model = get_model('quadratic')
         func = model.func()
-        self.assertEqual(func(2, 4, 4, 4), 28)
+        self.assertEqual(func([2], 4, 4, 4), 28)
         model = get_model('exponential')
         func = model.func()
-        self.assertEqual(math.floor(func(2, 4, 2)), 218)
+        self.assertEqual(math.floor(func([2], 4, 2)), 218)
         model = get_model('zweitering')
         func = model.func()
-        self.assertEqual(math.floor(func(2, 0, 40, 0.4, 4)), 4)
+        self.assertEqual(math.floor(func([2], 0, 40, 0.4, 4)), 4)
 
     # ====== data/processor.py ========
     def test_remove_zeros(self):
