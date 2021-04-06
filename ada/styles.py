@@ -209,6 +209,10 @@ left_label_style = label_style +\
                   'border-top-left-radius: 0.3em; \
                    border-bottom-left-radius: 0.3em;'
 
+right_label_style = label_style +\
+                  'border-top-right-radius: 0.3em; \
+                   border-bottom-right-radius: 0.3em;'
+
 round_label_style = label_style +\
                   'border-top-left-radius: 0.3em; \
                    border-top-right-radius: 0.3em;\

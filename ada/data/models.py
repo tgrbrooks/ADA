@@ -48,7 +48,7 @@ class FlatLine(GrowthModel):
 
     def func(self):
         def return_func(x, p):
-            return p
+            return np.ones(len(x)) * p
         return return_func
 
 
@@ -61,7 +61,7 @@ class Linear(GrowthModel):
 
     def func(self):
         def return_func(x, p0, p1):
-            return p1 * x + p0
+            return p1 * np.array(x) + p0
         return return_func
 
 
@@ -74,7 +74,7 @@ class Quadratic(GrowthModel):
 
     def func(self):
         def return_func(x, p0, p1, p2):
-            return p2 * np.power(x, 2) + p1 * x + p0
+            return p2 * np.power(np.array(x), 2) + p1 * np.array(x) + p0
         return return_func
 
 
@@ -87,7 +87,7 @@ class Exponential(GrowthModel):
 
     def func(self):
         def return_func(x, p0, p1):
-            return p0 * np.exp(p1 * x)
+            return p0 * np.exp(p1 * np.array(x))
         return return_func
 
 
@@ -100,7 +100,7 @@ class Zweitering(GrowthModel):
 
     def func(self):
         def return_func(x, y0, A, mu, lam):
-            exp_val = (4*mu/A) * (lam - x) + 2
+            exp_val = (4*mu/A) * (lam - np.array(x)) + 2
             return y0 + (A - y0) / (1 + np.exp(exp_val))
         return return_func
 

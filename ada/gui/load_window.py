@@ -55,15 +55,10 @@ class LoadWindow(QMainWindow):
         layout.setSpacing(5*config.wr)
 
         # Dropdown list of available file types
-        self.file_type = DropDown('File type:', [], self)
-        self.file_type.addItem('Algem Pro')
-        # Can't add HT24 data as replicate
         if self.row == -1:
-            self.file_type.addItem('Algem HT24')
-        self.file_type.addItem('IP')
-        self.file_type.addItem('PSI')
-        self.file_type.addItem('ADA')
-        self.file_type.entry.currentTextChanged.connect(self.update_options)
+            self.file_type = DropDown('File type:', config.replicate_types, self)
+        else:
+            self.file_type = DropDown('File type:', config.file_types, self)
         layout.addWidget(self.file_type)
 
         # Button for selecting files to import

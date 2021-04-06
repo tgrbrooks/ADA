@@ -13,7 +13,7 @@ from ada.plotter.main_plot import PlotCanvas
 from ada.data.data_manager import data_manager
 from ada.reader.read_calibration import read_calibration
 from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
-from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
+from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox, RadioButton
 from ada.components.list import List
 from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
@@ -503,9 +503,8 @@ class App(QMainWindow):
         # Stats configuration
         stats_box_layout = QFormLayout()
 
-        self.std_err = CheckBox('Standard error/deviation', self)
-        self.std_err.setToolTip('Checked = show standard error on mean\n'
-                                'Unchecked = show standard deviation')
+        self.std_err = RadioButton('Standard deviation', 'Standard error', self)
+        self.std_err.setToolTip('Show standard deviation or the standard error on the mean in plots and measurements')
         stats_box_layout.addRow(' ', self.std_err)
 
         self.sig_figs = SpinBox(
@@ -554,7 +553,7 @@ class App(QMainWindow):
         advanced_left_layout.addWidget(self.sg_rate)
 
         self.outlier_threshold = TextEntry(
-            'Advanced outlier threshold', self, config.outlier_threshold)
+            'Auto outlier threshold', self, config.outlier_threshold)
         advanced_right_layout.addWidget(self.outlier_threshold)
 
         advanced_left_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)

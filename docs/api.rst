@@ -5,17 +5,25 @@ API
 
 Directory structure
 -------------------
+- ``configuration.py``: Initial plotting/analysis configuration values
+
+- ``logger.py``: Logging configuration
+
+- ``styles.py``: Contains style sheets for components
+
 - ``ada``: Source code
 
     * ``gui``: Graphical windows
 
-    * ``plotter``: Matplotlib plotting and data manipulation functions
+    * ``data``: Data storage and processing classes/functions
 
-    * ``reader``: Data types and file parsing functions
+    * ``plotter``: Matplotlib canvases and related classes
+
+    * ``reader``: File parsing functions
 
     * ``components``: Wrappers around PyQt widgets adding custom styles and functionalities
 
-- ``docs``: Read the docs documentation
+- ``docs``: Read-the-docs documentation
 
 - ``images``: Logos, icons and other images
 
@@ -23,10 +31,12 @@ Directory structure
 
     * ``files``
 
-        - ``Algem-HT24``
+        - ``Algem-HT24``: Test files for the Algem HT24 bioreactor
 
-        - ``Algem-Pro``
+        - ``Algem-Pro``: Test files for the Algem Pro bioreactor
 
-        - ``IP``
+        - ``IP``: Test files for the Industrial Phytoplankton bioreactor
 
-        - ``PSI``
+        - ``PSI``: Test files for the Photon Systems Instruments bioreactor
+
+        - ``ADA``: Test files in the ADA file format

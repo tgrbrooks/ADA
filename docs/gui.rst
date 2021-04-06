@@ -12,6 +12,7 @@ Currently the accepted input formats are:
 
  * Algem Pro text files
  * Algem HT-24 CSV (comma separated variable) files
+ * Algem HT-24 intermediate text files
  * Industrial Plankton (IP) T-Iso CSV files
  * Photon Systems Instruments (PSI) photobioreactor ODS files
  * ADA export format/user input format CSV files
@@ -70,7 +71,7 @@ Plotting
 --------
 To plot the data with the default configuration just hit the ``Plot!`` button.
 
-If you want to change how the plot looks, head over to the :ref:`options` tabs.
+If you want to change how the plot looks or how the data is processed, head over to the :ref:`options` tabs.
 
 .. note::
    You can change the individual line colours and styles by clicking on the curves.
@@ -94,13 +95,13 @@ Making Measurements
 
 On the Plot
 '''''''''''
-You can measure the growth rates (gradients) on the plot by pressing the ``Measure`` button.
+You can measure the linear growth rates (gradients) on the plot by pressing the ``Measure`` button.
 
 This will let you click between any two points on any of the plotted curves and display the gradient on the plot.
 
 Fitting
 '''''''
-You can fit curves to the growth data with the ``Fit`` button.
+You can fit various growth models to the growth data with the ``Fit`` button.
 
 The available fits are (:math:`y` = growth data, :math:`x` = time data):
 
@@ -108,12 +109,15 @@ The available fits are (:math:`y` = growth data, :math:`x` = time data):
 * Linear :math:`y = p_{1}x + p_{0}`
 * Quadratic :math:`y = p_{2}x^2 + p_{1}x + p_{0}`
 * Exponential :math:`y = p_{0}e^{p_{1}x}`
+* Zweitering :math:`y = y_0 + (A - y_0)/(1 + \exp((4\mu/A)\cdot(\lambda - x) + 2))`
 
-To a Table
-''''''''''
+You can specify the time range over which to do the fit, or leave blank to fit the whole range. The starting guess and upper and lower bounds of the fit parameters can be set by checking the ``Set parameter bounds`` box.
+
+Creating a Table of Measurements
+''''''''''''''''''''''''''''''''
 If you've got a lot of growth curves and you don't want to measure everything manually you can configure standard measurements to be applied to all curves automatically with the ``To Table`` button.
 
-This will open up a new window that contains a dropdown menu with the available measurements/info, add a row to the table by selecting it in the dropdown menu and hit ``Add Row``
+This will open up a new window that contains a dropdown menu with the available measurements/info, add a row to the table by selecting it in the dropdown menu and hit ``Add Row``.
 
 This will show the row in the list below and allow you to configure it.
 
@@ -125,6 +129,7 @@ The available measurements/info are:
 * ``time to``: The time taken for the the Y data (selected with dropdown) to reach a certain point (entered in text box).
 * ``average of condition``: The average of the condition data (associated with the growth data by comparing the reactor ID and start date/time) between two times (entered in the text boxes).
 * ``condition at time``: The value of the condition data (selected with dropdown) at a certain time (entered in text box).
+* ``fit parameter``: The value of a fitted parameter from any of the available growth models, the time range can be specified but it is not currently possible to set the parameter limits.
 
 Measurements can be added as many times as you want if you want to measure multiple conditions.
 
@@ -132,3 +137,17 @@ The ``Create Table`` button will show the table in the ``Table`` tab.
 
 The ``Save Table`` button will open up a file browser to let you chose a file name and location, the table will be saved in csv format.
 
+Creating a Correlation Plot
+'''''''''''''''''''''''''''
+
+The ``Correlations`` button can be used to plot the dependence of fitted growth curve model parameters on different conditions.
+
+Growth data must have associated condition data loaded with it for this to work, and multiple growth measurements should be present for the correlations to make any sense.
+
+The fit range must be specified and the chosen condition data will be averaged in this range.
+
+The titles will be set automatically but they can be overrriden in the ``Configuration`` tab. Other configurations such as the font sizes are inherited from the main options.
+
+Checking ``Label`` will show information about each data point when you hover over it.
+
+Checking ``Calculate correlation`` will calculate the correlation coefficient between the fit parameter and growth condition and display it on the plot.

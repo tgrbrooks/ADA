@@ -1,4 +1,6 @@
 # Global configuration for the app
+file_types = ["Algem Pro", "Algem HT24", "IP", "PSI", "ADA"]
+replicate_types = ["Algem Pro", "IP", "PSI", "ADA"]
 xaxis_units = ["seconds", "minutes", "hours", "days"]
 info_options = ["none", "reactor", "profile", "title", "date", "time",
                 "date+time"]

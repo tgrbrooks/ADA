@@ -35,7 +35,6 @@ class FitWindow(QMainWindow):
     def initUI(self):
 
         self.setWindowTitle(self.title)
-        self.resize(self.width, self.height)
 
         window_layout = QHBoxLayout()
         window_layout.setContentsMargins(
@@ -85,6 +84,7 @@ class FitWindow(QMainWindow):
         widget.setLayout(window_layout)
 
         self.setCentralWidget(widget)
+        self.resize(self.width, self.height)
 
     @error_wrapper
     def render_bounds(self):
@@ -92,7 +92,7 @@ class FitWindow(QMainWindow):
         for i in reversed(range(self.bound_layout.count())): 
             self.bound_layout.itemAt(i).widget().setParent(None)
         if self.set_bounds.isChecked():
-            self.resize(self.width * 2, self.height)
+            self.resize(self.width * 3, self.height)
             model = get_model(self.fit_option.currentText(), '', '')
             for i, param in enumerate(model.params):
                 self.bounds.append(ParameterBounds(param, self))

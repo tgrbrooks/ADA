@@ -46,6 +46,9 @@ class RoundLabel(QWidget):
         text.setStyleSheet(styles.round_label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+        self.setGraphicsEffect(shadow)
         self.setLayout(layout)
 
 
