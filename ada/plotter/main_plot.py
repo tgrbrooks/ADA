@@ -461,7 +461,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             leg.set_draggable(True)
 
         # Toggle condition legend on
-        if(config.condition_legend and not self.condition_data.empty):
+        if(config.condition_legend and not data_manager.condition_data.empty):
             self.condition_legend_on = True
             self.condition_legend_title = config.condition_legend_title
             handles, labels = self.condition_axes.get_legend_handles_labels()
