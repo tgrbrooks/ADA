@@ -365,6 +365,8 @@ class DataManager():
             bounds = (fit_min, fit_max)
         if fit_start == []:
             fit_start = None
+        if fit_start is None and fit_name == 'exponential':
+            fit_start = [1, 1./config.unit_map[config.xvar]]
 
         fit_x, fit_y, fit_sigma = self.get_fit_data(
             index, signal_name, fit_from, fit_to)

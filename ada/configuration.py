@@ -2,6 +2,12 @@
 file_types = ["Algem Pro", "Algem HT24", "IP", "PSI", "ADA"]
 replicate_types = ["Algem Pro", "IP", "PSI", "ADA"]
 xaxis_units = ["seconds", "minutes", "hours", "days"]
+unit_map = {
+    "seconds": 24 * 60 * 60,
+    "minutes": 24 * 60,
+    "hours": 24,
+    "days": 1
+}
 info_options = ["none", "reactor", "profile", "title", "date", "time",
                 "date+time"]
 style_options = ["default", "greyscale", "colour blind", "pastel", "deep"]

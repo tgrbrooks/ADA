@@ -137,8 +137,6 @@ def read_psi(file_name):
                            'Did not read in any data')
     for sig in psi_data.signals:
         if(sig.data.size != psi_data.xaxis.data.size):
-            print(sig.data.size)
-            print(psi_data.xaxis.data.size)
             raise RuntimeError('Issue processing data:\n'
                                'Different number of %s entries'
                                % (sig.name))
