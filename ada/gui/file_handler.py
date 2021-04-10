@@ -63,7 +63,7 @@ class FileHandlerGui(QWidget):
             options=options)
         if self.file_name and self.save_fig:
             if(self.file_name == ''):
-                self.fig.savefig('graph.png')
+                self.fig.savefig('graph.png', dpi=1200)
             elif(self.file_name.find('.') == -1):
                 self.fig.savefig(self.file_name + '.png')
             else:
