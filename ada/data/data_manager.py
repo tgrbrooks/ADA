@@ -167,7 +167,7 @@ class DataManager():
         if config.std_err:
             std_err = True
 
-        for cond, j in enumerate(self.condition_data.data_files):
+        for j, cond in enumerate(self.condition_data.data_files):
             if self.growth_data.data_files[i].reactor != cond.reactor:
                 continue
             if self.growth_data.data_files[i].sub_reactor != cond.sub_reactor:
