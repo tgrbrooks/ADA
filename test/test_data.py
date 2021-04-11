@@ -11,7 +11,8 @@ from ada.data.algae_data import AlgaeData
 from ada.data.data_holder import DataHolder
 from ada.data.models import get_model
 from ada.data.processor import (
-    remove_zeros, align_to_y, remove_outliers, savitzky_golay, average_data, time_average, get_exponent, exponent_text, exponent_text_errors)
+    remove_zeros, align_to_y, remove_outliers, savitzky_golay, average_data,
+    time_average, time_average_arrays, get_exponent, exponent_text, exponent_text_errors)
 from ada.data.data_manager import DataManager
 
 
@@ -202,6 +203,24 @@ class DataTest(unittest.TestCase):
         self.assertAlmostEqual(err[0], 0.50, 2)
         self.assertAlmostEqual(err[4], 0.50, 2)
 
+    def test_time_average_array(self):
+        xdata1 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        ydata1 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        xdata2 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        ydata2 = np.array([10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+        xdatas = [xdata1, xdata2]
+        ydatas = [ydata1, ydata2]
+        newx, newy, err = time_average_arrays(xdatas, ydatas, 2)
+        self.assertEqual(newx[0], 0.5)
+        self.assertEqual(newy[0], 5.5)
+        self.assertAlmostEqual(err[0], 5.80, 2)
+        self.assertEqual(newx[4], 8.5)
+        self.assertEqual(newy[4], 13.5)
+        self.assertAlmostEqual(err[4], 5.80, 2)
+        newx, newy, err = time_average_arrays(xdatas, ydatas, 2, True)
+        self.assertAlmostEqual(err[0], 2.90, 2)
+        self.assertAlmostEqual(err[4], 2.90, 2)
+
     def test_get_exponent(self):
         self.assertEqual(get_exponent(100), 2)
 
@@ -246,7 +265,7 @@ class DataTest(unittest.TestCase):
         self.assertEqual(self.manager.get_growth_legend(0, ['500']), '500')
 
     def test_get_condition_xy_data(self):
-        xdata, ydata = self.manager.get_condition_xy_data(0, 'OD')
+        xdata, ydata, _ = self.manager.get_condition_xy_data(0, 'OD')
         self.assertEqual(xdata[4], 5401)
         self.assertEqual(ydata[4], 0.106)
 
@@ -257,7 +276,8 @@ class DataTest(unittest.TestCase):
         self.assertEqual(err, None)
 
     def test_get_condition_ytitle(self):
-        self.assertEqual(self.manager.get_condition_ytitle(0, 'OD'), 'OD [Numeric]')
+        self.assertEqual(self.manager.get_condition_ytitle(
+            0, 'OD'), 'OD [Numeric]')
 
     def test_get_condition_legend(self):
         self.assertEqual(self.manager.get_condition_legend(0, ['500']), '500')
@@ -276,34 +296,40 @@ class DataTest(unittest.TestCase):
         averages, error = self.manager.get_averages('OD', 100000, 200000)
         self.assertAlmostEqual(averages[0], 0.22, 2)
         self.assertAlmostEqual(error[0], 0.04, 2)
-        self.assertEqual(self.manager.get_averages('OD', 10000000, 20000000), ([None], [None]))
+        self.assertEqual(self.manager.get_averages(
+            'OD', 10000000, 20000000), ([None], [None]))
 
     def test_get_condition_at(self):
         condition_at = self.manager.get_condition_at('OD', 200000)
         self.assertAlmostEqual(condition_at[0], 0.31, 2)
 
     def test_get_all_fit_params(self):
-        fit_params, error = self.manager.get_all_fit_params('OD', 'linear', 100000, 200000, 'Gradient (p1)')
+        fit_params, error = self.manager.get_all_fit_params(
+            'OD', 'linear', 100000, 200000, 'Gradient (p1)')
         self.assertAlmostEqual(fit_params[0], 1.41E-6, 2)
         self.assertAlmostEqual(error[0], 3.39E-8, 2)
 
     def test_get_fit_data(self):
-        fit_x, fit_y, fit_sigma = self.manager.get_fit_data(0, 'OD', 100000, 200000)
+        fit_x, fit_y, fit_sigma = self.manager.get_fit_data(
+            0, 'OD', 100000, 200000)
         self.assertEqual(len(fit_x), 55)
         self.assertEqual(len(fit_y), 55)
         self.assertEqual(fit_sigma, None)
 
     def test_get_fit(self):
-        fit_result, _ = self.manager.get_fit(0, 'OD', 'flat line', 100000, 200000)
+        fit_result, _ = self.manager.get_fit(
+            0, 'OD', 'flat line', 100000, 200000)
         self.assertAlmostEqual(fit_result[0], 0.22, 2)
         fit_result, _ = self.manager.get_fit(0, 'OD', 'linear', 100000, 200000)
         self.assertAlmostEqual(fit_result[0], 6.95E-3, 2)
         self.assertAlmostEqual(fit_result[1], 1.41E-6, 2)
-        fit_result, _ = self.manager.get_fit(0, 'OD', 'quadratic', 100000, 200000)
+        fit_result, _ = self.manager.get_fit(
+            0, 'OD', 'quadratic', 100000, 200000)
         self.assertAlmostEqual(fit_result[0], 0.13, 2)
         self.assertAlmostEqual(fit_result[1], -2.78E-7, 2)
         self.assertAlmostEqual(fit_result[2], 5.64E-12, 2)
-        fit_result, _ = self.manager.get_fit(0, 'OD', 'exponential', 0, 200000, fit_start=[1, 0.00001])
+        fit_result, _ = self.manager.get_fit(
+            0, 'OD', 'exponential', 0, 200000, fit_start=[1, 0.00001])
         self.assertAlmostEqual(fit_result[0], 0.09, 2)
         self.assertAlmostEqual(fit_result[1], 1.00E-3, 2)
         fit_result, _ = self.manager.get_fit(0, 'OD', 'zweitering')

@@ -185,7 +185,7 @@ class PlotCanvas(FigureCanvasQTAgg):
             if i < len(config.conf_colors):
                 col = config.conf_colors[i]
 
-            if yerr is not None:
+            if(config.condition_average != -1):
                 condition_plot = \
                     self.condition_axes.errorbar(xdata,
                                                  ydata,
@@ -193,7 +193,16 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                  capsize=2, color=col,
                                                  label=legend_label)
                 self.plot_list.append([condition_plot[0]])
+            elif yerr is not None:
+                condition_plot = \
+                    self.condition_axes.plot(xdata, ydata,
+                                             '--', color=col,
+                                             label=legend_label)
+                fill_area = self.condition_axes.fill_between(xdata, ydata-yerr,
+                                                   ydata+yerr, color=col, alpha=0.4)
+                self.plot_list.append([condition_plot[0], fill_area])
             else:
+                print(xdata, ydata)
                 condition_plot = \
                     self.condition_axes.plot(xdata, ydata,
                                              '--', color=col,

@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 # Local includes
 from ada.data.algae_data import AlgaeData
 from ada.data.data_holder import DataHolder
-from ada.data.processor import process_data, time_average, average_data
+from ada.data.processor import process_data, time_average, time_average_arrays, average_data
 from ada.data.models import get_model
 import ada.configuration as config
 from ada.logger import logger
@@ -70,6 +70,9 @@ class DataManager():
 
     def num_replicates(self, index):
         return len(self.growth_data.replicate_files[index])
+
+    def num_condition_replicates(self, index):
+        return len(self.condition_data.replicate_files[index])
 
     def get_replicate_data(self, i, j, xvar, yvar):
         xdata = self.growth_data.replicate_files[i][j].get_xdata(xvar)
@@ -156,13 +159,15 @@ class DataManager():
             legend_label = self.growth_data.data_files[i].get_header_info(extra_info)
         return legend_label
 
-    def get_condition_xy_data(self, i, cond_name, xvar=None, condition_average=None):
+    def get_condition_xy_data(self, i, cond_name, xvar=None, condition_average=None, std_err=False):
         if xvar is None:
             xvar = config.xvar
         if condition_average is None:
             condition_average = config.condition_average
+        if config.std_err:
+            std_err = True
 
-        for cond in self.condition_data.data_files:
+        for j, cond in enumerate(self.condition_data.data_files):
             if self.growth_data.data_files[i].reactor != cond.reactor:
                 continue
             if self.growth_data.data_files[i].sub_reactor != cond.sub_reactor:
@@ -171,12 +176,7 @@ class DataManager():
                 continue
             if self.growth_data.data_files[i].time != cond.time:
                 continue
-            xdata = cond.get_xdata(xvar)
-            ydata = cond.get_signal(cond_name)
-            if condition_average != -1:
-                xdata, ydata, _ = time_average(
-                    xdata, ydata, condition_average)
-            return xdata, ydata
+            return self.get_condition_data(j, xvar, cond_name, condition_average, std_err)
         raise RuntimeError('No condition data found for %s'
                            % (self.growth_data.data_files[i].name))
 
@@ -188,16 +188,29 @@ class DataManager():
         if condition_average is None:
             condition_average = config.condition_average
         if config.std_err:
-            std_err = True
+            std_err = config.std_err
 
-        xdata = self.condition_data.data_files[i].get_xdata(xvar)
-        ydata = self.condition_data.data_files[i].get_signal(yvar)
+        xdatas = []
+        ydatas = []
+        for rep in self.condition_data.replicate_files[i]:
+            xdata = rep.get_xdata(xvar)
+            ydata = rep.get_ydata(yvar)
+            xdatas.append(xdata)
+            ydatas.append(ydata)
         yerr = None
         # Average condition data over time
-        if(condition_average != -1):
-            # Do something
+        if len(xdatas) > 1 and condition_average != -1:
             xdata, ydata, yerr = \
-                time_average(xdata, ydata, condition_average, std_err)
+                time_average_arrays(xdatas, ydatas, condition_average, std_err)
+        elif len(xdatas) > 1:
+            xdata, ydata, yerr = average_data(xdatas, ydatas, std_err)
+        elif len(xdatas) == 1 and condition_average != -1:
+            xdata, ydata, yerr = \
+                time_average(xdatas[0], ydatas[0], condition_average, std_err)
+        elif len(xdatas) == 1:
+            return xdatas[0], ydatas[0], None
+        else:
+            raise RuntimeError('No condition data found at index %i' % i)
         return xdata, ydata, yerr
 
     def get_condition_ytitle(self, i, yvar=None, yname=None, yunit=None):
@@ -279,7 +292,7 @@ class DataManager():
         averages = []
         errors = []
         for i, _ in enumerate(self.growth_data.data_files):
-            xdata, ydata = self.get_condition_xy_data(i, cond_name)
+            xdata, ydata, _ = self.get_condition_xy_data(i, cond_name)
             dat = np.array([])
             for i, x in enumerate(xdata):
                 if x >= start_t and x <= end_t:
@@ -300,7 +313,7 @@ class DataManager():
         logger.debug('Getting condition %s at time %.2f' % (cond_name, time))
         values = []
         for i, _ in enumerate(self.growth_data.data_files):
-            xdata, ydata = self.get_condition_xy_data(i, cond_name)
+            xdata, ydata, _ = self.get_condition_xy_data(i, cond_name)
             values.append(np.interp(time, xdata, ydata))
         return values
 
