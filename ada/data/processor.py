@@ -165,7 +165,7 @@ def time_average(xdata, ydata, window, show_err=False):
     while(i < len(xdata)):
         data_x = np.array([])
         data_y = np.array([])
-        while(i < len(xdata) and xdata[i] < w_i*window):
+        while(i < len(xdata) and xdata[i] < w_i * window):
             data_x = np.append(data_x, xdata[i])
             data_y = np.append(data_y, ydata[i])
             i = i + 1
@@ -180,6 +180,44 @@ def time_average(xdata, ydata, window, show_err=False):
         new_xdata = np.append(new_xdata, mean_x)
         new_ydata = np.append(new_ydata, mean_y)
         if(data_y.size == 1):
+            new_yerr = np.append(new_yerr, 0)
+        else:
+            new_yerr = np.append(new_yerr, std_dev)
+        w_i = w_i + 1
+    return new_xdata, new_ydata, new_yerr
+
+# Function to average arrays of data over time period
+def time_average_arrays(xdatas, ydatas, window, show_err=False):
+    logger.debug('Averaging data over time window of %i' % window)
+    new_xdata = np.array([])
+    new_ydata = np.array([])
+    new_yerr = np.array([])
+    w_i = 1
+    data_remaining = True
+    while data_remaining:
+        window_x = np.array([])
+        window_y = np.array([])
+        finished = True
+        for i, xdata in enumerate(xdatas):
+            # Check if there's any data in the next window
+            if len(xdata[xdata >= (w_i) * window]) > 0:
+                finished = False
+            mask = ((xdata >= (w_i - 1) * window) & (xdata < w_i * window))
+            window_x = np.append(window_x, xdata[mask])
+            window_y = np.append(window_y, ydatas[i][mask])
+        if finished:
+            data_remaining = False
+        if(window_y.size == 0):
+            w_i = w_i + 1
+            continue
+        mean_x = np.mean(window_x)
+        mean_y = np.mean(window_y)
+        std_dev = np.std(window_y, ddof=1)
+        if(show_err):
+            std_dev = std_dev/np.sqrt(window_y.size)
+        new_xdata = np.append(new_xdata, mean_x)
+        new_ydata = np.append(new_ydata, mean_y)
+        if(window_y.size == 1):
             new_yerr = np.append(new_yerr, 0)
         else:
             new_yerr = np.append(new_yerr, std_dev)

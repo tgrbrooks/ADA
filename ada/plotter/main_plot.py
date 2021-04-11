@@ -202,6 +202,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                                    ydata+yerr, color=col, alpha=0.4)
                 self.plot_list.append([condition_plot[0], fill_area])
             else:
+                print(xdata, ydata)
                 condition_plot = \
                     self.condition_axes.plot(xdata, ydata,
                                              '--', color=col,
