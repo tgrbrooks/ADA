@@ -56,9 +56,10 @@ class LoadWindow(QMainWindow):
 
         # Dropdown list of available file types
         if self.row == -1:
-            self.file_type = DropDown('File type:', config.replicate_types, self)
-        else:
             self.file_type = DropDown('File type:', config.file_types, self)
+        else:
+            self.file_type = DropDown('File type:', config.replicate_types, self)
+        self.file_type.entry.currentTextChanged.connect(self.update_options)
         layout.addWidget(self.file_type)
 
         # Button for selecting files to import
@@ -134,7 +135,7 @@ class LoadWindow(QMainWindow):
             self.details_file_list.show()
             self.merge_replicates.show()
         # Allow condition files to be added if not dealing with replicates
-        if (file_type == 'Algem HT24' or file_type == 'Algem Pro') and self.row == -1:
+        if file_type == 'Algem HT24' or file_type == 'Algem Pro':
             self.select_conditions_button.show()
             self.conditions_file_list.show()
             self.downsample.show()
@@ -190,6 +191,16 @@ class LoadWindow(QMainWindow):
         else:
             data_manager.growth_data.add_replicate(algem_data, self.row)
 
+    def load_algem_pro_conditions(self, file_name, downsample):
+        logger.info('Loading Algem-Pro condition file %s, downsample %i' %
+                    (file_name, downsample))
+        # Read in conditions files from Algem Pro
+        algem_conditions = read_algem_pro(file_name, downsample)
+        if self.row == -1:
+            data_manager.condition_data.add_data(algem_conditions)
+        else:
+            data_manager.condition_data.add_replicate(algem_conditions, self.row)
+
     def load_algem_ht24_txt(self, file_name):
         downsample = self.downsample.get_int()
 
@@ -232,51 +243,6 @@ class LoadWindow(QMainWindow):
                 else:
                     data_manager.growth_data.add_data(replicate[0])
 
-    def load_ip(self, file_name):
-        logger.info('Loading IP file %s' % file_name)
-        # Read in files from Industrial Plankton
-        try:
-            ip_data, condition_data = read_ip(file_name)
-        except Exception as e:
-            raise RuntimeError(
-                'Error reading file '+file_name+'\n'+str(e))
-        if self.row == -1:
-            data_manager.growth_data.add_data(ip_data)
-            data_manager.condition_data.add_data(condition_data)
-        else:
-            data_manager.growth_data.add_replicate(ip_data, self.row)
-
-    def load_psi(self, file_name):
-        logger.info('Loading PSI file %s' % file_name)
-        # Read in files from Photon System Instruments photobioreactor
-        try:
-            psi_data, condition_data = read_psi(file_name)
-        except Exception as e:
-            raise RuntimeError(
-                'Error reading file '+file_name+'\n'+str(e))
-        if self.row == -1:
-            data_manager.growth_data.add_data(psi_data)
-            data_manager.condition_data.add_data(condition_data)
-        else:
-            data_manager.growth_data.add_replicate(psi_data, self.row)
-
-    def load_ada(self, file_name):
-        logger.info('Loading ADA file %s' % file_name)
-        ada_data, condition_data = read_ada(file_name)
-        if self.row == -1:
-            data_manager.growth_data.add_data(ada_data)
-            if condition_data is not None:
-                data_manager.condition_data.add_data(condition_data)
-        else:
-            data_manager.growth_data.add_replicate(ada_data, self.row)
-
-    def load_algem_pro_conditions(self, file_name, downsample):
-        logger.info('Loading Algem-Pro condition file %s, downsample %i' %
-                    (file_name, downsample))
-        # Read in conditions files from Algem Pro
-        algem_conditions = read_algem_pro(file_name, downsample)
-        data_manager.condition_data.add_data(algem_conditions)
-
     def load_algem_ht24_conditions(self, file_name, downsample):
         logger.info('Loading HT-24 condition file %s, downsample %i' %
                     (file_name, downsample))
@@ -300,6 +266,48 @@ class LoadWindow(QMainWindow):
                                                  replicate[1])
                 else:
                     data_manager.condition_data.add_data(replicate[0])
+
+    def load_ip(self, file_name):
+        logger.info('Loading IP file %s' % file_name)
+        # Read in files from Industrial Plankton
+        try:
+            ip_data, condition_data = read_ip(file_name)
+        except Exception as e:
+            raise RuntimeError(
+                'Error reading file '+file_name+'\n'+str(e))
+        if self.row == -1:
+            data_manager.growth_data.add_data(ip_data)
+            data_manager.condition_data.add_data(condition_data)
+        else:
+            data_manager.growth_data.add_replicate(ip_data, self.row)
+            data_manager.condition_data.add_replicate(condition_data, self.row)
+
+    def load_psi(self, file_name):
+        logger.info('Loading PSI file %s' % file_name)
+        # Read in files from Photon System Instruments photobioreactor
+        try:
+            psi_data, condition_data = read_psi(file_name)
+        except Exception as e:
+            raise RuntimeError(
+                'Error reading file '+file_name+'\n'+str(e))
+        if self.row == -1:
+            data_manager.growth_data.add_data(psi_data)
+            data_manager.condition_data.add_data(condition_data)
+        else:
+            data_manager.growth_data.add_replicate(psi_data, self.row)
+            data_manager.condition_data.add_replicate(condition_data, self.row)
+
+    def load_ada(self, file_name):
+        logger.info('Loading ADA file %s' % file_name)
+        ada_data, condition_data = read_ada(file_name)
+        if self.row == -1:
+            data_manager.growth_data.add_data(ada_data)
+            if condition_data is not None:
+                data_manager.condition_data.add_data(condition_data)
+        else:
+            data_manager.growth_data.add_replicate(ada_data, self.row)
+            if condition_data is not None:
+                data_manager.condition_data.add_replicate(condition_data, self.row)
 
     @error_wrapper
     def load(self):

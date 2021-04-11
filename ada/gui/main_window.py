@@ -664,7 +664,7 @@ class App(QMainWindow):
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
         for i, data in enumerate(data_manager.get_condition_data_files()):
-            data_list_item = ConditionListItem(data.label, self)
+            data_list_item = ConditionListItem(data.label, i, self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
                                                    data_list_item.widget)
@@ -710,6 +710,17 @@ class App(QMainWindow):
                 continue
             data_manager.growth_data.delete_replicate(i, index)
         self.update_data_list()
+
+    # Function: Remove file from list of data
+    def remove_condition_replicate(self, index):
+        row = self.get_condition_row()
+        logger.debug('Removing replicate %i from condition list item %i' %
+                     (index, row))
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
+            if i != row:
+                continue
+            data_manager.condition_data.delete_replicate(i, index)
+        self.update_condition_data_list()
 
     # Function: Remove file from list of condition data
     def remove_condition_item(self):

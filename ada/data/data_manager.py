@@ -71,6 +71,9 @@ class DataManager():
     def num_replicates(self, index):
         return len(self.growth_data.replicate_files[index])
 
+    def num_condition_replicates(self, index):
+        return len(self.condition_data.replicate_files[index])
+
     def get_replicate_data(self, i, j, xvar, yvar):
         xdata = self.growth_data.replicate_files[i][j].get_xdata(xvar)
         ydata = self.growth_data.replicate_files[i][j].get_ydata(
@@ -171,8 +174,15 @@ class DataManager():
                 continue
             if self.growth_data.data_files[i].time != cond.time:
                 continue
-            xdata = cond.get_xdata(xvar)
-            ydata = cond.get_signal(cond_name)
+            xdatas = []
+            ydatas = []
+            for rep in self.condition_data.replicate_files[i]:
+                xdata = rep.get_xdata(xvar)
+                ydata = rep.get_ydata(cond_name)
+                xdatas.append(xdata)
+                ydatas.append(ydata)
+            if len(xdatas) > 1:
+                xdata, ydata, _ = average_data(xdatas, ydatas, False)
             if condition_average != -1:
                 xdata, ydata, _ = time_average(
                     xdata, ydata, condition_average)
@@ -188,11 +198,18 @@ class DataManager():
         if condition_average is None:
             condition_average = config.condition_average
         if config.std_err:
-            std_err = True
+            std_err = config.std_err
 
-        xdata = self.condition_data.data_files[i].get_xdata(xvar)
-        ydata = self.condition_data.data_files[i].get_signal(yvar)
+        xdatas = []
+        ydatas = []
+        for rep in self.condition_data.replicate_files[i]:
+            xdata = rep.get_xdata(xvar)
+            ydata = rep.get_ydata(yvar)
+            xdatas.append(xdata)
+            ydatas.append(ydata)
         yerr = None
+        if len(xdatas) > 1:
+            xdata, ydata, yerr = average_data(xdatas, ydatas, std_err)
         # Average condition data over time
         if(condition_average != -1):
             # Do something
