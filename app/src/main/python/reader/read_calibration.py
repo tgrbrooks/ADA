@@ -4,7 +4,7 @@ import csv
 import numpy as np
 
 # Local import
-from reader.calibration_data import CalibrationData
+from data.calibration_data import CalibrationData
 
 
 # Loop over ADA csv files and read them in

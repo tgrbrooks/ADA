@@ -3,8 +3,11 @@ from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
 
 from components.button import DeleteButton
 from components.label import Label, RoundLabel
-from components.user_input import DropDown, TextEntry
+from components.user_input import DropDown, TextEntry, CheckBox
+from data.models import get_model
+from data.data_manager import data_manager
 import configuration as config
+import styles as styles
 
 
 class TableListItem():
@@ -37,73 +40,79 @@ class TableListItem():
         # Gradient needs a start and end measurement point in Y
         if(text == 'gradient'):
             self.data = DropDown('Gradient of:', [], self.widget)
-            if len(parent.parent.data.data_files) > 0:
-                for sig in parent.parent.data.data_files[0].signals:
-                    self.data.addItem(sig.name)
+            for sig in data_manager.get_growth_variables():
+                self.data.addItem(sig)
             layout.addWidget(self.data)
-            self.grad_from = TextEntry('Between:', self.widget)
+            self.grad_from = TextEntry('Between:', self.widget, -1)
+            self.grad_from.setPlaceholderText('Y = ')
             layout.addWidget(self.grad_from)
-            self.grad_to = TextEntry('And:', self.widget)
+            self.grad_to = TextEntry('And:', self.widget, -1)
+            self.grad_to.setPlaceholderText('Y = ')
             layout.addWidget(self.grad_to)
 
         # Time to needs a Y point to reach
         if(text == 'time to'):
             self.data = DropDown('Time for:', [], self.widget)
-            if len(parent.parent.data.data_files) > 0:
-                for sig in parent.parent.data.data_files[0].signals:
-                    self.data.addItem(sig.name)
+            for sig in data_manager.get_growth_variables():
+                self.data.addItem(sig)
             layout.addWidget(self.data)
-            self.time_to = TextEntry('To reach:', self.widget)
+            self.time_to = TextEntry('To reach:', self.widget, -1)
+            self.time_to.setPlaceholderText('Y = ')
             layout.addWidget(self.time_to)
 
         # Average of a condition needs condition and start and end time
         if(text == 'average of condition'):
             self.condition = DropDown('Average of:', [], self.widget)
-            if len(parent.parent.condition_data.data_files) > 0:
-                for sig in parent.parent.condition_data.data_files[0].signals:
-                    self.condition.addItem(sig.name)
+            for sig in data_manager.get_condition_variables():
+                self.condition.addItem(sig)
             layout.addWidget(self.condition)
-            self.start_t = TextEntry('Between time:', self.widget)
+            self.start_t = TextEntry('Between:', self.widget, -1)
+            self.start_t.setPlaceholderText(config.xvar)
             layout.addWidget(self.start_t)
-            self.end_t = TextEntry('And:', self.widget)
+            self.end_t = TextEntry('And:', self.widget, -1)
+            self.end_t.setPlaceholderText(config.xvar)
             layout.addWidget(self.end_t)
 
         # Condition at time needs condition and time
         if(text == 'condition at time'):
             self.condition = DropDown('Value of:', [], self.widget)
-            if len(parent.parent.condition_data.data_files) > 0:
-                for sig in parent.parent.condition_data.data_files[0].signals:
-                    self.condition.addItem(sig.name)
+            for sig in data_manager.get_condition_variables():
+                self.condition.addItem(sig)
             layout.addWidget(self.condition)
-            self.time = TextEntry('At time:', self.widget)
+            self.time = TextEntry('At:', self.widget, -1)
+            self.time.setPlaceholderText(config.xvar)
             layout.addWidget(self.time)
 
         # Value of fit parameter needs fit and parameter
         if(text == 'fit parameter'):
-            self.fit = DropDown('Fit:', [], self.widget)
-            self.fit.addItem('y = p0')
-            self.fit.addItem('y = p1*x + p0')
-            self.fit.addItem('y = p2*x^2 + p1*x + p0')
-            self.fit.addItem('y = p0*exp(p1*x)')
+            self.fit = DropDown('Fit:', config.fit_options, self.widget)
+            self.fit.entry.currentTextChanged.connect(self.update_param_list)
             layout.addWidget(self.fit)
             self.data = DropDown('Data:', [], self.widget)
-            if len(parent.parent.data.data_files) > 0:
-                for sig in parent.parent.data.data_files[0].signals:
-                    self.data.addItem(sig.name)
+            for sig in data_manager.get_growth_variables():
+                self.data.addItem(sig)
             layout.addWidget(self.data)
-            self.param = DropDown('Parameter:', [], self.widget)
-            self.param.addItem('p0')
-            self.param.addItem('p1')
-            self.param.addItem('p2')
+            model = get_model(self.fit.currentText(), '', '')
+            self.param = DropDown('Parameter:', model.params, self.widget)
             layout.addWidget(self.param)
-            self.fit_from = TextEntry('From:', self.widget)
+            self.fit_from = TextEntry('From:', self.widget, -1)
+            self.fit_from.setPlaceholderText(config.xvar)
             layout.addWidget(self.fit_from)
-            self.fit_to = TextEntry('To:', self.widget)
+            self.fit_to = TextEntry('To:', self.widget, -1)
+            self.fit_to.setPlaceholderText(config.xvar)
             layout.addWidget(self.fit_to)
+            self.show_error = CheckBox("Show error")
+            layout.addWidget(self.show_error)
 
         # Pad out the row
         layout.addStretch()
-        layout.setSizeConstraint(QLayout.SetFixedSize)
+        layout.setSpacing(5)
+        layout.setContentsMargins(10, 10, 50, 5)
 
         self.widget.setLayout(layout)
         self.item.setSizeHint(self.widget.sizeHint())
+
+    def update_param_list(self, fit_name):
+        self.param.clear()
+        model = get_model(fit_name, "", "")
+        self.param.addItems(model.params)

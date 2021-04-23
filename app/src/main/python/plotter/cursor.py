@@ -2,6 +2,8 @@ from matplotlib.widgets import AxesWidget
 import matplotlib.pyplot as plt
 import numpy as np
 
+import configuration as config
+
 
 class Cursor(AxesWidget):
 
@@ -145,7 +147,7 @@ class SnapToCursor(AxesWidget):
         min_dist = np.sqrt((self.x[0][indx] - x)**2.
                            + (self.y[0][indx] - y)**2.)
         min_ind = 0
-        for ind, xdat in enumerate(self.x):
+        for ind, _ in enumerate(self.x):
             index_x = min(np.searchsorted(self.x[ind], x),
                           len(self.x[ind]) - 1)
             dist = np.sqrt((self.x[ind][index_x] - x)**2.
@@ -174,7 +176,7 @@ class SnapToCursor(AxesWidget):
         min_dist = np.sqrt((self.x[0][indx] - x)**2.
                            + (self.y[0][indx] - y)**2.)
         min_ind = 0
-        for ind, xdat in enumerate(self.x):
+        for ind, _ in enumerate(self.x):
             index_x = min(np.searchsorted(self.x[ind], x),
                           len(self.x[ind]) - 1)
             dist = np.sqrt((self.x[ind][index_x] - x)**2.
@@ -219,8 +221,8 @@ class SnapToCursor(AxesWidget):
             if(len(y_label.split('[')) > 1):
                 y_unit = (y_label.split('[')[1]).split(']')[0]
             grad_unit = y_unit + "/" + x_unit
-            self.gradtxt.set_text(r'grad = %1.2f$\times10^{%i}$ %s'
-                                  % (gradient, exponent, grad_unit))
+            self.gradtxt.set_text(r'grad = %.*f$\times10^{%i}$ %s'
+                                  % (config.sig_figs, gradient, exponent, grad_unit))
 
         self.positions.append(position)
 

@@ -8,7 +8,7 @@ from dateutil.parser import parse
 import ezodf as ods
 
 # Local import
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Loop over text files and read them in
@@ -61,7 +61,8 @@ def read_psi(file_name):
                     data_event = psi_data.Event()
                     data_event.xpos = xpos
                     data_event.labels = [label]
-                    data_event.datetime = start_datetime + timedelta(seconds=xpos)
+                    data_event.datetime = start_datetime + \
+                        timedelta(seconds=xpos)
                     psi_data.events.append(data_event)
 
         if sheet.name == 'Accessories':
@@ -119,7 +120,8 @@ def read_psi(file_name):
                     if j in cond_col_index:
                         if measurement is None:
                             measurement = condition_data.signals[cond_col_index[j]].data[-1]
-                        condition_data.signals[cond_col_index[j]].append(measurement)
+                        condition_data.signals[cond_col_index[j]].append(
+                            measurement)
 
     # Some error checking
     if(psi_data.xaxis.name == ''):
@@ -128,19 +130,16 @@ def read_psi(file_name):
     if(len(psi_data.signals) == 0):
         raise RuntimeError('Issue processing header:\n'
                            'Could not find sensor data')
-            
+
     # Check data has been read in
     if(psi_data.xaxis.data.size == 0):
         raise RuntimeError('Issue processing data:\n'
                            'Did not read in any data')
     for sig in psi_data.signals:
         if(sig.data.size != psi_data.xaxis.data.size):
-            print(sig.data.size)
-            print(psi_data.xaxis.data.size)
             raise RuntimeError('Issue processing data:\n'
                                'Different number of %s entries'
                                % (sig.name))
-                               
+
     # If everything is successful return the IP data product
     return psi_data, condition_data
-

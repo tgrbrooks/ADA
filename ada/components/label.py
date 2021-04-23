@@ -1,47 +1,56 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QSizePolicy,
-    QGraphicsDropShadowEffect, QHBoxLayout)
+                             QGraphicsDropShadowEffect, QHBoxLayout)
 
 from ada.components.button import DeleteButton
 import ada.configuration as config
+import ada.styles as styles
 
 
 class Label(QWidget):
     def __init__(self, text, bold=False, *args, **kwargs):
         super(Label, self).__init__(*args, **kwargs)
         text = QLabel(text)
-        text.setStyleSheet(config.label_style)
+        text.setStyleSheet(styles.label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
         self.setLayout(layout)
+
 
 class TopLabel(QWidget):
     def __init__(self, text, bold=False, *args, **kwargs):
         super(TopLabel, self).__init__(*args, **kwargs)
         text = QLabel(text)
-        text.setStyleSheet(config.top_label_style)
+        text.setStyleSheet(styles.top_label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
-        shadow = QGraphicsDropShadowEffect(blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
         self.setLayout(layout)
+
 
 class LeftLabel(QWidget):
     def __init__(self, text, bold=False, *args, **kwargs):
         super(LeftLabel, self).__init__(*args, **kwargs)
         text = QLabel(text)
-        text.setStyleSheet(config.left_label_style)
+        text.setStyleSheet(styles.left_label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
         self.setLayout(layout)
+
 
 class RoundLabel(QWidget):
     def __init__(self, text, bold=False, *args, **kwargs):
         super(RoundLabel, self).__init__(*args, **kwargs)
         text = QLabel(text)
-        text.setStyleSheet(config.round_label_style)
+        text.setStyleSheet(styles.round_label_style)
         layout = QVBoxLayout()
         layout.addWidget(text)
+        shadow = QGraphicsDropShadowEffect(
+            blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+        self.setGraphicsEffect(shadow)
         self.setLayout(layout)
+
 
 class DelLabel(QWidget):
     def __init__(self, text, bold=False, *args, **kwargs):
@@ -49,7 +58,7 @@ class DelLabel(QWidget):
         self.button = DeleteButton()
         self.text = QLabel(text)
         self.file_name = ''
-        self.text.setStyleSheet(config.label_style)
+        self.text.setStyleSheet(styles.label_style)
         self.text.setFixedHeight(25*config.hr)
         layout = QHBoxLayout()
         layout.addWidget(self.button)
@@ -63,4 +72,3 @@ class DelLabel(QWidget):
     def setText(self, text):
         self.text.setText(text.split('/')[-1])
         self.file_name = text
-

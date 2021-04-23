@@ -6,7 +6,7 @@ import numpy as np
 from dateutil.parser import parse
 
 # Local import
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Loop over text files and read them in
@@ -49,10 +49,8 @@ def read_algem_ht24(file_name, downsample=-1):
                 raise RuntimeError('Issue processing header:\n'
                                    'Could not find sensor data')
 
-            # TODO when to load details file
             count = 0
             for row in reader:
-
                 # Check if downsampling is used
                 if downsample != -1:
                     if count % downsample != 0:
@@ -162,10 +160,12 @@ def read_details(file_name, duplicate_name, downsample=-1):
             # Loop over the replicates
             for rep in replicate[1:]:
                 rep_i = get_index(rep, algem_data_list)
-                replicate_data_list.append([algem_data_list[rep_i], algem_data_index])
+                replicate_data_list.append(
+                    [algem_data_list[rep_i], algem_data_index])
         used_replicates.append(set(replicate))
         algem_data_index += 1
 
+    f.close()
     return new_algem_data_list, replicate_data_list
 
 

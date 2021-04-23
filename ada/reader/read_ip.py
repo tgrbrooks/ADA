@@ -6,7 +6,7 @@ import numpy as np
 from dateutil.parser import parse
 
 # Local import
-from ada.reader.algae_data import AlgaeData
+from ada.data.algae_data import AlgaeData
 
 
 # Loop over text files and read them in
@@ -54,7 +54,7 @@ def read_ip(file_name):
         if(len(ip_data.signals) == 0):
             raise RuntimeError('Issue processing header:\n'
                                'Could not find sensor data')
-                    
+
         first_measurement = next(reader)
         start_datetime = parse(first_measurement[0])
         ip_data.date = start_datetime.date()
@@ -71,7 +71,7 @@ def read_ip(file_name):
                 ip_data.signals[0].append(float(measurement))
             else:
                 condition_data.signals[cond_i].append(float(measurement))
-                cond_i += 1;
+                cond_i += 1
 
         for row in reader:
             if row[0] == "Event: ":
@@ -81,7 +81,7 @@ def read_ip(file_name):
                 found_existing = False
                 for evt in ip_data.events:
                     if time_diff == evt.xpos:
-                        found_existing =  True
+                        found_existing = True
                         evt.labels.append(row[2])
                 if not found_existing:
                     data_event = ip_data.Event()
@@ -103,7 +103,6 @@ def read_ip(file_name):
                     condition_data.signals[cond_i].append(float(measurement))
                     cond_i += 1
 
-            
     # Check data has been read in
     if(ip_data.xaxis.data.size == 0):
         raise RuntimeError('Issue processing data:\n'
