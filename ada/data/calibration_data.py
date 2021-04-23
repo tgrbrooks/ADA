@@ -24,7 +24,8 @@ class CalibrationData():
 
         low_p = np.polyfit([measured[0], measured[1]], [true[0], true[1]], 1)
         low_fit = np.poly1d(low_p)
-        high_p = np.polyfit([measured[size-2], measured[size-1]], [true[size-2], true[size-1]], 1)
+        high_p = np.polyfit([measured[size-2], measured[size-1]],
+                            [true[size-2], true[size-1]], 1)
         high_fit = np.poly1d(high_p)
         for od in ods:
             cd = 0
