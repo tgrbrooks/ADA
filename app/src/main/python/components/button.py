@@ -2,12 +2,13 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout,
                              QGraphicsDropShadowEffect, QSizePolicy)
 
 import configuration as config
+import styles as styles
 
 
 class Button(QPushButton):
     def __init__(self, text, parent=None, tooltip=None, *args, **kwargs):
         super(Button, self).__init__(text, parent, *args, **kwargs)
-        self.setStyleSheet(config.main_button_style)
+        self.setStyleSheet(styles.main_button_style)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=5*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
@@ -18,7 +19,7 @@ class Button(QPushButton):
 class BigButton(QPushButton):
     def __init__(self, text, parent=None, tooltip=None, *args, **kwargs):
         super(BigButton, self).__init__(text, parent, *args, **kwargs)
-        self.setStyleSheet(config.big_button_style)
+        self.setStyleSheet(styles.big_button_style)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=5*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
@@ -31,7 +32,7 @@ class BigButton(QPushButton):
 class AddButton(QPushButton):
     def __init__(self, parent=None, *args, **kwargs):
         super(AddButton, self).__init__('+', parent, *args, **kwargs)
-        self.setStyleSheet(config.add_button_style)
+        self.setStyleSheet(styles.add_button_style)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
@@ -43,7 +44,7 @@ class AddButton(QPushButton):
 class DeleteButton(QPushButton):
     def __init__(self, parent=None, *args, **kwargs):
         super(DeleteButton, self).__init__('x', parent, *args, **kwargs)
-        self.setStyleSheet(config.delete_button_style)
+        self.setStyleSheet(styles.delete_button_style)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)

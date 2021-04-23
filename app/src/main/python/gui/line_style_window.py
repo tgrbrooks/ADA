@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QLineEdit, QPushButton, QComboBox
 from components.button import Button
 from components.user_input import DropDown, TextEntry
 import configuration as config
+from logger import logger
 
 
 class LineStyleWindow(QMainWindow):
@@ -15,6 +16,8 @@ class LineStyleWindow(QMainWindow):
         self.title = 'Line Style'
         self.width = 150*config.wr
         self.height = 100*config.hr
+        logger.debug('Creating line style window [width:%.2f, height:%.2f]' % (
+            self.width, self.height))
         self.artist = artist
         self.line_i = line_i
         self.parent = parent
@@ -26,7 +29,8 @@ class LineStyleWindow(QMainWindow):
         self.resize(self.width, self.height)
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
+        layout.setContentsMargins(
+            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         layout.setSpacing(5*config.wr)
 
         self.line_style = DropDown('Line style:', [], self)
@@ -48,6 +52,8 @@ class LineStyleWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def apply_changes(self):
+        logger.debug('Trying to set colour %s and style %s' %
+                     (self.line_colour.text(), self.line_style.currentText()))
         try:
             if(is_color_like(self.line_colour.text())):
                 self.artist[0].set_color(self.line_colour.text())
@@ -71,4 +77,5 @@ class LineStyleWindow(QMainWindow):
             ])
             self.close()
         except Exception:
+            logger.warning('Unable change style, skipping')
             pass

@@ -5,7 +5,7 @@ import numpy as np
 from dateutil.parser import parse
 
 # Local import
-from reader.algae_data import AlgaeData
+from data.algae_data import AlgaeData
 
 
 # Loop over text files and read them in

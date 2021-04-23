@@ -5,29 +5,31 @@ import csv
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
                              QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
                              QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
-                             QFormLayout, QHBoxLayout, QMenu, QAction)
+                             QFormLayout, QHBoxLayout, QMenu, QAction, QSplitter)
 from PyQt5.QtCore import QPoint, Qt
 
 # Local application imports
 from plotter.main_plot import PlotCanvas
-from reader.data_holder import DataHolder
+from data.data_manager import data_manager
 from reader.read_calibration import read_calibration
 from components.label import Label, TopLabel, LeftLabel, DelLabel
-from components.user_input import TextEntry, SpinBox, DropDown, CheckBox
+from components.user_input import TextEntry, SpinBox, DropDown, CheckBox, RadioButton
 from components.list import List
 from components.spacer import Spacer
 from components.button import Button, BigButton
-from components.collapsible_box import CollapsibleBox
 from components.data_list_item import (DataListItem, ConditionListItem,
                                            DelListItem)
-from gui.error_window import ErrorWindow
+from gui.error_window import error_wrapper
 from gui.export_window import ExportWindow
 from gui.table_window import TableWindow
 from gui.fit_window import FitWindow
 from gui.load_window import LoadWindow
+from gui.correlation_window import CorrelationWindow
 from gui.file_handler import get_file_names, get_save_file_name
-from type_functions import isfloat, isint
+from type_functions import isfloat, isint, set_float, set_int
 import configuration as config
+import styles as styles
+from logger import logger
 
 
 class App(QMainWindow):
@@ -40,12 +42,9 @@ class App(QMainWindow):
         self.top = 60 * config.wr
         self.width = 960 * config.wr
         self.height = 600 * config.wr
-        # Container for data
-        self.data = DataHolder()
-        # Container for condition data
-        self.condition_data = DataHolder()
-        self.calibration = None
-        self.setStyleSheet(config.main_background)
+        logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
+            self.left, self.top, self.width, self.height))
+        self.setStyleSheet(styles.main_background)
         self.initUI()
 
     def initUI(self):
@@ -56,13 +55,15 @@ class App(QMainWindow):
         hr = config.wr
 
         tabs = QTabWidget()
-        tabs.setStyleSheet(config.tab_style)
+        tabs.setStyleSheet(styles.tab_style)
 
         # ---------------------------------------------------------------------
         #                           PLOTTING TAB
         # ---------------------------------------------------------------------
 
         # Main plotting window
+        splitter = QSplitter()
+
         plot_layout = QGridLayout()
         plot_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
         plot_layout.setSpacing(10*wr)
@@ -73,11 +74,10 @@ class App(QMainWindow):
             blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_layout.addWidget(self.plot, 0, 0, 5, 5)
+        plot_layout.addWidget(self.plot, 0, 0, 5, 6)
 
         # Saving options
         save_button = Button('Save Plot', self, 'Save the figure')
-        save_button.clicked.connect(self.update_config)
         save_button.clicked.connect(self.save_plot)
         plot_layout.addWidget(save_button, 5, 0)
 
@@ -90,7 +90,6 @@ class App(QMainWindow):
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
-        measure_button.clicked.connect(self.update_plot)
         plot_layout.addWidget(measure_button, 5, 2)
 
         # Fit curves
@@ -102,19 +101,26 @@ class App(QMainWindow):
         table_button = Button('To Table', self,
                               'Create a table of growth rates for all curves'
                               '\nConfigure in options tab')
-        table_button.clicked.connect(self.update_config)
         table_button.clicked.connect(self.create_table)
         plot_layout.addWidget(table_button, 5, 4)
 
+        # Correlations output button
+        correlation_button = Button('Correlations', self,
+                                    'Create additional plots showing correlations between growth and condition variables')
+        correlation_button.clicked.connect(self.open_correlation)
+        plot_layout.addWidget(correlation_button, 5, 5)
+
+        plot_widget = QWidget()
+        plot_widget.setLayout(plot_layout)
+        splitter.addWidget(plot_widget)
+
         data_entry_layout = QVBoxLayout()
-        data_entry_layout.setSpacing(5*wr)
-        data_entry_layout.setContentsMargins(5, 0, 5, 0)
+        data_entry_layout.setSpacing(10*wr)
+        data_entry_layout.setContentsMargins(5*wr, 5*hr, 5*wr, 5*hr)
         # Add data button
         self.data_button = Button('Add Data', self,
                                   'Import data for plotting')
-        self.data_button.clicked.connect(self.update_config)
         self.data_button.clicked.connect(self.open_data_files)
-        self.data_button.clicked.connect(self.update_data_list)
         data_entry_layout.addWidget(self.data_button)
         self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
         self.data_button.customContextMenuRequested.connect(
@@ -151,18 +157,14 @@ class App(QMainWindow):
 
         # Plot button
         plot_button = BigButton('Plot!', self, 'Plot the data!')
-        plot_button.clicked.connect(self.update_config)
         plot_button.clicked.connect(self.update_plot)
         data_entry_layout.addWidget(plot_button)
 
         data_entry_widget = QWidget()
         data_entry_widget.setLayout(data_entry_layout)
-        plot_layout.addWidget(data_entry_widget, 0, 5, 6, 1)
+        splitter.addWidget(data_entry_widget)
 
-        plot_widget = QWidget()
-        plot_widget.setStyleSheet(config.white_background)
-        plot_widget.setLayout(plot_layout)
-        tabs.addTab(plot_widget, 'Plotting')
+        tabs.addTab(splitter, 'Plotting')
 
         # ---------------------------------------------------------------------
         #                           OPTIONS TABS
@@ -197,9 +199,9 @@ class App(QMainWindow):
         x_form_layout.addRow(self.xaxis_unit)
 
         # X axis range
-        self.xaxis_min = TextEntry('Range min:', self)
+        self.xaxis_min = TextEntry('Range min:', self, config.xmin)
         x_form_layout.addRow(self.xaxis_min)
-        self.xaxis_max = TextEntry('Range max:', self)
+        self.xaxis_max = TextEntry('Range max:', self, config.xmax)
         x_form_layout.addRow(self.xaxis_max)
 
         # X axis log scale
@@ -226,9 +228,9 @@ class App(QMainWindow):
         y_form_layout.addRow(self.yaxis_unit)
 
         # Y axis range
-        self.yaxis_min = TextEntry('Range min:', self)
+        self.yaxis_min = TextEntry('Range min:', self, config.ymin)
         y_form_layout.addRow(self.yaxis_min)
-        self.yaxis_max = TextEntry('Range max:', self)
+        self.yaxis_max = TextEntry('Range max:', self, config.ymax)
         y_form_layout.addRow(self.yaxis_max)
 
         # Y axis log scale
@@ -264,9 +266,11 @@ class App(QMainWindow):
         z_form_layout.addRow(self.condition_yaxis_unit)
 
         # Condition Y axis range
-        self.condition_yaxis_min = TextEntry('Range min:', self)
+        self.condition_yaxis_min = TextEntry(
+            'Range min:', self, config.condition_ymin)
         z_form_layout.addRow(self.condition_yaxis_min)
-        self.condition_yaxis_max = TextEntry('Range max:', self)
+        self.condition_yaxis_max = TextEntry(
+            'Range max:', self, config.condition_ymax)
         z_form_layout.addRow(self.condition_yaxis_max)
 
         # Condition Y axis log scale
@@ -286,7 +290,7 @@ class App(QMainWindow):
         axis_v_layout.addWidget(Spacer())
 
         axis_box_widget = QWidget()
-        axis_box_widget.setStyleSheet(config.white_background)
+        axis_box_widget.setStyleSheet(styles.white_background)
         axis_box_widget.setLayout(axis_v_layout)
         tabs.addTab(axis_box_widget, 'Axes')
 
@@ -307,13 +311,13 @@ class App(QMainWindow):
         data_box_layout.addRow(' ', self.align_data)
 
         # Align all data at Y position
-        self.y_alignment = TextEntry('Align at Y:', self)
+        self.y_alignment = TextEntry('Align at Y:', self, config.y_alignment)
         self.y_alignment.setToolTip('Align all growth curves at given Y value')
         data_box_layout.addRow(self.y_alignment)
 
         # Condition data downsampling and averaging
         self.condition_average = TextEntry(
-            'Condition data time average:', self)
+            'Condition data time average:', self, config.condition_average)
         self.condition_average.setToolTip('Average over a given time window')
         data_box_layout.addRow(self.condition_average)
 
@@ -334,10 +338,14 @@ class App(QMainWindow):
         data_v_form_layout = QFormLayout()
         self.auto_remove = CheckBox('Auto-remove outliers off/on', self)
         data_v_form_layout.addRow(' ', self.auto_remove)
-        self.remove_above = TextEntry('Remove above:', self)
+        self.remove_above = TextEntry(
+            'Remove above:', self, config.remove_above)
         data_v_form_layout.addRow(self.remove_above)
-        self.remove_below = TextEntry('Remove below:', self)
+        self.remove_below = TextEntry(
+            'Remove below:', self, config.remove_below)
         data_v_form_layout.addRow(self.remove_below)
+        self.remove_zeros = CheckBox('Remove points with y=0 off/on', self)
+        data_v_form_layout.addRow(' ', self.remove_zeros)
         data_v_form_widget = QWidget()
         data_v_form_widget.setLayout(data_v_form_layout)
         data_v_layout.addWidget(data_v_form_widget)
@@ -349,7 +357,7 @@ class App(QMainWindow):
         data_h_layout.addWidget(Spacer())
 
         data_box_widget = QWidget()
-        data_box_widget.setStyleSheet(config.white_background)
+        data_box_widget.setStyleSheet(styles.white_background)
         data_box_widget.setLayout(data_h_layout)
         tabs.addTab(data_box_widget, 'Data')
 
@@ -434,7 +442,7 @@ class App(QMainWindow):
         legend_h_layout.addWidget(Spacer())
 
         legend_box_widget = QWidget()
-        legend_box_widget.setStyleSheet(config.white_background)
+        legend_box_widget.setStyleSheet(styles.white_background)
         legend_box_widget.setLayout(legend_h_layout)
         tabs.addTab(legend_box_widget, 'Legend')
 
@@ -453,17 +461,21 @@ class App(QMainWindow):
         style_box_layout.addRow(self.font_dropdown)
 
         # Font size textbox
-        self.title_size = SpinBox('Title font size:', 14, 0, 100, self)
+        self.title_size = SpinBox(
+            'Title font size:', config.title_size, 0, 100, self)
         style_box_layout.addRow(self.title_size)
 
-        self.legend_size = SpinBox('Legend font size:', 12, 0, 100, self)
+        self.legend_size = SpinBox(
+            'Legend font size:', config.legend_size, 0, 100, self)
         style_box_layout.addRow(self.legend_size)
 
-        self.label_size = SpinBox('Label font size:', 12, 0, 100, self)
+        self.label_size = SpinBox(
+            'Label font size:', config.label_size, 0, 100, self)
         style_box_layout.addRow(self.label_size)
 
         # Line width textbox
-        self.line_width = SpinBox('Line width:', 2, 0, 20, self)
+        self.line_width = SpinBox(
+            'Line width:', config.line_width, 0, 20, self)
         style_box_layout.addRow(self.line_width)
 
         # Condition axis colour
@@ -483,7 +495,7 @@ class App(QMainWindow):
         style_h_layout.addWidget(Spacer())
         style_h_widget = QWidget()
         style_h_widget.setLayout(style_h_layout)
-        style_h_widget.setStyleSheet(config.white_background)
+        style_h_widget.setStyleSheet(styles.white_background)
         tabs.addTab(style_h_widget, 'Style')
 
         # --------------- STATS CONFIGURATION
@@ -491,18 +503,76 @@ class App(QMainWindow):
         # Stats configuration
         stats_box_layout = QFormLayout()
 
-        self.std_err = CheckBox('Standard error/deviation', self)
-        self.std_err.setToolTip('Checked = show standard error on mean\n'
-                                'Unchecked = show standard deviation')
+        self.std_err = RadioButton('Standard deviation', 'Standard error', self)
+        self.std_err.setToolTip('Show standard deviation or the standard error on the mean in plots and measurements')
         stats_box_layout.addRow(' ', self.std_err)
+
+        self.sig_figs = SpinBox(
+            'Significant figures:', config.sig_figs, 0, 20, self)
+        stats_box_layout.addRow(self.sig_figs)
+
+        self.show_fit_text = CheckBox('Show fit model text', self)
+        self.show_fit_text.setToolTip('Checked = display equation for fitted model\n'
+                                      "Unchecked = don't display equation")
+        stats_box_layout.addRow(' ', self.show_fit_text)
+
+        self.show_fit_result = CheckBox('Show fit parameters', self)
+        self.show_fit_result.setToolTip('Checked = show fitted values of model parameters\n'
+                                        'Unchecked = don''t show fit parameters')
+        stats_box_layout.addRow(' ', self.show_fit_result)
+
+        self.show_fit_errors = CheckBox('Show fit errors', self)
+        self.show_fit_errors.setToolTip('Checked = show uncertainties on fit parameters\n'
+                                        'Unchecked = don''t show uncertainties')
+        stats_box_layout.addRow(' ', self.show_fit_errors)
 
         stats_box_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         stats_box_layout.setLabelAlignment(Qt.AlignCenter)
 
         stats_box_widget = QWidget()
-        stats_box_widget.setStyleSheet(config.white_background)
+        stats_box_widget.setStyleSheet(styles.white_background)
         stats_box_widget.setLayout(stats_box_layout)
         tabs.addTab(stats_box_widget, 'Stats')
+
+        # --------------- ADVANCED CONFIGURATION
+
+        # Advanced configuration
+        advanced_h_layout = QHBoxLayout()
+        advanced_left_layout = QFormLayout()
+        advanced_right_layout = QFormLayout()
+
+        advanced_left_layout.addWidget(TopLabel('Savitsky-Golay smoothing:'))
+        self.sg_window_size = TextEntry(
+            'Window size', self, config.sg_window_size)
+        advanced_left_layout.addWidget(self.sg_window_size)
+        self.sg_order = TextEntry('Order of polynomial', self, config.sg_order)
+        advanced_left_layout.addWidget(self.sg_order)
+        self.sg_deriv = TextEntry('Order of derivative', self, config.sg_deriv)
+        advanced_left_layout.addWidget(self.sg_deriv)
+        self.sg_rate = TextEntry('Sample spacing', self, config.sg_rate)
+        advanced_left_layout.addWidget(self.sg_rate)
+
+        self.outlier_threshold = TextEntry(
+            'Auto outlier threshold', self, config.outlier_threshold)
+        advanced_right_layout.addWidget(self.outlier_threshold)
+
+        advanced_left_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        advanced_left_layout.setLabelAlignment(Qt.AlignCenter)
+        advanced_right_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        advanced_right_layout.setLabelAlignment(Qt.AlignCenter)
+
+        advanced_left_widget = QWidget()
+        advanced_left_widget.setStyleSheet(styles.white_background)
+        advanced_left_widget.setLayout(advanced_left_layout)
+        advanced_h_layout.addWidget(advanced_left_widget)
+        advanced_right_widget = QWidget()
+        advanced_right_widget.setStyleSheet(styles.white_background)
+        advanced_right_widget.setLayout(advanced_right_layout)
+        advanced_h_layout.addWidget(advanced_right_widget)
+        advanced_widget = QWidget()
+        advanced_widget.setStyleSheet(styles.white_background)
+        advanced_widget.setLayout(advanced_h_layout)
+        tabs.addTab(advanced_widget, 'Advanced')
 
         # ----------------------------------
         self.setCentralWidget(tabs)
@@ -512,66 +582,63 @@ class App(QMainWindow):
     #                           MEMBER FUNCTIONS
     # -------------------------------------------------------------------------
 
-    # Function: Open and read in data files
+    # Open the load window to read in data files
+    @error_wrapper
     def open_data_files(self):
-        try:
-            self.load = LoadWindow(self, self.data, self.condition_data)
-            self.load.show()
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.update_config()
+        logger.debug('Opening data files')
+        self.load = LoadWindow(self)
+        self.load.show()
 
-    # Function: Open and read in calibration
+    # Open the file explorer and read in calibration file
+    @error_wrapper
     def open_calibration_file(self):
-        try:
-            self.calibration_file.clear()
-            calib_file_name = get_file_names()
-            self.calibration_file.setText(calib_file_name[0])
-            self.calibration = read_calibration(calib_file_name[0])
-            self.update_data_list()
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
-
-    def remove_calibration_file(self):
+        logger.debug('Loading calibration curve from file')
         self.calibration_file.clear()
-        self.calibration = None
+        calib_file_name = get_file_names()
+        self.calibration_file.setText(calib_file_name[0])
+        data_manager.calibration = read_calibration(calib_file_name[0])
+        self.update_data_list()
 
+    # Remove the calibration file
+    @error_wrapper
+    def remove_calibration_file(self):
+        logger.debug('Removing calibration curve')
+        self.calibration_file.clear()
+        data_manager.calibration = None
+
+    # Define right click behaviour
+    @error_wrapper
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
         if action == self.clear_action:
-            self.data.clear()
+            logger.debug('Clearing all data')
+            data_manager.clear()
+            self.remove_calibration_file()
             self.update_data_list()
-            self.condition_data.clear()
             self.update_condition_data_list()
 
-    # Function: Update the main plot
+    # Update the main plot
+    @error_wrapper
     def update_plot(self):
-        try:
-            self.plot.plot(self.data, self.condition_data)
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        self.update_config()
+        logger.debug('Updating the main plot')
+        self.plot.plot()
 
-    # Function: Save the main plot
+    # Save the main plot
+    @error_wrapper
     def save_plot(self):
-        try:
-            self.plot.save()
-        except Exception as e:
-            print('Error: ' + str(e))
-            self.error = ErrorWindow(str(e), self)
-            self.error.show()
+        logger.info('Saving the plot')
+        self.plot.save()
 
-    # Function: Update the list of data files and associated options
+    # Update the list of data files and associated options
     def update_data_list(self):
+        logger.debug('Updating the list of data files')
         self.data_list.clear()
         self.yaxis_dropdown.clear()
         self.legend_names.clear()
-        for i, data in enumerate(self.data.data_files):
+        for i, data in enumerate(data_manager.get_growth_data_files()):
             data_list_item = DataListItem(data.label, i, self)
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
@@ -587,16 +654,17 @@ class App(QMainWindow):
                     contains_od = True
                 if sig.name == 'CD':
                     contains_cd = True
-            if contains_od and not contains_cd and self.calibration is not None:
+            if contains_od and not contains_cd and data_manager.calibration is not None:
                 self.yaxis_dropdown.addItem('CD')
 
     # Function: Update the list of condition data and associated options
     def update_condition_data_list(self):
+        logger.debug('Updating the list of condition data files')
         self.condition_data_list.clear()
         self.condition_yaxis_dropdown.clear()
         self.condition_legend_names.clear()
-        for i, data in enumerate(self.condition_data.data_files):
-            data_list_item = ConditionListItem(data.name.split('/')[-1], self)
+        for i, data in enumerate(data_manager.get_condition_data_files()):
+            data_list_item = ConditionListItem(data.label, i, self)
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
                                                    data_list_item.widget)
@@ -625,37 +693,55 @@ class App(QMainWindow):
     # Function: Remove file from list of data
     def remove_item(self):
         row = self.get_data_row()
-        for i, data in enumerate(self.data.data_files):
+        logger.debug('Removing data list item %i' % row)
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_data(i)
+            data_manager.growth_data.delete_data(i)
         self.update_data_list()
 
     # Function: Remove file from list of data
     def remove_replicate(self, index):
         row = self.get_data_row()
-        for i, data in enumerate(self.data.data_files):
+        logger.debug('Removing replicate %i from data list item %i' %
+                     (index, row))
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
             if i != row:
                 continue
-            self.data.delete_replicate(i, index)
+            data_manager.growth_data.delete_replicate(i, index)
         self.update_data_list()
+
+    # Function: Remove file from list of data
+    def remove_condition_replicate(self, index):
+        row = self.get_condition_row()
+        logger.debug('Removing replicate %i from condition list item %i' %
+                     (index, row))
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
+            if i != row:
+                continue
+            data_manager.condition_data.delete_replicate(i, index)
+        self.update_condition_data_list()
 
     # Function: Remove file from list of condition data
     def remove_condition_item(self):
         row = self.get_condition_row()
-        for i, data in enumerate(self.condition_data.data_files):
+        logger.debug('Removing condition data list item %i' % row)
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
             if i != row:
                 continue
-            self.condition_data.delete_data(i)
+            data_manager.condition_data.delete_data(i)
         self.update_condition_data_list()
 
     def add_to_item(self):
         row = self.get_data_row()
+        logger.debug('Adding replicate to data list item %i' % row)
         # Open file with file handler
-        self.load = LoadWindow(self, self.data, self.condition_data, row)
+        self.load = LoadWindow(self, row)
         self.load.show()
 
+    @error_wrapper
     def download_template(self):
+        logger.debug('Downloading ADA data template')
         template = ['Name,,Title,,Reactor,,Profile,\n',
                     'Date,2020-01-15,Time,18:18:18\n',
                     'Time [hr],OD [],Conditions\n']
@@ -666,54 +752,65 @@ class App(QMainWindow):
                 csvfile.write(row)
 
     # Function: Toggle cursor on and off
+    @error_wrapper
     def toggle_cursor(self):
         config.do_fit = False
         config.cursor = not config.cursor
+        self.update_plot()
 
+    # Open window for fitting data
+    @error_wrapper
     def fit_curve(self):
-        self.fit = FitWindow(self)
-        self.fit.show()
+        if not config.do_fit:
+            logger.debug('Opening fit window')
+            self.fit = FitWindow(self)
+            self.fit.show()
+        else:
+            config.do_fit = False
+            self.update_plot()
 
-    # Function: Toggle grid on and off
+    # Open window for creating a data table
+    @error_wrapper
     def create_table(self):
+        self.update_config()
+        logger.debug('Opening table window')
         self.table = TableWindow(self)
         self.table.show()
 
-    # Function: Export data to csv format
+    # Function: Open window for exporting data to csv format
+    @error_wrapper
     def export_files(self):
+        logger.debug('Opening export window')
         self.export = ExportWindow(self)
         self.export.show()
 
+    # Open window for evaluating correlations
+    @error_wrapper
+    def open_correlation(self):
+        self.update_config()
+        logger.debug('Opening correlation window')
+        self.correlation = CorrelationWindow(self)
+        self.correlation.show()
+
     # Function: Update the global configuration
     def update_config(self):
+        logger.debug('Updating configuration')
         config.title = self.figure_title.text()
 
         # x axis config
         config.xvar = self.xaxis_dropdown.currentText()
         config.xname = self.xaxis_name.text()
         config.xunit = self.xaxis_unit.text()
-        if(isfloat(self.xaxis_min.text())):
-            config.xmin = float(self.xaxis_min.text())
-        else:
-            config.xmin = -1
-        if(isfloat(self.xaxis_max.text())):
-            config.xmax = float(self.xaxis_max.text())
-        else:
-            config.xmax = -1
+        config.xmin = self.xaxis_min.get_float()
+        config.xmax = self.xaxis_max.get_float()
         config.xlog = self.xaxis_log.isChecked()
 
         # y axis config
         config.yvar = self.yaxis_dropdown.currentText()
         config.yname = self.yaxis_name.text()
         config.yunit = self.yaxis_unit.text()
-        if(isfloat(self.yaxis_min.text())):
-            config.ymin = float(self.yaxis_min.text())
-        else:
-            config.ymin = -1
-        if(isfloat(self.yaxis_max.text())):
-            config.ymax = float(self.yaxis_max.text())
-        else:
-            config.ymax = -1
+        config.ymin = self.yaxis_min.get_float()
+        config.ymax = self.yaxis_max.get_float()
         config.ylog = self.yaxis_log.isChecked()
         config.ynormlog = self.yaxis_normlog.isChecked()
 
@@ -722,38 +819,19 @@ class App(QMainWindow):
             self.condition_yaxis_dropdown.currentText()
         config.condition_yname = self.condition_yaxis_name.text()
         config.condition_yunit = self.condition_yaxis_unit.text()
-        if(isfloat(self.condition_yaxis_min.text())):
-            config.condition_ymin = \
-                float(self.condition_yaxis_min.text())
-        else:
-            config.condition_ymin = -1
-        if(isfloat(self.condition_yaxis_max.text())):
-            config.condition_ymax = float(self.condition_yaxis_max.text())
-        else:
-            config.condition_ymax = -1
+        config.condition_ymin = self.condition_yaxis_min.get_float()
+        config.condition_ymax = self.condition_yaxis_max.get_float()
         config.condition_ylog = self.condition_yaxis_log.isChecked()
 
         # Data config
         config.smooth = self.smooth_data.isChecked()
         config.align = self.align_data.isChecked()
-        if(isfloat(self.y_alignment.text())):
-            config.y_alignment = float(self.y_alignment.text())
-        else:
-            config.y_alignment = -1
+        config.y_alignment = self.y_alignment.get_float()
         config.auto_remove = self.auto_remove.isChecked()
-        if(isfloat(self.remove_above.text())):
-            config.remove_above = float(self.remove_above.text())
-        else:
-            config.remove_above = -1
-        if(isfloat(self.remove_below.text())):
-            config.remove_below = float(self.remove_below.text())
-        else:
-            config.remove_below = -1
-        if(isfloat(self.condition_average.text())):
-            config.condition_average = \
-                float(self.condition_average.text())
-        else:
-            config.condition_average = -1
+        config.remove_zeros = self.remove_zeros.isChecked()
+        config.remove_above = self.remove_above.get_float()
+        config.remove_below = self.remove_below.get_float()
+        config.condition_average = self.condition_average.get_float()
         config.show_events = self.show_events.isChecked()
 
         # Legend config
@@ -766,14 +844,8 @@ class App(QMainWindow):
         config.condition_legend_title = self.condition_legend_title.text()
         if(config.condition_legend_title.lower() == 'none'):
             config.condition_legend_title = ''
-        config.label_names.clear()
-        for i in range(self.legend_names.count()):
-            config.label_names.append(self.legend_names.itemText(i))
-        config.condition_label_names.clear()
-        for i in range(self.condition_legend_names.count()):
-            config.condition_label_names.append(
-                self.condition_legend_names.itemText(i)
-            )
+        config.label_names = self.legend_names.get_list()
+        config.condition_label_names = self.condition_legend_names.get_list()
         config.extra_info = self.extra_info.currentText()
         config.condition_extra_info = \
             self.condition_extra_info.currentText()
@@ -784,26 +856,23 @@ class App(QMainWindow):
         # Style config
         config.style = self.style_dropdown.currentText()
         config.font_style = self.font_dropdown.currentText()
-        if(isfloat(self.title_size.text())):
-            config.title_size = float(self.title_size.text())
-        else:
-            config.title_size = -1
-        if(isfloat(self.legend_size.text())):
-            config.legend_size = float(self.legend_size.text())
-        else:
-            config.legend_size = -1
-        if(isfloat(self.label_size.text())):
-            config.label_size = float(self.label_size.text())
-        else:
-            config.label_size = -1
-        if(isfloat(self.line_width.text())):
-            config.line_width = float(self.line_width.text())
-        else:
-            config.line_width = -1
+        config.title_size = self.title_size.get_float()
+        config.legend_size = self.legend_size.get_float()
+        config.label_size = self.label_size.get_float()
+        config.line_width = self.line_width.get_float()
         config.axis_colour = self.axis_colour.text()
         config.grid = self.grid_toggle.isChecked()
 
         # Stats config
         config.std_err = self.std_err.isChecked()
+        config.show_fit_text = self.show_fit_text.isChecked()
+        config.show_fit_result = self.show_fit_result.isChecked()
+        config.show_fit_errors = self.show_fit_errors.isChecked()
+        config.sig_figs = self.sig_figs.get_int()
 
-        config.do_fit = False
+        # Advanced config
+        config.sg_window_size = self.sg_window_size.get_float()
+        config.sg_order = self.sg_order.get_float()
+        config.sg_deriv = self.sg_deriv.get_float()
+        config.sg_rate = self.sg_rate.get_float()
+        config.outlier_threshold = self.outlier_threshold.get_float()
