@@ -13,6 +13,9 @@ def process_data(xdata, ydata):
     if config.remove_zeros:
         xdata, ydata = remove_zeros(xdata, ydata)
 
+    if config.initial_y != -1:
+        ydata = ydata - ydata[0] + config.initial_y
+
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:
         xdata = xdata - xdata[0]

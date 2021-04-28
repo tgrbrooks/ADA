@@ -315,6 +315,11 @@ class App(QMainWindow):
         self.y_alignment.setToolTip('Align all growth curves at given Y value')
         data_box_layout.addRow(self.y_alignment)
 
+        # Align all data with 0 checkbox
+        self.initial_y = TextEntry('Set initial Y:', self, config.initial_y)
+        self.initial_y.setToolTip('Start growth curves at a given Y value')
+        data_box_layout.addRow(self.initial_y)
+
         # Condition data downsampling and averaging
         self.condition_average = TextEntry(
             'Condition data time average:', self, config.condition_average)
@@ -827,6 +832,7 @@ class App(QMainWindow):
         config.smooth = self.smooth_data.isChecked()
         config.align = self.align_data.isChecked()
         config.y_alignment = self.y_alignment.get_float()
+        config.initial_y = self.initial_y.get_float()
         config.auto_remove = self.auto_remove.isChecked()
         config.remove_zeros = self.remove_zeros.isChecked()
         config.remove_above = self.remove_above.get_float()

@@ -56,6 +56,7 @@ condition_ylog = False
 smooth = False
 align = False
 y_alignment = -1
+initial_y = -1
 auto_remove = False
 remove_zeros = False
 remove_above = None
