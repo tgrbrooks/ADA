@@ -253,13 +253,13 @@ class TableWindow(QMainWindow):
         logger.info('Saving the table as %s' % file_name)
         with open(file_name, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(self.header)
-            for i, title in enumerate(self.titles):
-                row = [title]
-                for dat in self.data[i]:
-                    if dat is not None:
-                        row.append(str(dat))
-                    else:
-                        row.append('none')
-                writer.writerow(row)
+            for row in range(self.table.rowCount()):
+                    rowdata = []
+                    for column in range(self.table.columnCount()):
+                        item = self.table.item(row, column)
+                        if item is not None:
+                            rowdata.append(item.text())
+                        else:
+                            rowdata.append('none')
+                    writer.writerow(rowdata)
         self.close()
