@@ -355,8 +355,6 @@ class App(QMainWindow):
         self.remove_below = TextEntry(
             'Remove below:', self, config.remove_below)
         data_v_form_layout.addRow(self.remove_below)
-        self.remove_zeros = CheckBox('Remove points with y=0 off/on', self)
-        data_v_form_layout.addRow(' ', self.remove_zeros)
         data_v_form_widget = QWidget()
         data_v_form_widget.setLayout(data_v_form_layout)
         data_v_layout.addWidget(data_v_form_widget)
@@ -859,7 +857,6 @@ class App(QMainWindow):
         config.y_alignment = self.y_alignment.get_float()
         config.initial_y = self.initial_y.get_float()
         config.auto_remove = self.auto_remove.isChecked()
-        config.remove_zeros = self.remove_zeros.isChecked()
         config.remove_above = self.remove_above.get_float()
         config.remove_below = self.remove_below.get_float()
         config.growth_average = self.growth_average.get_float()

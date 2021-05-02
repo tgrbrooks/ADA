@@ -60,7 +60,6 @@ align = False
 y_alignment = -1
 initial_y = -1
 auto_remove = False
-remove_zeros = False
 remove_above = None
 remove_below = None
 downsample = -1
