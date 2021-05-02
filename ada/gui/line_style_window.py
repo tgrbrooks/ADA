@@ -33,15 +33,14 @@ class LineStyleWindow(QMainWindow):
             5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
         layout.setSpacing(5*config.wr)
 
-        self.line_style = DropDown('Line style:', [], self)
-        self.line_style.addItem('solid')
-        self.line_style.addItem('dashed')
-        self.line_style.addItem('dashdot')
-        self.line_style.addItem('dotted')
+        self.line_style = DropDown('Line style:', config.line_style_options, self)
         layout.addWidget(self.line_style)
 
         self.line_colour = TextEntry('Line colour:', self)
         layout.addWidget(self.line_colour)
+
+        self.marker_style = DropDown('Marker style:', config.marker_style_options, self)
+        layout.addWidget(self.marker_style)
 
         apply_button = Button("Apply", self)
         apply_button.clicked.connect(self.apply_changes)
@@ -56,10 +55,10 @@ class LineStyleWindow(QMainWindow):
                      (self.line_colour.text(), self.line_style.currentText()))
         try:
             if(is_color_like(self.line_colour.text())):
-                self.artist[0].set_color(self.line_colour.text())
-                if(len(self.artist) > 1):
-                    self.artist[1].set_color(self.line_colour.text())
+                for i in range(len(self.artist)):
+                    self.artist[i].set_color(self.line_colour.text())
             self.artist[0].set_linestyle(self.line_style.currentText())
+            self.artist[0].set_marker(self.marker_style.currentText())
             if(self.parent.legend_on):
                 self.parent.axes.legend(
                     title=self.parent.legend_title,
@@ -73,9 +72,10 @@ class LineStyleWindow(QMainWindow):
             self.parent.draw()
             self.parent.plot_config.append([
                 self.line_i,
-                [self.artist[0].get_color(), self.artist[0].get_linestyle()]
+                [self.artist[0].get_color(), self.artist[0].get_linestyle(), self.artist[0].get_marker()]
             ])
             self.close()
-        except Exception:
+        except Exception as e:
+            logger.exception(e)
             logger.warning('Unable change style, skipping')
             pass

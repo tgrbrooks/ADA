@@ -80,9 +80,34 @@ class DataManager():
             yvar, self.calibration)
         return xdata, ydata
 
-    def get_xy_data(self, i, signal_name, xvar=None, std_err=False, ynormlog=False):
+    def get_averaged_data(self, xdatas, ydatas, time_window=None, std_err=False):
+        xdata = None
+        ydata = None
+        yerr = None
+        # Average replicate data sets over time
+        if len(xdatas) > 1 and time_window is not None:
+            xdata, ydata, yerr = \
+                time_average_arrays(xdatas, ydatas, time_window, std_err)
+        # Average replicate data sets for each point
+        elif len(xdatas) > 1:
+            xdata, ydata, yerr = average_data(xdatas, ydatas, std_err)
+        # Average a single data set over time
+        elif len(xdatas) == 1 and time_window is not None:
+            xdata, ydata, yerr = \
+                time_average(xdatas[0], ydatas[0], time_window, std_err)
+        # Return the original data set
+        elif len(xdatas) == 1:
+            xdata = xdatas[0]
+            ydata = ydatas[0]
+        else:
+            raise RuntimeError('No data found')
+        return xdata, ydata, yerr
+
+    def get_xy_data(self, i, signal_name, xvar=None, growth_average=None, std_err=False, ynormlog=False):
         if xvar is None:
             xvar = config.xvar
+        if growth_average is None:
+            growth_average = config.growth_average
         if config.std_err:
             std_err = True
         if config.ynormlog:
@@ -96,16 +121,14 @@ class DataManager():
             xdata, ydata = process_data(xdata, ydata)
             xdatas.append(xdata)
             ydatas.append(ydata)
-        if len(xdatas) > 1:
-            xdata, ydata, yerr = average_data(xdatas, ydatas, std_err)
-            if ynormlog:
+        
+        xdata, ydata, yerr = self.get_averaged_data(xdatas, ydatas, growth_average, std_err)
+        if ynormlog:
+            ydata = np.log(ydata/ydata[0])
+            if yerr is not None:
                 yerr = yerr/ydata
-                ydata = np.log(ydata/ydata[0])
-            return xdata, ydata, yerr
-        elif len(xdatas) == 1:
-            return xdatas[0], ydatas[0], None
-        else:
-            raise RuntimeError('No data found')
+
+        return xdata, ydata, yerr
 
     def get_xtitle(self, i, xvar=None, xname=None, xunit=None):
         if xvar is None:
@@ -197,21 +220,8 @@ class DataManager():
             ydata = rep.get_ydata(yvar)
             xdatas.append(xdata)
             ydatas.append(ydata)
-        yerr = None
-        # Average condition data over time
-        if len(xdatas) > 1 and condition_average != -1:
-            xdata, ydata, yerr = \
-                time_average_arrays(xdatas, ydatas, condition_average, std_err)
-        elif len(xdatas) > 1:
-            xdata, ydata, yerr = average_data(xdatas, ydatas, std_err)
-        elif len(xdatas) == 1 and condition_average != -1:
-            xdata, ydata, yerr = \
-                time_average(xdatas[0], ydatas[0], condition_average, std_err)
-        elif len(xdatas) == 1:
-            return xdatas[0], ydatas[0], None
-        else:
-            raise RuntimeError('No condition data found at index %i' % i)
-        return xdata, ydata, yerr
+        
+        return self.get_averaged_data(xdatas, ydatas, condition_average, std_err)
 
     def get_condition_ytitle(self, i, yvar=None, yname=None, yunit=None):
         if yvar is None:
@@ -351,9 +361,8 @@ class DataManager():
             to_index = np.abs(fit_x - fit_to).argmin()
             fit_x = fit_x[from_index:to_index]
             fit_y = fit_y[from_index:to_index]
-
-        if fit_sigma is not None:
-            fit_sigma = fit_sigma[from_index:to_index]
+            if fit_sigma is not None:
+                fit_sigma = fit_sigma[from_index:to_index]
 
         return fit_x, fit_y, fit_sigma
 
