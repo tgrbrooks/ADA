@@ -133,6 +133,10 @@ class PlotCanvas(FigureCanvasQTAgg):
             mpl.rcParams['ytick.labelsize'] = config.label_size
         if(config.line_width >= 0):
             mpl.rcParams['lines.linewidth'] = config.line_width
+        if(config.marker_size >= 0):
+            mpl.rcParams['lines.markersize'] = config.marker_size
+        if(config.save_dpi >= 0):
+            mpl.rcParams['savefig.dpi'] = config.save_dpi
         return
 
     def clear_axes(self):
@@ -185,14 +189,16 @@ class PlotCanvas(FigureCanvasQTAgg):
             if i < len(config.conf_colors):
                 col = config.conf_colors[i]
 
-            if(config.condition_average != -1):
+            if(config.condition_average is not None):
                 condition_plot = \
                     self.condition_axes.errorbar(xdata,
                                                  ydata,
                                                  yerr, fmt='--',
-                                                 capsize=2, color=col,
+                                                 capsize=config.capsize, color=col,
                                                  label=legend_label)
                 self.plot_list.append([condition_plot[0]])
+                self.plot_list.append([condition_plot[0], condition_plot[1][0],
+                                       condition_plot[1][1], condition_plot[2][0]])
             elif yerr is not None:
                 condition_plot = \
                     self.condition_axes.plot(xdata, ydata,
@@ -215,16 +221,22 @@ class PlotCanvas(FigureCanvasQTAgg):
             self.x_title, self.y_title = data_manager.get_titles(i)
             legend_label = data_manager.get_growth_legend(i)
 
-            if yerr is not None:
+            if(config.growth_average is not None):
+                growth_plot = \
+                    self.axes.errorbar(xdata,
+                                       ydata,
+                                       yerr, fmt='-',
+                                       capsize=config.capsize,
+                                       label=legend_label)
+                self.plot_list.append([growth_plot[0], growth_plot[1][0],
+                                       growth_plot[1][1], growth_plot[2][0]])
+            elif yerr is not None:
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr,
                                                    ydata+yerr, alpha=0.4)
                 self.plot_list.append([growth_plot[0], fill_area])
             else:
-                if config.ynormlog:
-                    ydata = np.log(ydata/ydata[0])
-
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 self.plot_list.append([growth_plot[0]])
@@ -451,10 +463,10 @@ class PlotCanvas(FigureCanvasQTAgg):
         for pconf in self.plot_config:
             if(pconf[0] > len(self.plot_list)):
                 continue
-            self.plot_list[pconf[0]][0].set_color(pconf[1][0])
+            for i in range(len(self.plot_list[pconf[0]])):
+                self.plot_list[pconf[0]][i].set_color(pconf[1][0])
             self.plot_list[pconf[0]][0].set_linestyle(pconf[1][1])
-            if len(self.plot_list[pconf[0]]) > 1:
-                self.plot_list[pconf[0]][1].set_color(pconf[1][0])
+            self.plot_list[pconf[0]][0].set_marker(pconf[1][2])
         return
 
     def set_legends(self):

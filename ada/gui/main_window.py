@@ -320,7 +320,13 @@ class App(QMainWindow):
         self.initial_y.setToolTip('Start growth curves at a given Y value')
         data_box_layout.addRow(self.initial_y)
 
-        # Condition data downsampling and averaging
+        # Growth data averaging
+        self.growth_average = TextEntry(
+            'Growth data time average:', self, config.growth_average)
+        self.growth_average.setToolTip('Average over a given time window')
+        data_box_layout.addRow(self.growth_average)
+
+        # Condition data averaging
         self.condition_average = TextEntry(
             'Condition data time average:', self, config.condition_average)
         self.condition_average.setToolTip('Average over a given time window')
@@ -456,6 +462,7 @@ class App(QMainWindow):
         # Style configuration
         style_h_layout = QHBoxLayout()
         style_box_layout = QFormLayout()
+        style_numeric_layout = QFormLayout()
 
         # Plot style dropdown menu
         self.style_dropdown = DropDown('Style:', config.style_options, self)
@@ -468,20 +475,32 @@ class App(QMainWindow):
         # Font size textbox
         self.title_size = SpinBox(
             'Title font size:', config.title_size, 0, 100, self)
-        style_box_layout.addRow(self.title_size)
+        style_numeric_layout.addRow(self.title_size)
 
         self.legend_size = SpinBox(
             'Legend font size:', config.legend_size, 0, 100, self)
-        style_box_layout.addRow(self.legend_size)
+        style_numeric_layout.addRow(self.legend_size)
 
         self.label_size = SpinBox(
             'Label font size:', config.label_size, 0, 100, self)
-        style_box_layout.addRow(self.label_size)
+        style_numeric_layout.addRow(self.label_size)
 
         # Line width textbox
         self.line_width = SpinBox(
             'Line width:', config.line_width, 0, 20, self)
-        style_box_layout.addRow(self.line_width)
+        style_numeric_layout.addRow(self.line_width)
+
+        self.marker_size = SpinBox(
+            'Marker size:', config.marker_size, 0, 20, self)
+        style_numeric_layout.addRow(self.marker_size)
+
+        self.capsize = SpinBox(
+            'Error cap size:', config.capsize, 0, 20, self)
+        style_numeric_layout.addRow(self.capsize)
+
+        self.save_dpi = SpinBox(
+            'Saved figure DPI:', config.save_dpi, 10, 2000, self)
+        style_numeric_layout.addRow(self.save_dpi)
 
         # Condition axis colour
         self.axis_colour = TextEntry('Condition axis color:', self)
@@ -496,8 +515,14 @@ class App(QMainWindow):
         style_box_widget = QWidget()
         style_box_widget.setLayout(style_box_layout)
 
+        style_numeric_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        style_numeric_layout.setLabelAlignment(Qt.AlignCenter)
+
+        style_numeric_widget = QWidget()
+        style_numeric_widget.setLayout(style_numeric_layout)
+
         style_h_layout.addWidget(style_box_widget)
-        style_h_layout.addWidget(Spacer())
+        style_h_layout.addWidget(style_numeric_widget)
         style_h_widget = QWidget()
         style_h_widget.setLayout(style_h_layout)
         style_h_widget.setStyleSheet(styles.white_background)
@@ -837,6 +862,7 @@ class App(QMainWindow):
         config.remove_zeros = self.remove_zeros.isChecked()
         config.remove_above = self.remove_above.get_float()
         config.remove_below = self.remove_below.get_float()
+        config.growth_average = self.growth_average.get_float()
         config.condition_average = self.condition_average.get_float()
         config.show_events = self.show_events.isChecked()
 
@@ -867,6 +893,9 @@ class App(QMainWindow):
         config.label_size = self.label_size.get_float()
         config.line_width = self.line_width.get_float()
         config.axis_colour = self.axis_colour.text()
+        config.marker_size = self.marker_size.get_float()
+        config.capsize = self.capsize.get_float()
+        config.save_dpi = self.save_dpi.get_float()
         config.grid = self.grid_toggle.isChecked()
 
         # Stats config
