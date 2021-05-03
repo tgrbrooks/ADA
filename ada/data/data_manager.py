@@ -124,9 +124,9 @@ class DataManager():
         
         xdata, ydata, yerr = self.get_averaged_data(xdatas, ydatas, growth_average, std_err)
         if ynormlog:
-            ydata = np.log(ydata/ydata[0])
             if yerr is not None:
                 yerr = yerr/ydata
+            ydata = np.log(ydata/ydata[0])
 
         return xdata, ydata, yerr
 
