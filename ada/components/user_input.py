@@ -114,9 +114,9 @@ class SpinBox(QWidget):
         layout.addWidget(text)
 
         self.entry = QSpinBox(parent)
-        self.entry.setValue(start)
         self.entry.setMinimum(min_val)
         self.entry.setMaximum(max_val)
+        self.entry.setValue(start)
         self.entry.setSingleStep(1)
         self.entry.setStyleSheet(styles.spinbox_style)
         layout.addWidget(self.entry)

@@ -9,9 +9,9 @@ from ada.logger import logger
 # Function to apply alignment, outlier removal and smoothing
 def process_data(xdata, ydata):
     logger.debug('Processing data')
-    # Remove any values <= 0
-    if config.remove_zeros:
-        xdata, ydata = remove_zeros(xdata, ydata)
+
+    if config.initial_y != -1:
+        ydata = ydata - ydata[0] + config.initial_y
 
     # Align at time 0 if option selected
     if config.align and config.y_alignment == -1:
@@ -31,19 +31,6 @@ def process_data(xdata, ydata):
     if(config.smooth):
         ydata = savitzky_golay(ydata, config.sg_window_size,
                                config.sg_order, config.sg_deriv, config.sg_rate)
-    return xdata, ydata
-
-
-# Function to remove any zero values
-def remove_zeros(xdata, ydata):
-    logger.debug('Removing any y=0 points in data')
-    data_index = 0
-    while data_index < len(ydata):
-        if (ydata[data_index] == 0):
-            ydata = np.delete(ydata, data_index)
-            xdata = np.delete(xdata, data_index)
-            data_index = data_index - 1
-        data_index = data_index + 1
     return xdata, ydata
 
 

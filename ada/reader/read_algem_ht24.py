@@ -102,28 +102,23 @@ def read_details(file_name, duplicate_name, downsample=-1):
 
     f = open(duplicate_name, 'r', errors='ignore')
     reader = csv.reader(f, delimiter=',')
-
-    date_row = next(reader)
-    date_all = parse(date_row[1]).date()
-
-    time_row = next(reader)
-    time_all = parse(time_row[1]).time()
-
-    exp_name_row = next(reader)
+    
     exp_name = ''
-    if(len(exp_name_row) > 1):
-        exp_name = exp_name_row
-
-    reac_row = next(reader)
     reactor = ''
-    if(len(reac_row) > 1):
-        reactor = reac_row[1]
-
-    next(reader)
 
     profiles = {}
     replicates = []
     for row in reader:
+        if len(row) <= 1:
+            continue
+        if row[0] == 'Date':
+            date_all = parse(row[1]).date()
+        if row[0] == 'Time':
+            time_all = parse(row[1]).time()
+        if row[0] == 'Experiment Name':
+            exp_name = row[1]
+        if row[0] == 'Serial Number':
+            reactor = row[1]
         if row[0].split(' ')[-1] == 'Profile':
             profile = row[1].split('.algp')[0].split('\\')[-1]
             profiles[row[0].split(' ')[0]] = profile
