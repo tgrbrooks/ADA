@@ -1,3 +1,4 @@
+-e git+https://github.com/tgrbrooks/ADA.git@ad78dd5b0f7969a45f499b1727296e793a24e132#egg=ADA
 altgraph==0.17
 cycler==0.10.0
 ezodf==0.3.2
@@ -9,11 +10,13 @@ macholib==1.14
 matplotlib==3.2.1
 numpy==1.18.4
 pefile==2019.4.18
-pip==9.0.1
 PyInstaller==3.4
 pyparsing==2.4.7
+pypiwin32==223
 PyQt5==5.9.2
 python-dateutil==2.8.1
-setuptools==44.1.1
+pywin32==300
+pywin32-ctypes==0.2.0
+scipy==1.5.4
 sip==4.19.8
 six==1.15.0
