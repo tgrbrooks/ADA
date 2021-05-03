@@ -11,7 +11,7 @@ from ada.data.algae_data import AlgaeData
 from ada.data.data_holder import DataHolder
 from ada.data.models import get_model
 from ada.data.processor import (
-    remove_zeros, align_to_y, remove_outliers, savitzky_golay, average_data,
+    align_to_y, remove_outliers, savitzky_golay, average_data,
     time_average, time_average_arrays, get_exponent, exponent_text, exponent_text_errors)
 from ada.data.data_manager import DataManager
 
@@ -150,13 +150,6 @@ class DataTest(unittest.TestCase):
         self.assertEqual(math.floor(func([2], 0, 40, 0.4, 4)), 4)
 
     # ====== data/processor.py ========
-    def test_remove_zeros(self):
-        xdata = [0, 3, 2, 1, 0, 1, 2, 3]
-        ydata = [0, 3, 2, 1, 0, 1, 2, 3]
-        newx, newy = remove_zeros(xdata, ydata)
-        self.assertEqual(len(newx), 6)
-        self.assertEqual(len(newy), 6)
-
     def test_align_to_y(self):
         xdata = np.array([0, 1, 2, 3, 4, 5, 6])
         ydata = np.array([0, 1, 2, 3, 4, 5, 6])
