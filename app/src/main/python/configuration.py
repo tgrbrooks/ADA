@@ -10,6 +10,8 @@ unit_map = {
 }
 info_options = ["none", "reactor", "profile", "title", "date", "time",
                 "date+time"]
+line_style_options = ["solid", "dashed", "dashdot", "dotted", "none"]
+marker_style_options = ["none", "o", "v", "s", "+", "x", "D"]
 style_options = ["default", "greyscale", "colour blind", "pastel", "deep"]
 font_options = ["sans-serif", "serif", "cursive", "fantasy", "monospace"]
 table_row_options = ["profile", "reactor", "gradient", "time to",
@@ -56,12 +58,13 @@ condition_ylog = False
 smooth = False
 align = False
 y_alignment = -1
+initial_y = -1
 auto_remove = False
-remove_zeros = False
 remove_above = None
 remove_below = None
 downsample = -1
-condition_average = -1
+growth_average = None
+condition_average = None
 show_events = False
 
 # Measurement config
@@ -84,9 +87,12 @@ font_style = ''
 title_size = 14
 legend_size = 12
 label_size = 12
+marker_size = 0
 line_width = 2
 axis_colour = -1
+capsize = 2
 grid = False
+save_dpi = 600
 
 # Stats config
 std_err = False
