@@ -1,4 +1,4 @@
--e git+https://github.com/tgrbrooks/ADA.git@ad78dd5b0f7969a45f499b1727296e793a24e132#egg=ADA
+-e git+git@github.com:tgrbrooks/ADA.git@f97d12c95d34188ecd5781c99ee3fd8c9b248de4#egg=ADA
 altgraph==0.17
 cycler==0.10.0
 ezodf==0.3.2
