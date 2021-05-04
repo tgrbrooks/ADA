@@ -11,7 +11,7 @@ unit_map = {
 info_options = ["none", "reactor", "profile", "title", "date", "time",
                 "date+time"]
 line_style_options = ["solid", "dashed", "dashdot", "dotted", "none"]
-marker_style_options = ["none", "o", "v", "s", "+", "x", "D"]
+marker_style_options = {"none": "", "circle": "o", "triangle": "v", "square": "s", "plus": "+", "cross": "x", "diamond": "D"}
 style_options = ["default", "greyscale", "colour blind", "pastel", "deep"]
 font_options = ["sans-serif", "serif", "cursive", "fantasy", "monospace"]
 table_row_options = ["profile", "reactor", "gradient", "time to",
