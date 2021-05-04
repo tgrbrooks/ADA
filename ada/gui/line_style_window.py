@@ -39,7 +39,7 @@ class LineStyleWindow(QMainWindow):
         self.line_colour = TextEntry('Line colour:', self)
         layout.addWidget(self.line_colour)
 
-        self.marker_style = DropDown('Marker style:', config.marker_style_options, self)
+        self.marker_style = DropDown('Marker style:', list(config.marker_style_options.keys()), self)
         layout.addWidget(self.marker_style)
 
         apply_button = Button("Apply", self)
@@ -58,7 +58,7 @@ class LineStyleWindow(QMainWindow):
                 for i in range(len(self.artist)):
                     self.artist[i].set_color(self.line_colour.text())
             self.artist[0].set_linestyle(self.line_style.currentText())
-            self.artist[0].set_marker(self.marker_style.currentText())
+            self.artist[0].set_marker(config.marker_style_options[self.marker_style.currentText()])
             if(self.parent.legend_on):
                 self.parent.axes.legend(
                     title=self.parent.legend_title,
