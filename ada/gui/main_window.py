@@ -767,6 +767,22 @@ class App(QMainWindow):
         self.load = LoadWindow(self, row)
         self.load.show()
 
+    # Function: Remove file from list of data
+    def set_visibility(self):
+        row = self.get_data_row()
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
+            if i != row:
+                continue
+            data_manager.get_growth_file(i).visible = not data_manager.get_growth_file(i).visible
+
+    # Function: Remove file from list of data
+    def set_condition_visibility(self):
+        row = self.get_condition_row()
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
+            if i != row:
+                continue
+            data_manager.get_condition_file(i).visible = not data_manager.get_condition_file(i).visible
+
     @error_wrapper
     def download_template(self):
         logger.debug('Downloading ADA data template')

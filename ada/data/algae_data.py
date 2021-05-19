@@ -15,6 +15,8 @@ class AlgaeData():
         self.reactor = ''
         self.sub_reactor = ''
         self.profile = ''
+        self.style = {}
+        self.visible = True
         # Data information
         self.xaxis = self.XAxis()
         self.signals = []
