@@ -17,6 +17,7 @@ class AlgaeData():
         self.profile = ''
         self.style = {}
         self.visible = True
+        self.legend = ''
         # Data information
         self.xaxis = self.XAxis()
         self.signals = []

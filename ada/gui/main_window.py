@@ -671,7 +671,10 @@ class App(QMainWindow):
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
                                          data_list_item.widget)
-            self.legend_names.addItem(data.label)
+            if data.legend:
+                self.legend_names.addItem(data.legend)
+            else:
+                self.legend_names.addItem(data.label)
             if i > 0:
                 continue
             contains_od = False
@@ -696,7 +699,10 @@ class App(QMainWindow):
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
                                                    data_list_item.widget)
-            self.condition_legend_names.addItem(data.label)
+            if data.legend:
+                self.condition_legend_names.addItem(data.legend)
+            else:
+                self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
             for sig in data.signals:
@@ -890,7 +896,11 @@ class App(QMainWindow):
         if(config.condition_legend_title.lower() == 'none'):
             config.condition_legend_title = ''
         config.label_names = self.legend_names.get_list()
+        for i, label in enumerate(config.label_names):
+            data_manager.get_growth_file(i).legend = label
         config.condition_label_names = self.condition_legend_names.get_list()
+        for i, label in enumerate(config.condition_label_names):
+            data_manager.get_condition_file(i).legend = label
         config.extra_info = self.extra_info.currentText()
         config.condition_extra_info = \
             self.condition_extra_info.currentText()

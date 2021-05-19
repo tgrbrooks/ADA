@@ -15,7 +15,7 @@ from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
-from ada.plotter.cursor import Cursor, SnapToCursor
+from ada.plotter.cursor import SnapToCursor
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 from ada.gui.line_style_window import LineStyleWindow
