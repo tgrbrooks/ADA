@@ -636,7 +636,6 @@ class App(QMainWindow):
         data_manager.calibration = None
 
     # Define right click behaviour
-    @error_wrapper
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
