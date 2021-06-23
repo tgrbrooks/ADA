@@ -38,6 +38,11 @@ class PlotObject():
             self.plots = [plots[0][0], plots[1]]
 
     def set_style(self):
+        if "style" in self.data.style:
+            if config.style != self.data.style["style"]:
+                return
+        else:
+            return
         if "color" in self.data.style:
             self.set_color(self.data.style["color"])
         if "marker" in self.data.style:
@@ -46,6 +51,7 @@ class PlotObject():
             self.set_linestyle(self.data.style["linestyle"])
 
     def save_style(self):
+        self.data.style["style"] = config.style
         self.data.style["color"] = self.plots[0].get_color()
         self.data.style["marker"] = self.plots[0].get_marker()
         self.data.style["linestyle"] = self.plots[0].get_linestyle()
