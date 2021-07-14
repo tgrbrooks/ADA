@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout
-from PyQt5.QtWidgets import QPushButton, QLabel, QWidget, QListWidget
+from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QVBoxLayout, QLayout,
+                             QLabel, QWidget, QCheckBox)
 
 from ada.data.data_manager import data_manager
 from ada.components.button import AddButton, DeleteButton
@@ -17,6 +17,9 @@ class DataListItem():
         del_button.clicked.connect(parent.remove_item)
         add_button = AddButton()
         add_button.clicked.connect(parent.add_to_item)
+        show_box = QCheckBox()
+        show_box.setChecked(data_manager.get_growth_file(index).visible)
+        show_box.clicked.connect(parent.set_visibility)
         label = QLabel(text)
         label.setStyleSheet(styles.default_font_bold)
 
@@ -24,6 +27,7 @@ class DataListItem():
         layout = QHBoxLayout()
         layout.addWidget(del_button)
         layout.addWidget(add_button)
+        layout.addWidget(show_box)
         layout.addWidget(label)
         layout.addStretch()
         layout.setSizeConstraint(QLayout.SetFixedSize)
@@ -64,12 +68,16 @@ class ConditionListItem():
         self.widget = QWidget()
         del_button = DeleteButton()
         del_button.clicked.connect(parent.remove_condition_item)
+        show_box = QCheckBox()
+        show_box.setChecked(data_manager.get_condition_file(index).visible)
+        show_box.clicked.connect(parent.set_condition_visibility)
         label = QLabel(text)
         label.setStyleSheet(styles.default_font_bold)
 
         hwidget = QWidget()
         layout = QHBoxLayout()
         layout.addWidget(del_button)
+        layout.addWidget(show_box)
         layout.addWidget(label)
         layout.addStretch()
         layout.setSizeConstraint(QLayout.SetFixedSize)

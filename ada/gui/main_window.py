@@ -636,7 +636,6 @@ class App(QMainWindow):
         data_manager.calibration = None
 
     # Define right click behaviour
-    @error_wrapper
     def on_context_menu(self, point):
         # show context menu
         action = self.clear_menu.exec_(self.data_button.mapToGlobal(point))
@@ -671,7 +670,10 @@ class App(QMainWindow):
             self.data_list.addItem(data_list_item.item)
             self.data_list.setItemWidget(data_list_item.item,
                                          data_list_item.widget)
-            self.legend_names.addItem(data.label)
+            if data.legend:
+                self.legend_names.addItem(data.legend)
+            else:
+                self.legend_names.addItem(data.label)
             if i > 0:
                 continue
             contains_od = False
@@ -696,7 +698,10 @@ class App(QMainWindow):
             self.condition_data_list.addItem(data_list_item.item)
             self.condition_data_list.setItemWidget(data_list_item.item,
                                                    data_list_item.widget)
-            self.condition_legend_names.addItem(data.label)
+            if data.legend:
+                self.condition_legend_names.addItem(data.legend)
+            else:
+                self.condition_legend_names.addItem(data.label)
             if i > 0:
                 continue
             for sig in data.signals:
@@ -766,6 +771,22 @@ class App(QMainWindow):
         # Open file with file handler
         self.load = LoadWindow(self, row)
         self.load.show()
+
+    # Function: Remove file from list of data
+    def set_visibility(self):
+        row = self.get_data_row()
+        for i, _ in enumerate(data_manager.get_growth_data_files()):
+            if i != row:
+                continue
+            data_manager.get_growth_file(i).visible = not data_manager.get_growth_file(i).visible
+
+    # Function: Remove file from list of data
+    def set_condition_visibility(self):
+        row = self.get_condition_row()
+        for i, _ in enumerate(data_manager.get_condition_data_files()):
+            if i != row:
+                continue
+            data_manager.get_condition_file(i).visible = not data_manager.get_condition_file(i).visible
 
     @error_wrapper
     def download_template(self):
@@ -874,7 +895,11 @@ class App(QMainWindow):
         if(config.condition_legend_title.lower() == 'none'):
             config.condition_legend_title = ''
         config.label_names = self.legend_names.get_list()
+        for i, label in enumerate(config.label_names):
+            data_manager.get_growth_file(i).legend = label
         config.condition_label_names = self.condition_legend_names.get_list()
+        for i, label in enumerate(config.condition_label_names):
+            data_manager.get_condition_file(i).legend = label
         config.extra_info = self.extra_info.currentText()
         config.condition_extra_info = \
             self.condition_extra_info.currentText()
