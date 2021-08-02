@@ -29,11 +29,17 @@ class DataManager():
     def num_growth_files(self):
         return len(self.get_growth_data_files())
 
+    def get_growth_file(self, i):
+        return self.growth_data.data_files[i]
+
     def get_condition_data_files(self):
         return self.condition_data.data_files
 
     def num_condition_files(self):
         return len(self.get_condition_data_files())
+
+    def get_condition_file(self, i):
+        return self.condition_data.data_files[i]
 
     def get_growth_variables(self):
         variables = []
