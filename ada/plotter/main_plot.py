@@ -11,13 +11,11 @@ from PyQt5.QtWidgets import QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.colors import is_color_like
-import matplotlib.pyplot as plt
-import matplotlib.style
 from matplotlib.text import Text
 import matplotlib as mpl
 
 # Local imports
-from ada.plotter.cursor import Cursor, SnapToCursor
+from ada.plotter.cursor import SnapToCursor
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 from ada.gui.line_style_window import LineStyleWindow
@@ -25,6 +23,48 @@ from ada.gui.file_handler import save_file
 
 import ada.configuration as config
 from ada.logger import logger
+
+
+class PlotObject():
+    def __init__(self, data, plots, plot_type):
+        self.data = data
+        self.type = plot_type
+        self.plots = []
+        if plot_type == "line":
+            self.plots = [plots[0]]
+        elif self.type == "errorbar":
+            self.plots = [plots[0], plots[1][0], plots[1][1], plots[2][0]]
+        elif self.type == "fill":
+            self.plots = [plots[0][0], plots[1]]
+
+    def set_style(self):
+        if "style" in self.data.style:
+            if config.style != self.data.style["style"]:
+                return
+        else:
+            return
+        if "color" in self.data.style:
+            self.set_color(self.data.style["color"])
+        if "marker" in self.data.style:
+            self.set_marker(self.data.style["marker"])
+        if "linestyle" in self.data.style:
+            self.set_linestyle(self.data.style["linestyle"])
+
+    def save_style(self):
+        self.data.style["style"] = config.style
+        self.data.style["color"] = self.plots[0].get_color()
+        self.data.style["marker"] = self.plots[0].get_marker()
+        self.data.style["linestyle"] = self.plots[0].get_linestyle()
+
+    def set_color(self, color):
+        for i, _ in enumerate(self.plots):
+            self.plots[i].set_color(color)
+
+    def set_marker(self, color):
+        self.plots[0].set_marker(color)
+
+    def set_linestyle(self, color):
+        self.plots[0].set_linestyle(color)
 
 
 class PlotCanvas(FigureCanvasQTAgg):
@@ -106,6 +146,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         # Show the plot
         self.draw()
+        self.save_plot_styles()
 
     def set_style(self):
         # Style configuration
@@ -178,6 +219,8 @@ class PlotCanvas(FigureCanvasQTAgg):
     def plot_condition_data(self):
         # Loop over the condition data files
         for i in range(data_manager.num_condition_files()):
+            if not data_manager.get_condition_file(i).visible:
+                continue
             # Get the condition data in the right time units. averaging if required
             xdata, ydata, yerr = data_manager.get_condition_data(i)
             ytitle = data_manager.get_condition_ytitle(i)
@@ -190,56 +233,62 @@ class PlotCanvas(FigureCanvasQTAgg):
                 col = config.conf_colors[i]
 
             if(config.condition_average is not None):
-                condition_plot = \
-                    self.condition_axes.errorbar(xdata,
-                                                 ydata,
-                                                 yerr, fmt='--',
-                                                 capsize=config.capsize, color=col,
-                                                 label=legend_label)
-                self.plot_list.append([condition_plot[0]])
-                self.plot_list.append([condition_plot[0], condition_plot[1][0],
-                                       condition_plot[1][1], condition_plot[2][0]])
+                condition_plot = self.condition_axes.errorbar(xdata,
+                                                              ydata,
+                                                              yerr, fmt='--',
+                                                              capsize=config.capsize, color=col,
+                                                              label=legend_label)
+                self.plot_list.append(PlotObject(data_manager.get_condition_file(i),
+                                                 condition_plot,
+                                                 "errorbar"))
             elif yerr is not None:
-                condition_plot = \
-                    self.condition_axes.plot(xdata, ydata,
-                                             '--', color=col,
-                                             label=legend_label)
+                condition_plot = self.condition_axes.plot(xdata, ydata,
+                                                          '--', color=col,
+                                                          label=legend_label)
                 fill_area = self.condition_axes.fill_between(xdata, ydata-yerr,
-                                                   ydata+yerr, color=col, alpha=0.4)
-                self.plot_list.append([condition_plot[0], fill_area])
+                                                             ydata+yerr, color=col, alpha=0.4)
+                self.plot_list.append(PlotObject(data_manager.get_condition_file(i),
+                                                 [condition_plot, fill_area],
+                                                 "fill"))
             else:
-                print(xdata, ydata)
-                condition_plot = \
-                    self.condition_axes.plot(xdata, ydata,
-                                             '--', color=col,
-                                             label=legend_label)
-                self.plot_list.append([condition_plot[0]])
+                condition_plot = self.condition_axes.plot(xdata, ydata,
+                                                          '--', color=col,
+                                                          label=legend_label)
+                self.plot_list.append(PlotObject(data_manager.get_condition_file(i),
+                                                 condition_plot,
+                                                 "line"))
 
     def plot_data(self):
         for i in range(data_manager.num_growth_files()):
+            if not data_manager.get_growth_file(i).visible:
+                continue
             xdata, ydata, yerr = data_manager.get_xy_data(i, config.yvar)
             self.x_title, self.y_title = data_manager.get_titles(i)
             legend_label = data_manager.get_growth_legend(i)
 
             if(config.growth_average is not None):
-                growth_plot = \
-                    self.axes.errorbar(xdata,
-                                       ydata,
-                                       yerr, fmt='-',
-                                       capsize=config.capsize,
-                                       label=legend_label)
-                self.plot_list.append([growth_plot[0], growth_plot[1][0],
-                                       growth_plot[1][1], growth_plot[2][0]])
+                growth_plot = self.axes.errorbar(xdata,
+                                                 ydata,
+                                                 yerr, fmt='-',
+                                                 capsize=config.capsize,
+                                                 label=legend_label)
+                self.plot_list.append(PlotObject(data_manager.get_growth_file(i),
+                                                 growth_plot,
+                                                 "errorbar"))
             elif yerr is not None:
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
                 fill_area = self.axes.fill_between(xdata, ydata-yerr,
                                                    ydata+yerr, alpha=0.4)
-                self.plot_list.append([growth_plot[0], fill_area])
+                self.plot_list.append(PlotObject(data_manager.get_growth_file(i),
+                                                 [growth_plot, fill_area],
+                                                 "fill"))
             else:
                 growth_plot = self.axes.plot(xdata, ydata, '-',
                                              label=legend_label)
-                self.plot_list.append([growth_plot[0]])
+                self.plot_list.append(PlotObject(data_manager.get_growth_file(i),
+                                                 growth_plot,
+                                                 "line"))
 
             self.xdata_list.append(xdata)
             self.ydata_list.append(ydata)
@@ -405,11 +454,10 @@ class PlotCanvas(FigureCanvasQTAgg):
                 return True
 
             def onpress(event):
-                _, line_i, min_dist = \
-                    self.find_closest(self.plot_list, event.xdata, event.ydata)
-                if min_dist < 5:
-                    self.linewindow = LineStyleWindow(self.plot_list[line_i],
-                                                      line_i, self)
+                closest_i = self.find_closest(
+                    self.plot_list, event.xdata, event.ydata, 5)
+                if closest_i is not None:
+                    self.linewindow = LineStyleWindow(self.plot_list[closest_i].data, self)
                     self.linewindow.show()
                 return True
 
@@ -459,15 +507,12 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def set_plot_styles(self):
         # Apply any saved changes from the line style configuration
-        # TODO behaviour when data added/removed
-        for pconf in self.plot_config:
-            if(pconf[0] > len(self.plot_list)):
-                continue
-            for i in range(len(self.plot_list[pconf[0]])):
-                self.plot_list[pconf[0]][i].set_color(pconf[1][0])
-            self.plot_list[pconf[0]][0].set_linestyle(pconf[1][1])
-            self.plot_list[pconf[0]][0].set_marker(pconf[1][2])
-        return
+        for i, _ in enumerate(self.plot_list):
+            self.plot_list[i].set_style()
+
+    def save_plot_styles(self):
+        for i, _ in enumerate(self.plot_list):
+            self.plot_list[i].save_style()
 
     def set_legends(self):
         # Switch legend on/off
@@ -493,18 +538,18 @@ class PlotCanvas(FigureCanvasQTAgg):
         return
 
     # Function to find the closest curve to an x,y point
-    def find_closest(self, plots, x, y):
+    def find_closest(self, plots, x, y, limit):
         min_dist = 99999
-        min_ind = -1
         # Transform to display coordinates
         x_display, y_display = self.axes.transData.transform_point((x, y))
+        closest_i = None
         for i, plot in enumerate(plots):
             xdata_display = np.array([])
             ydata_display = np.array([])
             # Transform all points to display coordinates
-            for j, xold in enumerate(plot[0].get_xdata()):
-                xnew, ynew = plot[0].axes.transData.transform_point(
-                    (xold, plot[0].get_ydata()[j])
+            for j, xold in enumerate(plot.plots[0].get_xdata()):
+                xnew, ynew = plot.plots[0].axes.transData.transform_point(
+                    (xold, plot.plots[0].get_ydata()[j])
                 )
                 xdata_display = np.append(xdata_display, xnew)
                 ydata_display = np.append(ydata_display, ynew)
@@ -514,10 +559,10 @@ class PlotCanvas(FigureCanvasQTAgg):
             distance = dist[dist_i]
             if(distance < min_dist):
                 min_dist = distance
-                min_ind = i
-        if (min_ind == -1):
-            raise RuntimeError('No selected plot')
-        return plots[min_ind][0], min_ind, min_dist
+                closest_i = i
+        if (min_dist > limit):
+            return None
+        return closest_i
 
     # Function to save figure through file handler gui
     def save(self):

@@ -1,7 +1,6 @@
 from matplotlib.colors import is_color_like
 
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
-from PyQt5.QtWidgets import QLineEdit, QPushButton, QComboBox
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 
 from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry
@@ -11,15 +10,14 @@ from ada.logger import logger
 
 class LineStyleWindow(QMainWindow):
 
-    def __init__(self, artist, line_i, parent=None):
+    def __init__(self, plot_data, parent=None):
         super(LineStyleWindow, self).__init__(parent)
         self.title = 'Line Style'
         self.width = 150*config.wr
         self.height = 100*config.hr
         logger.debug('Creating line style window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
-        self.artist = artist
-        self.line_i = line_i
+        self.data = plot_data
         self.parent = parent
         self.initUI()
 
@@ -55,25 +53,11 @@ class LineStyleWindow(QMainWindow):
                      (self.line_colour.text(), self.line_style.currentText()))
         try:
             if(is_color_like(self.line_colour.text())):
-                for i in range(len(self.artist)):
-                    self.artist[i].set_color(self.line_colour.text())
-            self.artist[0].set_linestyle(self.line_style.currentText())
-            self.artist[0].set_marker(config.marker_style_options[self.marker_style.currentText()])
-            if(self.parent.legend_on):
-                self.parent.axes.legend(
-                    title=self.parent.legend_title,
-                    loc='upper left'
-                )
-            if(self.parent.condition_legend_on):
-                self.parent.condition_axes.legend(
-                    title=self.parent.condition_legend_title,
-                    loc='lower right'
-                )
+                self.data.style["color"] = self.line_colour.text()
+            self.data.style["linestyle"] = self.line_style.currentText()
+            self.data.style["marker"] = config.marker_style_options[self.marker_style.currentText()]
+            self.parent.set_plot_styles()
             self.parent.draw()
-            self.parent.plot_config.append([
-                self.line_i,
-                [self.artist[0].get_color(), self.artist[0].get_linestyle(), self.artist[0].get_marker()]
-            ])
             self.close()
         except Exception as e:
             logger.exception(e)
