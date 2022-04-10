@@ -4,7 +4,7 @@
 
 ![Logo](/images/logo_v2.png)
 
-An PyQt5 based plotting and analysis package for algae growth curves.
+A PyQt5 based plotting and analysis package for algae growth curves.
 
 # Installation
 
