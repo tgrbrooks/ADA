@@ -98,9 +98,10 @@ class App(QMainWindow):
             blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_layout.addWidget(self.plot, 0, 0, 5, 6)
+        plot_layout.addWidget(self.plot, 0, 1, 5, 5)
 
         tool_bar = QToolBar("Tools", self)
+        tool_bar.setOrientation(Qt.Vertical)
         tool_bar.setStyleSheet(styles.toolbar_style)
 
         # Measure gradient
@@ -127,7 +128,11 @@ class App(QMainWindow):
         self.template_action.triggered.connect(self.download_template)
         tool_bar.addAction(self.template_action)
 
-        plot_layout.addWidget(tool_bar, 5, 0, 1, 6)
+        self.tests_action = QAction(QIcon(":normal.svg"), '&Statistical Tests', self)
+        self.tests_action.triggered.connect(self.download_template)
+        tool_bar.addAction(self.tests_action)
+
+        plot_layout.addWidget(tool_bar, 0, 0, 5, 1)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)

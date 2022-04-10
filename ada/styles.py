@@ -172,7 +172,7 @@ toolbar_style = """
 QToolBar {
     background: white;
     border: none;
-    spacing: 2em;
+    spacing: .5em;
 }
 QToolBar QToolButton{
     background-color: #28a745;
