@@ -168,6 +168,24 @@ QListWidget::item:selected
 """
 list_item_style = 'border-bottom: 0.2em black;'
 
+toolbar_style = """
+QToolBar {
+    background: white;
+    border: none;
+    spacing: 2em;
+}
+QToolBar QToolButton{
+    background-color: #28a745;
+    border-radius: 0.2em;
+    padding: 0.2em;
+}
+QToolBar QToolButton:hover{
+    background-color: #1e8235;
+    border-radius: 0.2em;
+    padding: 0.2em;
+}
+"""
+
 default_font = 'font-size: 14pt;\
                 font-family: Sans;\
                 color: #1e8235;'
