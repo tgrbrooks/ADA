@@ -3,22 +3,21 @@ import csv
 
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
-                             QGridLayout, QVBoxLayout, QScrollArea, QPushButton, QListWidget, QComboBox,
-                             QCheckBox, QLabel, QLineEdit, QGraphicsDropShadowEffect, QSizePolicy,
+                             QGridLayout, QVBoxLayout, QGraphicsDropShadowEffect, QSizePolicy,
                              QFormLayout, QHBoxLayout, QMenu, QAction, QSplitter)
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QPoint, Qt, QUrl
+from PyQt5.QtGui import QDesktopServices
 
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
 from ada.data.data_manager import data_manager
 from ada.reader.read_calibration import read_calibration
-from ada.components.label import Label, TopLabel, LeftLabel, DelLabel
+from ada.components.label import TopLabel, DelLabel
 from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox, RadioButton
 from ada.components.list import List
 from ada.components.spacer import Spacer
 from ada.components.button import Button, BigButton
-from ada.components.data_list_item import (DataListItem, ConditionListItem,
-                                           DelListItem)
+from ada.components.data_list_item import DataListItem, ConditionListItem
 from ada.gui.error_window import error_wrapper
 from ada.gui.export_window import ExportWindow
 from ada.gui.table_window import TableWindow
@@ -26,7 +25,6 @@ from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
 from ada.gui.correlation_window import CorrelationWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
-from ada.type_functions import isfloat, isint, set_float, set_int
 import ada.configuration as config
 import ada.styles as styles
 from ada.logger import logger
@@ -45,7 +43,32 @@ class App(QMainWindow):
         logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
         self.setStyleSheet(styles.main_background)
+        self._createMenuBar()
         self.initUI()
+
+    def _createMenuBar(self):
+        logger.info('Creating menu')
+        menu_bar = self.menuBar()
+        menu_bar.setNativeMenuBar(False)
+
+        file_menu = menu_bar.addMenu("&File")
+        self.save_action = QAction('Save plot', self)
+        self.save_action.triggered.connect(self.save_plot)
+        file_menu.addAction(self.save_action)
+        self.export_action = QAction('Export data', self)
+        self.export_action.triggered.connect(self.export_files)
+        file_menu.addAction(self.export_action)
+
+        help_menu = menu_bar.addMenu("&Help")
+        self.docs_action = QAction('Documentation', self)
+        self.docs_action.triggered.connect(self.open_docs)
+        help_menu.addAction(self.docs_action)
+        self.video_action = QAction('Tutorials', self)
+        self.video_action.triggered.connect(self.open_video)
+        help_menu.addAction(self.video_action)
+        self.issues_action = QAction('Issues', self)
+        self.issues_action.triggered.connect(self.open_issues)
+        help_menu.addAction(self.issues_action)
 
     def initUI(self):
 
@@ -658,6 +681,18 @@ class App(QMainWindow):
     def save_plot(self):
         logger.info('Saving the plot')
         self.plot.save()
+
+    def open_docs(self):
+        url = QUrl("https://algaeplotter.readthedocs.io/en/latest/")
+        QDesktopServices.openUrl(url)
+
+    def open_video(self):
+        url = QUrl("https://www.youtube.com/channel/UCN5YtDhGqRBfPnk--78lsAQ")
+        QDesktopServices.openUrl(url)
+
+    def open_issues(self):
+        url = QUrl("https://github.com/tgrbrooks/ADA/issues/new/choose")
+        QDesktopServices.openUrl(url)
 
     # Update the list of data files and associated options
     def update_data_list(self):
