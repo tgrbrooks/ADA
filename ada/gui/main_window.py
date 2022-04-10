@@ -99,39 +99,28 @@ class App(QMainWindow):
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_layout.addWidget(self.plot, 0, 0, 5, 6)
 
-        # Saving options
-        save_button = Button('Save Plot', self, 'Save the figure')
-        save_button.clicked.connect(self.save_plot)
-        plot_layout.addWidget(save_button, 5, 0)
-
-        # Export options
-        export_button = Button('Export Data', self,
-                               'Export the data to CSV')
-        export_button.clicked.connect(self.export_files)
-        plot_layout.addWidget(export_button, 5, 1)
-
         # Measure gradient
         measure_button = Button('Measure', self, 'Measure the growth rate')
         measure_button.clicked.connect(self.toggle_cursor)
-        plot_layout.addWidget(measure_button, 5, 2)
+        plot_layout.addWidget(measure_button, 5, 0)
 
         # Fit curves
         fit_button = Button('Fit', self, 'Fit the growth curves')
         fit_button.clicked.connect(self.fit_curve)
-        plot_layout.addWidget(fit_button, 5, 3)
+        plot_layout.addWidget(fit_button, 5, 1)
 
         # Table output button
         table_button = Button('To Table', self,
                               'Create a table of growth rates for all curves'
                               '\nConfigure in options tab')
         table_button.clicked.connect(self.create_table)
-        plot_layout.addWidget(table_button, 5, 4)
+        plot_layout.addWidget(table_button, 5, 2)
 
         # Correlations output button
         correlation_button = Button('Correlations', self,
                                     'Create additional plots showing correlations between growth and condition variables')
         correlation_button.clicked.connect(self.open_correlation)
-        plot_layout.addWidget(correlation_button, 5, 5)
+        plot_layout.addWidget(correlation_button, 5, 3)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
