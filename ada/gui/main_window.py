@@ -2,11 +2,11 @@
 import csv
 
 # Related third party imports
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy, QToolBar,
                              QGridLayout, QVBoxLayout, QGraphicsDropShadowEffect, QSizePolicy,
                              QFormLayout, QHBoxLayout, QMenu, QAction, QSplitter)
 from PyQt5.QtCore import QPoint, Qt, QUrl
-from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtGui import QDesktopServices, QIcon
 
 # Local application imports
 from ada.plotter.main_plot import PlotCanvas
@@ -27,6 +27,7 @@ from ada.gui.correlation_window import CorrelationWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
 import ada.styles as styles
+import ada.gui.qrc_resources
 from ada.logger import logger
 
 
@@ -99,28 +100,34 @@ class App(QMainWindow):
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_layout.addWidget(self.plot, 0, 0, 5, 6)
 
+        tool_bar = QToolBar("Tools", self)
+        tool_bar.setStyleSheet(styles.toolbar_style)
+
         # Measure gradient
-        measure_button = Button('Measure', self, 'Measure the growth rate')
-        measure_button.clicked.connect(self.toggle_cursor)
-        plot_layout.addWidget(measure_button, 5, 0)
+        self.measure_action = QAction(QIcon(":measure.svg"), '&Measure', self)
+        self.measure_action.triggered.connect(self.toggle_cursor)
+        tool_bar.addAction(self.measure_action)
 
         # Fit curves
-        fit_button = Button('Fit', self, 'Fit the growth curves')
-        fit_button.clicked.connect(self.fit_curve)
-        plot_layout.addWidget(fit_button, 5, 1)
+        self.fit_action = QAction(QIcon(":fit.svg"), '&Fit', self)
+        self.fit_action.triggered.connect(self.fit_curve)
+        tool_bar.addAction(self.fit_action)
 
         # Table output button
-        table_button = Button('To Table', self,
-                              'Create a table of growth rates for all curves'
-                              '\nConfigure in options tab')
-        table_button.clicked.connect(self.create_table)
-        plot_layout.addWidget(table_button, 5, 2)
+        self.table_action = QAction(QIcon(":table.svg"), '&To Table', self)
+        self.table_action.triggered.connect(self.create_table)
+        tool_bar.addAction(self.table_action)
 
         # Correlations output button
-        correlation_button = Button('Correlations', self,
-                                    'Create additional plots showing correlations between growth and condition variables')
-        correlation_button.clicked.connect(self.open_correlation)
-        plot_layout.addWidget(correlation_button, 5, 3)
+        self.correlation_action = QAction(QIcon(":correlations.svg"), '&Correlations', self)
+        self.correlation_action.triggered.connect(self.open_correlation)
+        tool_bar.addAction(self.correlation_action)
+
+        self.template_action = QAction(QIcon(":template.svg"), '&Download Template', self)
+        self.template_action.triggered.connect(self.download_template)
+        tool_bar.addAction(self.template_action)
+
+        plot_layout.addWidget(tool_bar, 5, 0, 1, 6)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -346,10 +353,6 @@ class App(QMainWindow):
 
         self.show_events = CheckBox('Show events off/on', self)
         data_box_layout.addRow(' ', self.show_events)
-
-        download_button = Button(' Download ADA data template ', self)
-        download_button.clicked.connect(self.download_template)
-        data_box_layout.addRow(' ', download_button)
 
         data_form_widget = QWidget()
         data_form_widget.setLayout(data_box_layout)
