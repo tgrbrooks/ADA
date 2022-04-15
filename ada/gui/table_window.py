@@ -1,9 +1,6 @@
 import csv
-import numpy as np
-from scipy.optimize import curve_fit
 
-from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
-                             QPushButton, QComboBox, QScrollArea, QListWidget,
+from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QWidget,
                              QVBoxLayout, QTabWidget, QTableWidget,
                              QTableWidgetItem, QSizePolicy)
 from PyQt5.QtCore import QPoint

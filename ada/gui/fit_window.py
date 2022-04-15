@@ -1,19 +1,12 @@
-import csv
-import numpy as np
-
-from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QLabel, QWidget,
-                             QPushButton, QComboBox, QLineEdit, QHBoxLayout)
+from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QHBoxLayout)
 
 from ada.gui.error_window import error_wrapper
-from ada.components.label import Label
 from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
 from ada.components.spacer import Spacer
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
-from ada.type_functions import isfloat
 import ada.configuration as config
-import ada.styles as styles
 from ada.logger import logger
 
 

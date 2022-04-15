@@ -217,6 +217,7 @@ default_label_font_bold = default_font +\
 label_style = default_label_font_bold +\
               'background-color: #e3fcec;\
                border: 0.05em solid #1e8235; \
+               max-height: 1.2em; \
                padding: 0.22em;'
               
 top_label_style = label_style +\

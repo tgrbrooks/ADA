@@ -1,6 +1,3 @@
-# Standard library imports
-import csv
-
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy, QToolBar,
                              QGridLayout, QVBoxLayout, QGraphicsDropShadowEffect, QSizePolicy,
@@ -24,6 +21,7 @@ from ada.gui.table_window import TableWindow
 from ada.gui.fit_window import FitWindow
 from ada.gui.load_window import LoadWindow
 from ada.gui.correlation_window import CorrelationWindow
+from ada.gui.test_window import TestWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
 import ada.styles as styles
@@ -100,39 +98,20 @@ class App(QMainWindow):
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         plot_layout.addWidget(self.plot, 0, 1, 5, 5)
 
-        tool_bar = QToolBar("Tools", self)
-        tool_bar.setOrientation(Qt.Vertical)
-        tool_bar.setStyleSheet(styles.toolbar_style)
+        toolbar = QToolBar("Tools", self)
+        toolbar.setOrientation(Qt.Vertical)
+        toolbar.setStyleSheet(styles.toolbar_style)
 
-        # Measure gradient
-        self.measure_action = QAction(QIcon(":measure.svg"), '&Measure', self)
-        self.measure_action.triggered.connect(self.toggle_cursor)
-        tool_bar.addAction(self.measure_action)
+        toolbar_icons = [":measure.svg", ":fit.svg", ":table.svg", ":correlations.svg", ":template.svg", ":normal.svg"]
+        toolbar_labels = ['&Measure', '&Fit', '&To Table', '&Correlations', '&Download Template', '&Statisitical Tests']
+        toolbar_actions = [self.toggle_cursor, self.fit_curve, self.create_table, self.open_correlation, self.download_template, self.open_tests]
 
-        # Fit curves
-        self.fit_action = QAction(QIcon(":fit.svg"), '&Fit', self)
-        self.fit_action.triggered.connect(self.fit_curve)
-        tool_bar.addAction(self.fit_action)
+        for i, icon in enumerate(toolbar_icons):
+            toolbar_action = QAction(QIcon(icon), toolbar_labels[i], self)
+            toolbar_action.triggered.connect(toolbar_actions[i])
+            toolbar.addAction(toolbar_action)
 
-        # Table output button
-        self.table_action = QAction(QIcon(":table.svg"), '&To Table', self)
-        self.table_action.triggered.connect(self.create_table)
-        tool_bar.addAction(self.table_action)
-
-        # Correlations output button
-        self.correlation_action = QAction(QIcon(":correlations.svg"), '&Correlations', self)
-        self.correlation_action.triggered.connect(self.open_correlation)
-        tool_bar.addAction(self.correlation_action)
-
-        self.template_action = QAction(QIcon(":template.svg"), '&Download Template', self)
-        self.template_action.triggered.connect(self.download_template)
-        tool_bar.addAction(self.template_action)
-
-        self.tests_action = QAction(QIcon(":normal.svg"), '&Statistical Tests', self)
-        self.tests_action.triggered.connect(self.download_template)
-        tool_bar.addAction(self.tests_action)
-
-        plot_layout.addWidget(tool_bar, 0, 0, 5, 1)
+        plot_layout.addWidget(toolbar, 0, 0, 5, 1)
 
         plot_widget = QWidget()
         plot_widget.setLayout(plot_layout)
@@ -872,6 +851,14 @@ class App(QMainWindow):
         logger.debug('Opening correlation window')
         self.correlation = CorrelationWindow(self)
         self.correlation.show()
+
+    # Open window for performing statistical tests
+    @error_wrapper
+    def open_tests(self):
+        self.update_config()
+        logger.debug('Opening test window')
+        self.tests = TestWindow(self)
+        self.tests.show()
 
     # Function: Update the global configuration
     def update_config(self):

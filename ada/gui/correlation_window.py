@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 # Related third party imports
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
@@ -10,9 +9,8 @@ from ada.plotter.correlation_plot import CorrelationCanvas
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 from ada.components.user_input import TextEntry, DropDown, CheckBox
-from ada.components.button import Button, BigButton
+from ada.components.button import Button
 from ada.gui.error_window import error_wrapper
-from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
 import ada.styles as styles
 from ada.logger import logger

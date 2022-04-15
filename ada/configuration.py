@@ -18,6 +18,8 @@ table_row_options = ["profile", "reactor", "gradient", "time to",
                      "average of condition", "condition at time",
                      "fit parameter"]
 fit_options = ["flat line", "linear", "quadratic", "exponential", "zweitering"]
+test_options = ["T-test", "ANOVA"]
+measurement_options = ['',"gradient", "time to", "fit parameter"]
 
 conf_colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
 
