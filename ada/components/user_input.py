@@ -11,15 +11,16 @@ import ada.styles as styles
 
 
 class TextEntry(QWidget):
-    def __init__(self, text, parent=None, default=None, *args, **kwargs):
+    def __init__(self, text, parent=None, default=None, placeholder=None, *args, **kwargs):
         super(TextEntry, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.default = default
 
-        text = LeftLabel(text, True)
-        layout.addWidget(text)
+        self.name = text
+        label = LeftLabel(text, True)
+        layout.addWidget(label)
 
         self.entry = QLineEdit(parent)
         self.entry.setStyleSheet(styles.right_line_edit_style)
@@ -32,23 +33,36 @@ class TextEntry(QWidget):
             blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.wr)
         self.setGraphicsEffect(shadow)
 
-    def currentText(self):
+        if placeholder is not None:
+            self.entry.setPlaceholderText(placeholder)
+
+    def currentText(self, error=False):
+        text = self.entry.currentText()
+        if error and (text == '' or text is None):
+            raise RuntimeError(self.name + 'could not be interpreted as a string')
         return self.entry.currentText()
 
-    def text(self):
-        return self.entry.text()
+    def text(self, error=False):
+        text = self.entry.text()
+        if error and (text == '' or text is None):
+            raise RuntimeError(self.name + 'could not be interpreted as a string')
+        return text
 
     def setPlaceholderText(self, text):
         return self.entry.setPlaceholderText(text)
 
-    def get_float(self):
+    def get_float(self, error=False):
         if isfloat(self.entry.text()):
             return float(self.entry.text())
+        if error:
+            raise RuntimeError(self.name + ' could not be interpreted as a number')
         return self.default
 
-    def get_int(self):
+    def get_int(self, error=False):
         if isint(self.entry.text()):
             return int(self.entry.text())
+        if error:
+            raise RuntimeError(self.name + ' could not be interpreted as a number')
         return self.default
 
 
@@ -82,22 +96,28 @@ class ParameterBounds(QWidget):
             blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.wr)
         self.setGraphicsEffect(shadow)
 
-    def get_start(self):
+    def get_start(self, error=False):
         start_str = self.start.text()
         if isfloat(start_str):
             return float(start_str)
+        if error:
+            raise RuntimeError('Start not a number')
         return 1
 
-    def get_min(self):
+    def get_min(self, error=False):
         min_str = self.min.text()
         if isfloat(min_str):
             return float(min_str)
+        if error:
+            raise RuntimeError('Minimum bound not a number')
         return -np.inf
 
-    def get_max(self):
+    def get_max(self, error=False):
         max_str = self.max.text()
         if isfloat(max_str):
             return float(max_str)
+        if error:
+            raise RuntimeError('Maximum bound not a number')
         return np.inf
 
 
@@ -145,14 +165,15 @@ class SpinBox(QWidget):
 
 
 class DropDown(QWidget):
-    def __init__(self, text, options, parent=None, *args, **kwargs):
+    def __init__(self, text, options, parent=None, change_action=None, *args, **kwargs):
         super(DropDown, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        text = LeftLabel(text, True)
-        layout.addWidget(text)
+        self.name = text
+        label = LeftLabel(text, True)
+        layout.addWidget(label)
 
         self.entry = QComboBox(parent)
         self.entry.addItems(options)
@@ -165,8 +186,14 @@ class DropDown(QWidget):
             blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
 
-    def currentText(self):
-        return self.entry.currentText()
+        if change_action is not None:
+            self.entry.currentTextChanged.connect(change_action)
+
+    def currentText(self, error=False):
+        text = self.entry.currentText()
+        if error and (text == '' or text is None):
+            raise RuntimeError(self.name + 'could not be interpreted as a string')
+        return text
 
     def currentTextChanged(self, value):
         return self.entry.currentTextChanged(value)
@@ -185,6 +212,9 @@ class DropDown(QWidget):
 
     def count(self):
         return self.entry.count()
+    
+    def connect(self, func):
+        return self.entry.currentTextChanged.connect(func)
 
     def setCurrentIndex(self, index):
         return self.entry.setCurrentIndex(index)

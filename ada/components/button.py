@@ -5,7 +5,7 @@ import ada.styles as styles
 
 
 class Button(QPushButton):
-    def __init__(self, text, parent=None, tooltip=None, *args, **kwargs):
+    def __init__(self, text, parent=None, tooltip=None, clicked=None, *args, **kwargs):
         super(Button, self).__init__(text, parent, *args, **kwargs)
         self.setStyleSheet(styles.main_button_style)
         shadow = QGraphicsDropShadowEffect(
@@ -13,6 +13,11 @@ class Button(QPushButton):
         self.setGraphicsEffect(shadow)
         if tooltip is not None:
             self.setToolTip(tooltip)
+        if clicked is not None:
+            self.clicked.connect(clicked)
+
+    def connect(self, func):
+        return self.clicked.connect(func)
 
 
 class BigButton(QPushButton):

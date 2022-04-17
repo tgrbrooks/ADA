@@ -1,7 +1,9 @@
 from scipy.stats import ttest_ind, f_oneway
-from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QLabel)
+from PyQt5.QtWidgets import (QVBoxLayout, QWidget, QLabel)
 
 from ada.gui.error_window import error_wrapper
+from ada.components.window import Window
+from ada.components.layout_widget import LayoutWidget
 from ada.components.button import Button
 from ada.components.spacer import Spacer
 from ada.components.user_input import DropDown, TextEntry
@@ -12,133 +14,80 @@ from ada.logger import logger
 
 
 # Class for a table constructor window
-class TestWindow(QMainWindow):
+class TestWindow(Window):
 
     def __init__(self, parent=None):
-        super(TestWindow, self).__init__(parent)
-        self.title = 'Statistical test'
-        self.width = 200*config.wr
-        self.height = 150*config.hr
-        logger.debug('Creating test window [width:%.2f, height:%.2f]' % (
-            self.width, self.height))
-        self.parent = parent
+        super(TestWindow, self).__init__('Statistical test', 200, 150, QVBoxLayout, parent)
         self.initUI()
 
     def initUI(self):
+        self.test_option = DropDown('Test:', config.test_options, change_action=self.render_test)
+        self.window.addWidget(self.test_option)
 
-        self.setWindowTitle(self.title)
+        self.data_input = LayoutWidget(QVBoxLayout)
+        self.data_option1 = DropDown('Sample 1:', data_manager.get_growth_data_labels())
+        self.data_input.addWidget(self.data_option1)
+        self.data_option2 = DropDown('Sample 2:', data_manager.get_growth_data_labels())
+        self.data_input.addWidget(self.data_option2)
+        self.window.addWidget(self.data_input.widget)
 
-        window_layout = QVBoxLayout()
-        window_layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        window_layout.setSpacing(5*config.wr)
+        self.test_measurement = DropDown('Measurement:', config.measurement_options, change_action=self.render_measurement)
+        self.window.addWidget(self.test_measurement)
 
-        test_layout = QVBoxLayout()
+        self.measurement = LayoutWidget(QVBoxLayout)
+        self.window.addWidget(self.measurement.widget)
+        self.measurement.hide()
 
-        self.test_option = DropDown('Test:', config.test_options, self)
-        self.test_option.entry.currentTextChanged.connect(self.render_test)
-        test_layout.addWidget(self.test_option)
-
-        # List of row options
-        self.data_layout = QVBoxLayout()
-        self.data_option1 = DropDown('Sample 1:', [], self)
-        self.data_option2 = DropDown('Sample 2:', [], self)
-        for data in data_manager.get_growth_data_files():
-            self.data_option1.addItem(data.label)
-            self.data_option2.addItem(data.label)
-        self.data_layout.addWidget(self.data_option1)
-        self.data_layout.addWidget(self.data_option2)
-        self.data_widget = QWidget()
-        self.data_widget.setLayout(self.data_layout)
-        test_layout.addWidget(self.data_widget)
-
-        self.test_measurement = DropDown('Measurement:', config.measurement_options, self)
-        self.test_measurement.entry.currentTextChanged.connect(self.render_measurement)
-        test_layout.addWidget(self.test_measurement)
-
-        self.measurement_layout = QVBoxLayout()
-
-        self.measurement_widget = QWidget()
-        self.measurement_widget.setLayout(self.measurement_layout)
-        test_layout.addWidget(self.measurement_widget)
-        self.measurement_widget.hide()
-
-        # Button to add a new row
-        test_button = Button("Test", self)
-        test_button.clicked.connect(self.test)
-        test_layout.addWidget(test_button)
+        self.window.addWidget(Button("Test", clicked=self.test))
 
         self.statistic = QLabel("Statistic = ")
-        test_layout.addWidget(self.statistic)
+        self.window.addWidget(self.statistic)
         self.pvalue = QLabel("P value = ")
-        test_layout.addWidget(self.pvalue)
+        self.window.addWidget(self.pvalue)
 
-        test_layout.addWidget(Spacer())
-
-        test_widget = QWidget()
-        test_widget.setLayout(test_layout)
-        window_layout.addWidget(test_widget)
-
-        widget = QWidget()
-        widget.setLayout(window_layout)
-
-        self.setCentralWidget(widget)
-        self.resize(self.width, self.height)
+        self.window.addWidget(Spacer())
 
     @error_wrapper
     def render_test(self):
         option = self.test_option.currentText()
         if option == 'T-test':
-            self.data_widget.show()
+            self.data_input.show()
         else:
-            self.data_widget.hide()
+            self.data_input.hide()
             
     @error_wrapper
     def render_measurement(self):
-        for i in reversed(range(self.measurement_layout.count())): 
-            self.measurement_layout.itemAt(i).widget().setParent(None)
+        self.measurement.clear()
         option = self.test_measurement.currentText()
         if option == 'gradient':
-            self.signal = DropDown('Gradient of:', [], self.measurement_widget)
-            for sig in data_manager.get_growth_variables():
-                self.signal.addItem(sig)
-            self.measurement_layout.addWidget(self.signal)
-            self.grad_from = TextEntry('Between:', self.measurement_widget, -1)
-            self.grad_from.setPlaceholderText('Y = ')
-            self.measurement_layout.addWidget(self.grad_from)
-            self.grad_to = TextEntry('And:', self.measurement_widget, -1)
-            self.grad_to.setPlaceholderText('Y = ')
-            self.measurement_layout.addWidget(self.grad_to)
-            self.measurement_widget.show()
+            self.signal = DropDown('Gradient of:', data_manager.get_growth_variables())
+            self.measurement.addWidget(self.signal)
+            self.grad_from = TextEntry('Between:', placeholder='Y = ')
+            self.measurement.addWidget(self.grad_from)
+            self.grad_to = TextEntry('And:', placeholder='Y = ')
+            self.measurement.addWidget(self.grad_to)
         elif option == 'time to':
-            self.signal = DropDown('Time for:', [], self.measurement_widget)
-            for sig in data_manager.get_growth_variables():
-                self.signal.addItem(sig)
-            self.measurement_layout.addWidget(self.signal)
-            self.time_to = TextEntry('To reach:', self.measurement_widget, -1)
-            self.time_to.setPlaceholderText('Y = ')
-            self.measurement_layout.addWidget(self.time_to)
-            self.measurement_widget.show()
+            self.signal = DropDown('Time for:', data_manager.get_growth_variables())
+            self.measurement.addWidget(self.signal)
+            self.time_to = TextEntry('To reach:', placeholder='Y = ')
+            self.measurement.addWidget(self.time_to)
         elif option == 'fit parameter': 
-            self.fit = DropDown('Fit:', config.fit_options, self.measurement_widget)
-            self.fit.entry.currentTextChanged.connect(self.update_param_list)
-            self.measurement_layout.addWidget(self.fit)
-            self.signal = DropDown('Of:', [], self.measurement_widget)
-            for sig in data_manager.get_growth_variables():
-                self.signal.addItem(sig)
-            self.measurement_layout.addWidget(self.signal)
-            model = get_model(self.fit.currentText(), '', '')
-            self.param = DropDown('Parameter:', model.params, self.measurement_widget)
-            self.measurement_layout.addWidget(self.param)
-            self.fit_from = TextEntry('From:', self.measurement_widget, -1)
-            self.fit_from.setPlaceholderText(config.xvar)
-            self.measurement_layout.addWidget(self.fit_from)
-            self.fit_to = TextEntry('To:', self.measurement_widget, -1)
-            self.fit_to.setPlaceholderText(config.xvar)
-            self.measurement_layout.addWidget(self.fit_to)
-            self.measurement_widget.show()
+            self.fit = DropDown('Fit:', config.fit_options, change_action=self.update_param_list)
+            self.measurement.addWidget(self.fit)
+            self.signal = DropDown('Of:', data_manager.get_growth_variables())
+            self.measurement.addWidget(self.signal)
+            model = get_model(self.fit.currentText())
+            self.param = DropDown('Parameter:', model.params)
+            self.measurement.addWidget(self.param)
+            self.fit_from = TextEntry('From:', placeholder=config.xvar)
+            self.measurement.addWidget(self.fit_from)
+            self.fit_to = TextEntry('To:', placeholder=config.xvar)
+            self.measurement.addWidget(self.fit_to)
         else:
-            self.measurement_widget.hide()
+            self.measurement.hide()
+            return
+        self.measurement.show()
+        return
 
     
     def update_param_list(self, fit_name):
@@ -156,27 +105,30 @@ class TestWindow(QMainWindow):
         measurements = []
         for i, dat in enumerate(data_manager.get_growth_data_files()):
             if test_option == 'T-test':
-                data1 = self.data_option1.currentText()
-                data2 = self.data_option2.currentText()
+                data1 = self.data_option1.currentText(error=True)
+                data2 = self.data_option2.currentText(error=True)
+                if data1 == data2:
+                    raise RuntimeError('Samples must be different')
                 if dat.label != data1 and dat.label != data2:
                     continue
             signal = self.signal.currentText()
             if measurement_option == 'gradient':
-                grad_from = self.grad_from.get_float()
-                grad_to = self.grad_to.get_float()
+                grad_from = self.grad_from.get_float(error=True)
+                grad_to = self.grad_to.get_float(error=True)
                 measurements.append(data_manager.get_replicate_gradients(i, signal, grad_from, grad_to))
             elif measurement_option == 'time to':
-                time_to = self.time_to.get_float()
+                time_to = self.time_to.get_float(error=True)
                 measurements.append(data_manager.get_replicate_time_to(i, signal, time_to))
             elif measurement_option == 'fit parameter':
-                fit_name = self.fit.currentText()
-                fit_from = self.fit_from.get_float()
-                fit_to = self.fit_to.get_float()
-                fit_param = self.param.currentText()
+                fit_name = self.fit.currentText(error=True)
+                fit_from = self.fit_from.get_float(error=True)
+                fit_to = self.fit_to.get_float(error=True)
+                fit_param = self.param.currentText(error=True)
                 measurements.append(data_manager.get_replicate_fits(i, signal, fit_name, fit_from, fit_to, fit_param))
+            else:
+                raise RuntimeError('Unknown measurement')
         # Calculate test result
         statistic, pvalue = -1, -1
-        print(measurements)
         if test_option == 'T-test':
             if len(measurements) != 2:
                 raise RuntimeError('Unable to find data for t-test')

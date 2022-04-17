@@ -26,6 +26,12 @@ class DataManager():
     def get_growth_data_files(self):
         return self.growth_data.data_files
 
+    def get_growth_data_labels(self):
+        labels = []
+        for data in self.growth_data.data_files:
+            labels.append(data.label)
+        return labels
+
     def num_growth_files(self):
         return len(self.get_growth_data_files())
 
