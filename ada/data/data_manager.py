@@ -3,7 +3,8 @@ from scipy.optimize import curve_fit
 
 # Local includes
 from ada.data.data_holder import DataHolder
-from ada.data.processor import process_data, time_average, time_average_arrays, average_data
+from ada.data.processor import (process_data, time_average, time_average_arrays,
+                                average_data, calculate_gradient, calculate_time_to, get_fit_data_range)
 from ada.data.models import get_model
 import ada.configuration as config
 from ada.logger import logger
@@ -76,6 +77,9 @@ class DataManager():
     def num_replicates(self, index):
         return len(self.growth_data.replicate_files[index])
 
+    def get_replicates(self, index):
+        return self.growth_data.replicate_files[index]
+
     def num_condition_replicates(self, index):
         return len(self.condition_data.replicate_files[index])
 
@@ -108,15 +112,11 @@ class DataManager():
             raise RuntimeError('No data found')
         return xdata, ydata, yerr
 
-    def get_xy_data(self, i, signal_name, xvar=None, growth_average=None, std_err=False, ynormlog=False):
+    def get_replicate_xy_data(self, i, signal_name, xvar=None, growth_average=None):
         if xvar is None:
             xvar = config.xvar
         if growth_average is None:
             growth_average = config.growth_average
-        if config.std_err:
-            std_err = True
-        if config.ynormlog:
-            ynormlog = True
 
         xdatas = []
         ydatas = []
@@ -126,7 +126,16 @@ class DataManager():
             xdata, ydata = process_data(xdata, ydata)
             xdatas.append(xdata)
             ydatas.append(ydata)
-        
+
+        return xdatas, ydatas
+
+    def get_xy_data(self, i, signal_name, xvar=None, growth_average=None, std_err=False, ynormlog=False):
+        if config.std_err:
+            std_err = True
+        if config.ynormlog:
+            ynormlog = True
+
+        xdatas, ydatas = self.get_replicate_xy_data(i, signal_name, xvar, growth_average)
         xdata, ydata, yerr = self.get_averaged_data(xdatas, ydatas, growth_average, std_err)
         if ynormlog:
             if yerr is not None:
@@ -259,46 +268,41 @@ class DataManager():
                 self.condition_data.data_files[i].get_header_info(extra_info)
         return legend_label
 
+    def get_replicate_gradients(self, i, signal_name, grad_from, grad_to):
+        logger.debug('Getting gradient of %s from %.2f to %.2f' %
+                     (signal_name, grad_from, grad_to))
+        gradients = []
+        xdatas, ydatas = self.get_replicate_xy_data(i, signal_name)
+        for rep_i, xdata in enumerate(xdatas):
+            gradients.append(calculate_gradient(xdata, ydatas[rep_i], grad_from, grad_to))
+        return gradients
+
     def get_gradients(self, signal_name, grad_from, grad_to):
         logger.debug('Getting gradient of %s from %.2f to %.2f' %
                      (signal_name, grad_from, grad_to))
         gradients = []
         for i, _ in enumerate(self.growth_data.data_files):
             xdata, ydata, _ = self.get_xy_data(i, signal_name)
-            # Calculate the gradient
-            x1 = None
-            y1 = None
-            x2 = None
-            y2 = None
-            for i, ydat in enumerate(ydata):
-                if ydat >= grad_from and x1 is None:
-                    x1 = xdata[i]
-                    y1 = ydat
-                if ydat >= grad_to and x2 is None:
-                    x2 = xdata[i]
-                    y2 = ydat
-                if x1 is not None and x2 is not None:
-                    break
-            if x1 is None or x2 is None:
-                gradients.append(None)
-            else:
-                gradients.append((y2-y1)/(x2-x1))
+            gradients.append(calculate_gradient(xdata, ydata, grad_from, grad_to))
         return gradients
+
+    def get_replicate_time_to(self, i, signal_name, time_to):
+        logger.debug('Getting the time to reach %s of %.2f' %
+                     (signal_name, time_to))
+        times = []
+        xdatas, ydatas = self.get_replicate_xy_data(i, signal_name)
+        for rep_i, xdata in enumerate(xdatas):
+            times.append(calculate_time_to(xdata, ydatas[rep_i], time_to))
+        return times
 
     def get_time_to(self, signal_name, time_to):
         logger.debug('Getting the time to reach %s of %.2f' %
                      (signal_name, time_to))
         times = []
         for i, _ in enumerate(self.growth_data.data_files):
-            found = False
             xdata, ydata, _ = self.get_xy_data(i, signal_name)
-            for i, ydat in enumerate(ydata):
-                if ydat >= time_to:
-                    times.append(xdata[i])
-                    found = True
-                    break
-            if not found:
-                times.append(None)
+            times.append(calculate_time_to(xdata, ydata, time_to))
+            
         return times
 
     def get_averages(self, cond_name, start_t, end_t):
@@ -359,17 +363,23 @@ class DataManager():
             fit_to = config.fit_to
 
         fit_x, fit_y, fit_sigma = self.get_xy_data(index, signal_name)
+        return get_fit_data_range(fit_x, fit_y, fit_sigma, fit_from, fit_to)
 
-        # Only fit the data in the given range
-        if fit_from != fit_to:
-            from_index = np.abs(fit_x - fit_from).argmin()
-            to_index = np.abs(fit_x - fit_to).argmin()
-            fit_x = fit_x[from_index:to_index]
-            fit_y = fit_y[from_index:to_index]
-            if fit_sigma is not None:
-                fit_sigma = fit_sigma[from_index:to_index]
-
-        return fit_x, fit_y, fit_sigma
+    def get_replicate_fits(self, index, signal_name, fit_name, fit_from, fit_to, fit_param):
+        fit_start = None
+        if fit_name == 'exponential':
+            fit_start = [1, 1./config.unit_map[config.xvar]]
+        model = get_model(fit_name)
+        func = model.func()
+        xdatas, ydatas = self.get_replicate_xy_data(index, signal_name)
+        values = []
+        for rep_i, xdata in enumerate(xdatas):
+            fit_x, fit_y, _ = get_fit_data_range(xdata, ydatas[rep_i], None, fit_from, fit_to)
+            fit_result, _ = curve_fit(func, fit_x, fit_y, p0=fit_start)
+            for i, param in enumerate(model.params):
+                if param == fit_param:
+                    values.append(fit_result[i])
+        return values
 
     def get_fit(self, index, signal_name=None, fit_name=None, fit_from=None, fit_to=None, fit_start=None, fit_min=None, fit_max=None):
         if signal_name is None:

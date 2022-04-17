@@ -147,6 +147,7 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def set_style(self):
         # Style configuration
+        '''
         if(config.style != ''):
             if(config.style == 'default'):
                 mpl.style.use('default')
@@ -158,6 +159,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                 mpl.style.use('seaborn-pastel')
             if(config.style == 'deep'):
                 mpl.style.use('seaborn-colorblind')
+        '''
         if(config.font_style != ''):
             mpl.rcParams['font.family'] = config.font_style
         if(config.title_size >= 0):

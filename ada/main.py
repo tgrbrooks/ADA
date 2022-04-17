@@ -22,5 +22,4 @@ if __name__ == '__main__':
     logger.info('Starting application')
     ex = App()
 
-    logger.info('Closing application')
     sys.exit(app.exec_())
