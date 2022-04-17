@@ -5,7 +5,6 @@ from ada.logger import logger
 
 # Standard imports
 import sys
-import logging
 
 # pyqt5 imports
 from PyQt5.QtWidgets import QApplication
@@ -23,5 +22,5 @@ if __name__ == '__main__':
     logger.info('Starting application')
     ex = App()
 
-    sys.exit(app.exec_())
     logger.info('Closing application')
+    sys.exit(app.exec_())

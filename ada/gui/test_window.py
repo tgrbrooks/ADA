@@ -1,9 +1,8 @@
-from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QHBoxLayout)
+from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QWidget)
 
 from ada.gui.error_window import error_wrapper
 from ada.components.button import Button
-from ada.components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
-from ada.components.spacer import Spacer
+from ada.components.user_input import DropDown, TextEntry
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config

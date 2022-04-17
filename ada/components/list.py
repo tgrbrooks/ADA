@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QListWidget, QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QListWidget
 
 import ada.configuration as config
 import ada.styles as styles

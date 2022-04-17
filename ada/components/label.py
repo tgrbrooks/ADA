@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QSizePolicy,
+from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout,
                              QGraphicsDropShadowEffect, QHBoxLayout)
 
 from ada.components.button import DeleteButton

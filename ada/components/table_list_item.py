@@ -1,13 +1,11 @@
-from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
-                             QPushButton, QLabel, QWidget, QLineEdit, QComboBox, QSizePolicy)
+from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QWidget
 
 from ada.components.button import DeleteButton
-from ada.components.label import Label, RoundLabel
+from ada.components.label import RoundLabel
 from ada.components.user_input import DropDown, TextEntry, CheckBox
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
-import ada.styles as styles
 
 
 class TableListItem():

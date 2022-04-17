@@ -1,18 +1,13 @@
-import csv
-
-from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
-                             QCheckBox, QPushButton, QComboBox, QListWidget, QLineEdit, QVBoxLayout)
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+from PyQt5.QtCore import QPoint
 
 from ada.data.data_manager import data_manager
 from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names
 from ada.type_functions import isint
-from ada.components.label import Label
 from ada.components.list import List
-from ada.components.button import Button, BigButton
-from ada.components.user_input import TextEntry, SpinBox, DropDown, CheckBox
-from ada.components.spacer import Spacer
+from ada.components.button import Button
+from ada.components.user_input import TextEntry, DropDown, CheckBox
 from ada.components.data_list_item import DelListItem
 
 from ada.reader.read_algem_ht24 import (read_algem_ht24,

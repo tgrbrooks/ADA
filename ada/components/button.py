@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout,
-                             QGraphicsDropShadowEffect, QSizePolicy)
+from PyQt5.QtWidgets import QPushButton, QGraphicsDropShadowEffect, QSizePolicy
 
 import ada.configuration as config
 import ada.styles as styles

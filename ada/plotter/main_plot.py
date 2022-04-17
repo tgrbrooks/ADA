@@ -1,8 +1,5 @@
 # Standard imports
-import random
-from math import factorial
 import numpy as np
-from scipy.optimize import curve_fit
 
 # pyqt5 imports
 from PyQt5.QtWidgets import QSizePolicy

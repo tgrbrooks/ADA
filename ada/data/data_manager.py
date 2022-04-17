@@ -2,7 +2,6 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 # Local includes
-from ada.data.algae_data import AlgaeData
 from ada.data.data_holder import DataHolder
 from ada.data.processor import process_data, time_average, time_average_arrays, average_data
 from ada.data.models import get_model
