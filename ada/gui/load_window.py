@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtCore import QPoint
 
 from ada.data.data_manager import data_manager
@@ -6,6 +6,7 @@ from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_file_names
 from ada.type_functions import isint
 from ada.components.list import List
+from ada.components.window import Window
 from ada.components.button import Button
 from ada.components.user_input import TextEntry, DropDown, CheckBox
 from ada.components.data_list_item import DelListItem
@@ -23,16 +24,10 @@ import ada.styles as styles
 from ada.logger import logger
 
 
-class LoadWindow(QMainWindow):
+class LoadWindow(Window):
 
     def __init__(self, parent, row=-1):
-        super(LoadWindow, self).__init__(parent)
-        self.title = 'Load Files'
-        self.width = 350*config.wr
-        self.height = 150*config.hr
-        logger.debug('Creating load window [width:%.2f, height:%.2f]' % (
-            self.width, self.height))
-        self.parent = parent
+        super(LoadWindow, self).__init__('Load Files', 350, 150, QVBoxLayout, parent)
         self.details = []
         self.condition_files = []
         self.files = []
@@ -40,80 +35,67 @@ class LoadWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowTitle(self.title)
-        self.resize(self.width, self.height)
-
-        layout = QVBoxLayout()
-        layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        layout.setSpacing(5*config.wr)
-
         # Dropdown list of available file types
         if self.row == -1:
             self.file_type = DropDown('File type:', config.file_types, self)
         else:
             self.file_type = DropDown('File type:', config.replicate_types, self)
         self.file_type.entry.currentTextChanged.connect(self.update_options)
-        layout.addWidget(self.file_type)
+        self.window.addWidget(self.file_type)
 
         # Button for selecting files to import
         select_file_button = Button("Select data file(s)", self)
         select_file_button.clicked.connect(self.select_data)
-        layout.addWidget(select_file_button)
+        self.window.addWidget(select_file_button)
 
         # List of files to import
         self.file_list = List(self)
         self.file_list.setSpacing(-5*config.wr)
         self.file_list.setStyleSheet(styles.default_font)
-        layout.addWidget(self.file_list)
+        self.window.addWidget(self.file_list)
 
         # Button and list for Algem conditions files
         self.select_conditions_button = Button("Select conditions file(s)",
                                                self)
         self.select_conditions_button.clicked.connect(self.select_conditions)
-        layout.addWidget(self.select_conditions_button)
+        self.window.addWidget(self.select_conditions_button)
         self.select_conditions_button.hide()
 
         self.conditions_file_list = List(self)
         self.conditions_file_list.setSpacing(-5*config.wr)
         self.conditions_file_list.setStyleSheet(styles.default_font)
-        layout.addWidget(self.conditions_file_list)
+        self.window.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
 
         # Button and list for HT24 details file
         self.select_details_button = Button("Select details file", self)
         self.select_details_button.clicked.connect(self.select_details)
-        layout.addWidget(self.select_details_button)
+        self.window.addWidget(self.select_details_button)
         self.select_details_button.hide()
 
         self.details_file_list = List(self)
         self.details_file_list.setSpacing(-5*config.wr)
         self.details_file_list.setStyleSheet(styles.default_font)
-        layout.addWidget(self.details_file_list)
+        self.window.addWidget(self.details_file_list)
         self.details_file_list.hide()
 
         # Option to downsample conditions data
         self.downsample = TextEntry('Downsample conditions:', self, config.downsample)
         self.downsample.setToolTip('Only read in every X data points')
-        layout.addWidget(self.downsample)
+        self.window.addWidget(self.downsample)
         self.downsample.hide()
 
         # Checkbox for merging replicates in HT24 data
         self.merge_replicates = CheckBox('Merge replicates', self)
-        layout.addWidget(self.merge_replicates)
+        self.window.addWidget(self.merge_replicates)
         self.merge_replicates.hide()
 
         # Button to load the data
         load_button = Button("Load", self)
         load_button.clicked.connect(self.load)
-        layout.addWidget(load_button)
+        self.window.addWidget(load_button)
 
         self.update_options()
-
-        widget = QWidget()
-        widget.setLayout(layout)
-        self.setCentralWidget(widget)
 
     def update_options(self):
         logger.debug('Updating the load options based on file type')

@@ -1,5 +1,5 @@
 from scipy.stats import ttest_ind, f_oneway
-from PyQt5.QtWidgets import (QVBoxLayout, QWidget, QLabel)
+from PyQt5.QtWidgets import (QVBoxLayout, QLabel)
 
 from ada.gui.error_window import error_wrapper
 from ada.components.window import Window
