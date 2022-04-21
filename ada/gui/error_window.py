@@ -16,11 +16,9 @@ class ErrorWindow(Window):
     def initUI(self):
         self.setStyleSheet(styles.error_background)
 
-        text = QLabel(self.message)
+        text = self.window.addWidget(QLabel(self.message), 0, 0)
         text.setStyleSheet(styles.error_font)
         text.setWordWrap(True)
-
-        self.window.addWidget(text, 0, 0)
 
 def error_wrapper(func):
     def inner(self):

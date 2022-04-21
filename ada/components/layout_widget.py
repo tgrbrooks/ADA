@@ -16,7 +16,13 @@ class LayoutWidget(QWidget):
             self.layout.setSpacing(spacing*config.wr)
 
     def addWidget(self, widget, *args):
-        return self.layout.addWidget(widget, *args)
+        self.layout.addWidget(widget, *args)
+        return widget
+
+    def addWidgets(self, widgets):
+        for widget in widgets:
+            self.layout.addWidget(widget)
+        return widgets
 
     def show(self):
         return self.widget.show()

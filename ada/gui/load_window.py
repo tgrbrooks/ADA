@@ -27,7 +27,8 @@ from ada.logger import logger
 class LoadWindow(Window):
 
     def __init__(self, parent, row=-1):
-        super(LoadWindow, self).__init__('Load Files', 350, 150, QVBoxLayout, parent)
+        super(LoadWindow, self).__init__(
+            'Load Files', 350, 150, QVBoxLayout, parent)
         self.details = []
         self.condition_files = []
         self.files = []
@@ -36,64 +37,53 @@ class LoadWindow(Window):
 
     def initUI(self):
         # Dropdown list of available file types
+        file_types = config.replicate_types
         if self.row == -1:
-            self.file_type = DropDown('File type:', config.file_types, self)
-        else:
-            self.file_type = DropDown('File type:', config.replicate_types, self)
-        self.file_type.entry.currentTextChanged.connect(self.update_options)
-        self.window.addWidget(self.file_type)
+            file_types = config.file_types
+        self.file_type = self.window.addWidget(
+            DropDown('File type:', file_types, parent=self, change_action=self.update_options))
 
         # Button for selecting files to import
-        select_file_button = Button("Select data file(s)", self)
-        select_file_button.clicked.connect(self.select_data)
-        self.window.addWidget(select_file_button)
+        self.window.addWidget(
+            Button("Select data file(s)", parent=self, clicked=self.select_data))
 
         # List of files to import
-        self.file_list = List(self)
+        self.file_list = self.window.addWidget(List(self))
         self.file_list.setSpacing(-5*config.wr)
         self.file_list.setStyleSheet(styles.default_font)
-        self.window.addWidget(self.file_list)
 
         # Button and list for Algem conditions files
-        self.select_conditions_button = Button("Select conditions file(s)",
-                                               self)
-        self.select_conditions_button.clicked.connect(self.select_conditions)
-        self.window.addWidget(self.select_conditions_button)
+        self.select_conditions_button = self.window.addWidget(
+            Button("Select conditions file(s)", parent=self, clicked=self.select_conditions))
         self.select_conditions_button.hide()
 
-        self.conditions_file_list = List(self)
+        self.conditions_file_list = self.window.addWidget(List(self))
         self.conditions_file_list.setSpacing(-5*config.wr)
         self.conditions_file_list.setStyleSheet(styles.default_font)
-        self.window.addWidget(self.conditions_file_list)
         self.conditions_file_list.hide()
 
         # Button and list for HT24 details file
-        self.select_details_button = Button("Select details file", self)
-        self.select_details_button.clicked.connect(self.select_details)
-        self.window.addWidget(self.select_details_button)
+        self.select_details_button = self.window.addWidget(
+            Button("Select details file", parent=self, clicked=self.select_details))
         self.select_details_button.hide()
 
-        self.details_file_list = List(self)
+        self.details_file_list = self.window.addWidget(List(self))
         self.details_file_list.setSpacing(-5*config.wr)
         self.details_file_list.setStyleSheet(styles.default_font)
-        self.window.addWidget(self.details_file_list)
         self.details_file_list.hide()
 
         # Option to downsample conditions data
-        self.downsample = TextEntry('Downsample conditions:', self, config.downsample)
-        self.downsample.setToolTip('Only read in every X data points')
-        self.window.addWidget(self.downsample)
+        self.downsample = self.window.addWidget(
+            TextEntry('Downsample conditions:', parent=self, default=config.downsample, tooltip='Only read in every X data points'))
         self.downsample.hide()
 
         # Checkbox for merging replicates in HT24 data
-        self.merge_replicates = CheckBox('Merge replicates', self)
-        self.window.addWidget(self.merge_replicates)
+        self.merge_replicates = self.window.addWidget(
+            CheckBox('Merge replicates', self))
         self.merge_replicates.hide()
 
         # Button to load the data
-        load_button = Button("Load", self)
-        load_button.clicked.connect(self.load)
-        self.window.addWidget(load_button)
+        self.window.addWidget(Button("Load", parent=self, clicked=self.load))
 
         self.update_options()
 
@@ -176,7 +166,8 @@ class LoadWindow(Window):
         if self.row == -1:
             data_manager.condition_data.add_data(algem_conditions)
         else:
-            data_manager.condition_data.add_replicate(algem_conditions, self.row)
+            data_manager.condition_data.add_replicate(
+                algem_conditions, self.row)
 
     def load_algem_ht24_txt(self, file_name):
         downsample = self.downsample.get_int()
@@ -189,14 +180,16 @@ class LoadWindow(Window):
             data_manager.growth_data.add_data(algem_data)
         for replicate in rep_algem_data_list:
             if self.merge_replicates.isChecked():
-                data_manager.growth_data.add_replicate(replicate[0], replicate[1])
+                data_manager.growth_data.add_replicate(
+                    replicate[0], replicate[1])
             else:
                 data_manager.growth_data.add_data(replicate[0])
         for condition_data in cond_data_list:
             data_manager.condition_data.add_data(condition_data)
         for replicate in rep_cond_data_list:
             if self.merge_replicates.isChecked():
-                data_manager.condition_data.add_replicate(replicate[0], replicate[1])
+                data_manager.condition_data.add_replicate(
+                    replicate[0], replicate[1])
             else:
                 data_manager.condition_data.add_data(replicate[0])
 
@@ -216,7 +209,8 @@ class LoadWindow(Window):
                 data_manager.growth_data.add_data(algem_data)
             for replicate in replicate_data_list:
                 if self.merge_replicates.isChecked():
-                    data_manager.growth_data.add_replicate(replicate[0], replicate[1])
+                    data_manager.growth_data.add_replicate(
+                        replicate[0], replicate[1])
                 else:
                     data_manager.growth_data.add_data(replicate[0])
 
@@ -240,7 +234,7 @@ class LoadWindow(Window):
             for replicate in replicate_conditions_list:
                 if self.merge_replicates.isChecked():
                     data_manager.condition_data.add_replicate(replicate[0],
-                                                 replicate[1])
+                                                              replicate[1])
                 else:
                     data_manager.condition_data.add_data(replicate[0])
 
@@ -284,7 +278,8 @@ class LoadWindow(Window):
         else:
             data_manager.growth_data.add_replicate(ada_data, self.row)
             if condition_data is not None:
-                data_manager.condition_data.add_replicate(condition_data, self.row)
+                data_manager.condition_data.add_replicate(
+                    condition_data, self.row)
 
     @error_wrapper
     def load(self):

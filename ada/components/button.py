@@ -21,7 +21,7 @@ class Button(QPushButton):
 
 
 class BigButton(QPushButton):
-    def __init__(self, text, parent=None, tooltip=None, *args, **kwargs):
+    def __init__(self, text, parent=None, tooltip=None, clicked=None, *args, **kwargs):
         super(BigButton, self).__init__(text, parent, *args, **kwargs)
         self.setStyleSheet(styles.big_button_style)
         shadow = QGraphicsDropShadowEffect(
@@ -31,10 +31,12 @@ class BigButton(QPushButton):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         if tooltip is not None:
             self.setToolTip(tooltip)
+        if clicked is not None:
+            self.clicked.connect(clicked)
 
 
 class AddButton(QPushButton):
-    def __init__(self, parent=None, *args, **kwargs):
+    def __init__(self, parent=None, clicked=None, *args, **kwargs):
         super(AddButton, self).__init__('+', parent, *args, **kwargs)
         self.setStyleSheet(styles.add_button_style)
         shadow = QGraphicsDropShadowEffect(
@@ -43,10 +45,12 @@ class AddButton(QPushButton):
         self.setFixedHeight(16*config.hr)
         self.setFixedWidth(16*config.wr)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        if clicked is not None:
+            self.clicked.connect(clicked)
 
 
 class DeleteButton(QPushButton):
-    def __init__(self, parent=None, *args, **kwargs):
+    def __init__(self, parent=None, clicked=None, *args, **kwargs):
         super(DeleteButton, self).__init__('x', parent, *args, **kwargs)
         self.setStyleSheet(styles.delete_button_style)
         shadow = QGraphicsDropShadowEffect(
@@ -55,3 +59,5 @@ class DeleteButton(QPushButton):
         self.setFixedHeight(16*config.hr)
         self.setFixedWidth(16*config.wr)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        if clicked is not None:
+            self.clicked.connect(clicked)

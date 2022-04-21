@@ -53,7 +53,7 @@ class RoundLabel(QWidget):
 
 
 class DelLabel(QWidget):
-    def __init__(self, text, bold=False, *args, **kwargs):
+    def __init__(self, text, bold=False, clicked=None, *args, **kwargs):
         super(DelLabel, self).__init__(*args, **kwargs)
         self.button = DeleteButton()
         self.text = QLabel(text)
@@ -64,6 +64,8 @@ class DelLabel(QWidget):
         layout.addWidget(self.button)
         layout.addWidget(self.text)
         self.setLayout(layout)
+        if clicked is not None:
+            self.button.clicked.connect(clicked)
 
     def clear(self):
         self.text.clear()

@@ -53,59 +53,43 @@ class CorrelationWindow(Window):
 
         # X axis selection = condition variable
         # Dropdown of condition variables OR take from main plot
-        self.condition = DropDown('X-axis: Average of', [], self)
-        if len(data_manager.get_condition_data_files()) > 0:
-            for sig in data_manager.get_condition_variables():
-                self.condition.addItem(sig)
-        corr_config.addWidget(self.condition)
+        self.condition = corr_config.addWidget(
+            DropDown('X-axis: Average of', data_manager.get_condition_variables()))
 
         # Y axis selection = growth related measurement
         # Dropdown of y variables (OD/CD) OR take from main plot
-        self.data = DropDown('Y-axis:', [], self)
-        if len(data_manager.get_growth_data_files()) > 0:
-            for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig)
-        corr_config.addWidget(self.data)
+        self.data = corr_config.addWidget(
+            DropDown('Y-axis:', data_manager.get_growth_variables()))
 
         # Choice of fit and fit parameter
         fit_option = LayoutWidget(QHBoxLayout)
-        self.fit = DropDown('Fit:', config.fit_options, self)
-        self.fit.entry.currentTextChanged.connect(self.update_param_list)
-        fit_option.addWidget(self.fit)
-        model = get_model(self.fit.currentText(), '', '')
-        self.param = DropDown('Parameter:', model.params, self)
-        fit_option.addWidget(self.param)
+        model = get_model(config.fit_options[0])
+        self.fit, self.param = fit_option.addWidgets([
+            DropDown('Fit:', config.fit_options, parent=self, change_action=self.update_param_list),
+            DropDown('Parameter:', model.params)])
         corr_config.addWidget(fit_option.widget)
 
         range_option = LayoutWidget(QHBoxLayout)
-        self.start_t = TextEntry('Between:', self, -1)
-        self.start_t.setPlaceholderText(config.xvar)
-        range_option.addWidget(self.start_t)
-        self.end_t = TextEntry('And:', self, -1)
-        self.end_t.setPlaceholderText(config.xvar)
-        range_option.addWidget(self.end_t)
+        self.start_t, self.end_t = range_option.addWidgets([
+            TextEntry('Between:', self, -1, placeholder=config.xvar),
+            TextEntry('And:', self, -1, placeholder=config.xvar)])
         corr_config.addWidget(range_option.widget)
 
-        self.figure_title = TextEntry('Figure title:', self)
-        corr_config.addWidget(self.figure_title)
+        self.figure_title = corr_config.addWidget(TextEntry('Figure title:'))
         title_option = LayoutWidget(QHBoxLayout)
-        self.x_title = TextEntry('X-axis title:', self)
-        title_option.addWidget(self.x_title)
-        self.y_title = TextEntry('Y-axis title:', self)
-        title_option.addWidget(self.y_title)
+        self.x_title, self.y_title = title_option.addWidgets([
+            TextEntry('X-axis title:'),
+            TextEntry('Y-axis title:')])
         corr_config.addWidget(title_option.widget)
 
         options = LayoutWidget(QHBoxLayout)
-        self.label = CheckBox('Label', self)
-        options.addWidget(self.label)
-        self.calc_correlation = CheckBox('Calculate correlation', self)
-        options.addWidget(self.calc_correlation)
+        self.label, self.calc_correlation = options.addWidgets([
+            CheckBox('Label', self),
+            CheckBox('Calculate correlation', self)])
         corr_config.addWidget(options.widget)
 
         # Plot button
-        plot_button = Button('Plot', self)
-        plot_button.clicked.connect(self.update_plot)
-        corr_config.addWidget(plot_button)
+        corr_config.addWidget(Button('Plot', parent=self, clicked=self.update_plot))
 
         self.tabs.addTab(corr_config.widget, 'Configuration')
 
@@ -113,18 +97,15 @@ class CorrelationWindow(Window):
         plot_view = LayoutWidget(QGridLayout, margin=5, spacing=10)
 
         # Plot
-        self.plot = CorrelationCanvas(
-            self, width=10*config.wr, height=4*config.hr, dpi=100*config.wr)
+        self.plot = plot_view.addWidget(
+            CorrelationCanvas(self, width=10*config.wr, height=4*config.hr, dpi=100*config.wr), 0, 0, 4, 4)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=10*config.wr, xOffset=3*config.wr, yOffset=3*config.hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_view.addWidget(self.plot, 0, 0, 4, 4)
 
         # Save button
-        save_button = Button('Save', self)
-        save_button.clicked.connect(self.save_plot)
-        plot_view.addWidget(save_button, 4, 0, 1, 4)
+        plot_view.addWidget(Button('Save', parent=self, clicked=self.save_plot), 4, 0, 1, 4)
 
         self.tabs.addTab(plot_view.widget, 'Plot')
 

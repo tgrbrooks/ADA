@@ -17,22 +17,22 @@ from ada.logger import logger
 class TestWindow(Window):
 
     def __init__(self, parent=None):
-        super(TestWindow, self).__init__('Statistical test', 200, 150, QVBoxLayout, parent)
+        super(TestWindow, self).__init__(
+            'Statistical test', 200, 150, QVBoxLayout, parent)
         self.initUI()
 
     def initUI(self):
-        self.test_option = DropDown('Test:', config.test_options, change_action=self.render_test)
-        self.window.addWidget(self.test_option)
+        self.test_option = self.window.addWidget(
+            DropDown('Test:', config.test_options, change_action=self.render_test))
 
         self.data_input = LayoutWidget(QVBoxLayout)
-        self.data_option1 = DropDown('Sample 1:', data_manager.get_growth_data_labels())
-        self.data_input.addWidget(self.data_option1)
-        self.data_option2 = DropDown('Sample 2:', data_manager.get_growth_data_labels())
-        self.data_input.addWidget(self.data_option2)
+        self.data_option1, self.data_option2 = self.data_input.addWidgets([
+            DropDown('Sample 1:', data_manager.get_growth_data_labels()),
+            DropDown('Sample 2:', data_manager.get_growth_data_labels())])
         self.window.addWidget(self.data_input.widget)
 
-        self.test_measurement = DropDown('Measurement:', config.measurement_options, change_action=self.render_measurement)
-        self.window.addWidget(self.test_measurement)
+        self.test_measurement = self.window.addWidget(
+            DropDown('Measurement:', config.measurement_options, change_action=self.render_measurement))
 
         self.measurement = LayoutWidget(QVBoxLayout)
         self.window.addWidget(self.measurement.widget)
@@ -40,10 +40,8 @@ class TestWindow(Window):
 
         self.window.addWidget(Button("Test", clicked=self.test))
 
-        self.statistic = QLabel("Statistic = ")
-        self.window.addWidget(self.statistic)
-        self.pvalue = QLabel("P value = ")
-        self.window.addWidget(self.pvalue)
+        self.statistic, self.pvalue = self.window.addWidgets([
+            QLabel("Statistic = "), QLabel("P value = ")])
 
         self.window.addWidget(Spacer())
 
@@ -54,42 +52,35 @@ class TestWindow(Window):
             self.data_input.show()
         else:
             self.data_input.hide()
-            
+
     @error_wrapper
     def render_measurement(self):
         self.measurement.clear()
         option = self.test_measurement.currentText()
         if option == 'gradient':
-            self.signal = DropDown('Gradient of:', data_manager.get_growth_variables())
-            self.measurement.addWidget(self.signal)
-            self.grad_from = TextEntry('Between:', placeholder='Y = ')
-            self.measurement.addWidget(self.grad_from)
-            self.grad_to = TextEntry('And:', placeholder='Y = ')
-            self.measurement.addWidget(self.grad_to)
+            self.signal, self.grad_from, self.grad_to = self.measurement.addWidgets([
+                DropDown('Gradient of:', data_manager.get_growth_variables()),
+                TextEntry('Between:', placeholder='Y = '),
+                TextEntry('And:', placeholder='Y = ')])
         elif option == 'time to':
-            self.signal = DropDown('Time for:', data_manager.get_growth_variables())
-            self.measurement.addWidget(self.signal)
-            self.time_to = TextEntry('To reach:', placeholder='Y = ')
-            self.measurement.addWidget(self.time_to)
-        elif option == 'fit parameter': 
-            self.fit = DropDown('Fit:', config.fit_options, change_action=self.update_param_list)
-            self.measurement.addWidget(self.fit)
-            self.signal = DropDown('Of:', data_manager.get_growth_variables())
-            self.measurement.addWidget(self.signal)
-            model = get_model(self.fit.currentText())
-            self.param = DropDown('Parameter:', model.params)
-            self.measurement.addWidget(self.param)
-            self.fit_from = TextEntry('From:', placeholder=config.xvar)
-            self.measurement.addWidget(self.fit_from)
-            self.fit_to = TextEntry('To:', placeholder=config.xvar)
-            self.measurement.addWidget(self.fit_to)
+            self.signal, self.time_to = self.measurement.addWidgets([
+                DropDown('Time for:', data_manager.get_growth_variables()),
+                TextEntry('To reach:', placeholder='Y = ')])
+        elif option == 'fit parameter':
+            model = get_model(config.fit_options[0])
+            self.fit, self.signal, self.param, self.fit_from, self.fit_to = self.measurement.addWidgets([
+                DropDown('Fit:', config.fit_options,
+                         change_action=self.update_param_list),
+                DropDown('Of:', data_manager.get_growth_variables()),
+                DropDown('Parameter:', model.params),
+                TextEntry('From:', placeholder=config.xvar),
+                TextEntry('To:', placeholder=config.xvar)])
         else:
             self.measurement.hide()
             return
         self.measurement.show()
         return
 
-    
     def update_param_list(self, fit_name):
         self.param.clear()
         model = get_model(fit_name, "", "")
@@ -115,16 +106,19 @@ class TestWindow(Window):
             if measurement_option == 'gradient':
                 grad_from = self.grad_from.get_float(error=True)
                 grad_to = self.grad_to.get_float(error=True)
-                measurements.append(data_manager.get_replicate_gradients(i, signal, grad_from, grad_to))
+                measurements.append(data_manager.get_replicate_gradients(
+                    i, signal, grad_from, grad_to))
             elif measurement_option == 'time to':
                 time_to = self.time_to.get_float(error=True)
-                measurements.append(data_manager.get_replicate_time_to(i, signal, time_to))
+                measurements.append(
+                    data_manager.get_replicate_time_to(i, signal, time_to))
             elif measurement_option == 'fit parameter':
                 fit_name = self.fit.currentText(error=True)
                 fit_from = self.fit_from.get_float(error=True)
                 fit_to = self.fit_to.get_float(error=True)
                 fit_param = self.param.currentText(error=True)
-                measurements.append(data_manager.get_replicate_fits(i, signal, fit_name, fit_from, fit_to, fit_param))
+                measurements.append(data_manager.get_replicate_fits(
+                    i, signal, fit_name, fit_from, fit_to, fit_param))
             else:
                 raise RuntimeError('Unknown measurement')
         # Calculate test result

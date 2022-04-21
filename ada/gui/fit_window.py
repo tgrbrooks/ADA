@@ -25,34 +25,18 @@ class FitWindow(Window):
         fit_config = LayoutWidget(QVBoxLayout)
 
         # List of row options
-        self.curve_option = DropDown('Data:', [], self)
-        for data in data_manager.get_growth_data_files():
-            self.curve_option.addItem(data.label)
-        fit_config.addWidget(self.curve_option)
-
-        self.fit_option = DropDown('Fit:', config.fit_options, self)
-        fit_config.addWidget(self.fit_option)
-
-        self.fit_from = TextEntry('From:', self, config.fit_from)
-        fit_config.addWidget(self.fit_from)
-
-        self.fit_to = TextEntry('To:', self, config.fit_to)
-        fit_config.addWidget(self.fit_to)
-
-        self.set_bounds = CheckBox('Set parameter bounds', self)
-        self.set_bounds.entry.stateChanged.connect(self.render_bounds)
-        fit_config.addWidget(self.set_bounds)
-
-        # Button to add a new row
-        fit_button = Button("Fit", self)
-        fit_button.clicked.connect(self.fit)
-        fit_config.addWidget(fit_button)
+        self.curve_option, self.fit_option, self.fit_from, self.fit_to, self.set_bounds, _ = fit_config.addWidgets([
+            DropDown('Data:', data_manager.get_growth_data_labels(), self),
+            DropDown('Fit:', config.fit_options, self),
+            TextEntry('From:', self, config.fit_from),
+            TextEntry('To:', self, config.fit_to),
+            CheckBox('Set parameter bounds', parent=self, change_action=self.render_bounds),
+            Button("Fit", parent=self, clicked=self.fit)])
 
         self.window.addWidget(fit_config.widget)
 
         self.bound_input = LayoutWidget(QVBoxLayout)
-        self.param_bounds = ParameterBounds("p", self)
-        self.bound_input.addWidget(self.param_bounds)
+        self.param_bounds = self.bound_input.addWidget(ParameterBounds("p", self))
 
         self.window.addWidget(self.bound_input.widget)
         self.bound_input.hide()

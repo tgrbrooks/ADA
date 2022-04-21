@@ -17,18 +17,11 @@ class LineStyleWindow(Window):
         self.initUI()
 
     def initUI(self):
-        self.line_style = DropDown('Line style:', config.line_style_options, self)
-        self.window.addWidget(self.line_style)
-
-        self.line_colour = TextEntry('Line colour:', self)
-        self.window.addWidget(self.line_colour)
-
-        self.marker_style = DropDown('Marker style:', list(config.marker_style_options.keys()), self)
-        self.window.addWidget(self.marker_style)
-
-        apply_button = Button("Apply", self)
-        apply_button.clicked.connect(self.apply_changes)
-        self.window.addWidget(apply_button)
+        self.line_style, self.line_colour, self.marker_style, _ = self.window.addWidgets([
+            DropDown('Line style:', config.line_style_options, self),
+            TextEntry('Line colour:', self),
+            DropDown('Marker style:', list(config.marker_style_options.keys()), self),
+            Button("Apply", parent=self, clicked=self.apply_changes)])
 
     def apply_changes(self):
         logger.debug('Trying to set colour %s and style %s' %

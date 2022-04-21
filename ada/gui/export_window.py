@@ -21,15 +21,10 @@ class ExportWindow(Window):
         self.initUI()
 
     def initUI(self):
-        self.rename = CheckBox('Rename with profile', self)
-        self.window.addWidget(self.rename)
-
-        self.conditions = CheckBox('Include conditions', self)
-        self.window.addWidget(self.conditions)
-
-        export_button = Button("Export", self)
-        export_button.clicked.connect(self.export)
-        self.window.addWidget(export_button)
+        self.rename, self.conditions, _ = self.window.addWidgets([
+            CheckBox('Rename with profile'),
+            CheckBox('Include conditions'),
+            Button("Export", parent=self, clicked=self.export)])
 
     @error_wrapper
     def export(self):

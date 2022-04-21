@@ -1,7 +1,7 @@
 # Related third party imports
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy, QToolBar,
+from PyQt5.QtWidgets import (QMainWindow, QTabWidget, QSizePolicy, QToolBar,
                              QGridLayout, QVBoxLayout, QGraphicsDropShadowEffect, QSizePolicy,
-                             QFormLayout, QHBoxLayout, QMenu, QAction, QSplitter)
+                             QHBoxLayout, QMenu, QAction, QSplitter)
 from PyQt5.QtCore import QPoint, Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QIcon
 
@@ -91,36 +91,36 @@ class App(QMainWindow):
         plot_view = LayoutWidget(QGridLayout, margin=5, spacing=10)
 
         # Main plot window (row, column, row extent, column extent)
-        self.plot = PlotCanvas(self, width=10*wr, height=4*hr, dpi=100*wr)
+        self.plot = plot_view.addWidget(PlotCanvas(self, width=10*wr, height=4*hr, dpi=100*wr), 0, 1, 5, 5)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=10*wr, xOffset=3*wr, yOffset=3*hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_view.addWidget(self.plot, 0, 1, 5, 5)
 
-        toolbar = QToolBar("Tools", self)
+        toolbar = plot_view.addWidget(QToolBar("Tools", self), 0, 0, 5, 1)
         toolbar.setOrientation(Qt.Vertical)
         toolbar.setStyleSheet(styles.toolbar_style)
 
         toolbar_icons = [":measure.svg", ":fit.svg", ":table.svg", ":correlations.svg", ":template.svg", ":normal.svg"]
         toolbar_labels = ['&Measure', '&Fit', '&To Table', '&Correlations', '&Download Template', '&Statisitical Tests']
         toolbar_actions = [self.toggle_cursor, self.fit_curve, self.create_table, self.open_correlation, self.download_template, self.open_tests]
-
         for i, icon in enumerate(toolbar_icons):
             toolbar_action = QAction(QIcon(icon), toolbar_labels[i], self)
             toolbar_action.triggered.connect(toolbar_actions[i])
             toolbar.addAction(toolbar_action)
 
-        plot_view.addWidget(toolbar, 0, 0, 5, 1)
-
         splitter.addWidget(plot_view.widget)
 
         data_entry = LayoutWidget(QVBoxLayout, margin=5, spacing=10)
-        # Add data button
-        self.data_button = Button('Add Data', self,
-                                  'Import data for plotting')
-        self.data_button.clicked.connect(self.open_data_files)
-        data_entry.addWidget(self.data_button)
+        self.data_button, self.data_list, _, self.condition_data_list, _, self.calibration_file, _ = data_entry.addWidgets([
+            Button('Add Data', parent=self, tooltip='Import data for plotting', clicked=self.open_data_files),
+            List(parent=self, scroll=True),
+            TopLabel('Condition Data:', bold=True),
+            List(parent=self, scroll=True),
+            Button('Add Calibration Curve', parent=self, tooltip='Set OD to CD conversion from file', clicked=self.open_calibration_file),
+            DelLabel('', clicked=self.remove_calibration_file),
+            BigButton('Plot!', parent=self, tooltip='Plot the data!', clicked=self.update_plot)])
+
         self.data_button.setContextMenuPolicy(Qt.CustomContextMenu)
         self.data_button.customContextMenuRequested.connect(
             self.on_context_menu)
@@ -129,35 +129,7 @@ class App(QMainWindow):
         self.clear_action = QAction('Clear all', self)
         self.clear_menu.addAction(self.clear_action)
 
-        # List of data in a scrollable area
-        self.data_list = List(self)
-        self.data_list.setSizePolicy(QSizePolicy.Expanding,
-                                     QSizePolicy.Expanding)
-        data_entry.addWidget(self.data_list)
-
-        # Add condition data text
-        condition_data_text = TopLabel('Condition Data:', True)
-        data_entry.addWidget(condition_data_text)
-        # List of condition data
-        self.condition_data_list = List(self)
-        self.condition_data_list.setSizePolicy(QSizePolicy.Expanding,
-                                               QSizePolicy.Expanding)
-        data_entry.addWidget(self.condition_data_list)
-
-        calibration_button = Button('Add Calibration Curve', self,
-                                    'Set OD to CD conversion from file')
-        calibration_button.clicked.connect(self.open_calibration_file)
-        data_entry.addWidget(calibration_button)
-        self.calibration_file = DelLabel(self)
-        self.calibration_file.button.clicked.connect(
-            self.remove_calibration_file)
         self.calibration_file.setFixedHeight(40*hr)
-        data_entry.addWidget(self.calibration_file)
-
-        # Plot button
-        plot_button = BigButton('Plot!', self, 'Plot the data!')
-        plot_button.clicked.connect(self.update_plot)
-        data_entry.addWidget(plot_button)
 
         splitter.addWidget(data_entry.widget)
 
@@ -172,99 +144,63 @@ class App(QMainWindow):
         # Axis configuration
         axis_options = LayoutWidget(QVBoxLayout)
         axis_h = LayoutWidget(QHBoxLayout)
+
+        self.figure_title = axis_options.addWidget(
+            TextEntry('Figure title:', self))
+
         x_options = LayoutWidget(QVBoxLayout)
-        x_form = Form()
-        y_options = LayoutWidget(QVBoxLayout)
-        y_form = Form()
-        z_options = LayoutWidget(QVBoxLayout)
-        z_form = Form()
-
-        self.figure_title = TextEntry('Figure title:', self)
-        axis_options.addWidget(self.figure_title)
-
         x_options.addWidget(TopLabel('X (time):'))
-        # X axis drop down menu
-        self.xaxis_dropdown = DropDown('Variable:', config.xaxis_units, self)
-        self.xaxis_dropdown.setCurrentIndex(2)
-        x_form.addRow(self.xaxis_dropdown)
 
-        # X axis titles
-        self.xaxis_name = TextEntry('Label:', self)
-        x_form.addRow(self.xaxis_name)
-        self.xaxis_unit = TextEntry('Unit name:', self)
-        self.xaxis_unit.setToolTip('Enter "none" for no units')
-        x_form.addRow(self.xaxis_unit)
-
-        # X axis range
-        self.xaxis_min = TextEntry('Range min:', self, config.xmin)
-        x_form.addRow(self.xaxis_min)
-        self.xaxis_max = TextEntry('Range max:', self, config.xmax)
-        x_form.addRow(self.xaxis_max)
-
-        # X axis log scale
-        self.xaxis_log = CheckBox('Log scale', self)
-        x_form.addRow(self.xaxis_log, pad=True)
+        # X axis config
+        x_form = Form()
+        self.xaxis_dropdown, self.xaxis_name, self.xaxis_unit, self.xaxis_min, self.xaxis_max, self.xaxis_log = x_form.addRows([
+            DropDown('Variable:', config.xaxis_units, parent=self, index=2),
+            TextEntry('Label:', parent=self),
+            TextEntry('Unit name:', parent=self, tooltip='Enter "none" for no units'),
+            TextEntry('Range min:', parent=self, default=config.xmin),
+            TextEntry('Range max:', parent=self, default=config.xmax),
+            CheckBox('Log scale', parent=self)],
+            padding=[False, False, False, False, False, True])
 
         x_options.addWidget(x_form.widget)
         axis_h.addWidget(x_options.widget)
 
+        y_options = LayoutWidget(QVBoxLayout)
         y_options.addWidget(TopLabel('Y (growth):'))
-        # Y axis drop down menu
-        self.yaxis_dropdown = DropDown('Variable:', [], self)
-        y_form.addRow(self.yaxis_dropdown)
-
-        # Y axis titles
-        self.yaxis_name = TextEntry('Label:', self)
-        y_form.addRow(self.yaxis_name)
-        self.yaxis_unit = TextEntry('Unit name:', self)
-        self.yaxis_unit.setToolTip('Enter "none" for no units')
-        y_form.addRow(self.yaxis_unit)
-
-        # Y axis range
-        self.yaxis_min = TextEntry('Range min:', self, config.ymin)
-        y_form.addRow(self.yaxis_min)
-        self.yaxis_max = TextEntry('Range max:', self, config.ymax)
-        y_form.addRow(self.yaxis_max)
+        # Y axis config
+        y_form = Form()
+        self.yaxis_dropdown, self.yaxis_name, self.yaxis_unit, self.yaxis_min, self.yaxis_max = y_form.addRows([
+            DropDown('Variable:', [], parent=self),
+            TextEntry('Label:', parent=self),
+            TextEntry('Unit name:', parent=self, tooltip='Enter "none" for no units'),
+            TextEntry('Range min:', parent=self, default=config.ymin),
+            TextEntry('Range max:', parent=self, default=config.ymax)])
 
         # Y axis log scale
-        self.yaxis_log = CheckBox('Log scale', self)
-        self.yaxis_normlog = CheckBox('ln(Y/Y0)', self)
-        ylog_hbox = QHBoxLayout()
-        ylog_hbox.setSpacing(15*wr)
-        ylog_hbox.setContentsMargins(0, 0, 1*wr, 1*hr)
-        ylog_hbox.addWidget(self.yaxis_log)
-        ylog_hbox.addWidget(self.yaxis_normlog)
-        ylog_widget = QWidget()
-        ylog_widget.setLayout(ylog_hbox)
-        y_form.addRow(ylog_widget, pad=True)
+        ylog_hbox = LayoutWidget(QHBoxLayout)
+        ylog_hbox.layout.setSpacing(15*wr)
+        ylog_hbox.layout.setContentsMargins(0, 0, 1*wr, 1*hr)
+        self.yaxis_log, self.yaxis_normlog = ylog_hbox.addWidgets([
+            CheckBox('Log scale', self),
+            CheckBox('ln(Y/Y0)', self)])
+        y_form.addRow(ylog_hbox.widget, pad=True)
 
         y_options.addWidget(y_form.widget)
         axis_h.addWidget(Spacer())
         axis_h.addWidget(y_options.widget)
 
+        z_options = LayoutWidget(QVBoxLayout)
         z_options.addWidget(TopLabel('Y2 (conditions):'))
         # Condition Y axis drop down menu
-        self.condition_yaxis_dropdown = DropDown('Variable:', [], self)
-        z_form.addRow(self.condition_yaxis_dropdown)
-
-        # Condition Y axis titles
-        self.condition_yaxis_name = TextEntry('Label:', self)
-        z_form.addRow(self.condition_yaxis_name)
-        self.condition_yaxis_unit = TextEntry('Unit name:', self)
-        self.xaxis_unit.setToolTip('Enter "none" for no units')
-        z_form.addRow(self.condition_yaxis_unit)
-
-        # Condition Y axis range
-        self.condition_yaxis_min = TextEntry(
-            'Range min:', self, config.condition_ymin)
-        z_form.addRow(self.condition_yaxis_min)
-        self.condition_yaxis_max = TextEntry(
-            'Range max:', self, config.condition_ymax)
-        z_form.addRow(self.condition_yaxis_max)
-
-        # Condition Y axis log scale
-        self.condition_yaxis_log = CheckBox('Log scale', self)
-        z_form.addRow(self.condition_yaxis_log, pad=True)
+        z_form = Form()
+        self.condition_yaxis_dropdown, self.condition_yaxis_name, self.condition_yaxis_unit, self.condition_yaxis_min, self.condition_yaxis_max, self.condition_yaxis_log = z_form.addRows([
+            DropDown('Variable:', [], parent=self),
+            TextEntry('Label:', parent=self),
+            TextEntry('Unit name:', parent=self, tooltip='Enter "none" for no units'),
+            TextEntry('Range min:', parent=self, default=config.condition_ymin),
+            TextEntry('Range max:', parent=self, default=config.condition_ymax),
+            CheckBox('Log scale', parent=self)],
+            padding=[False, False, False, False, False, True])
 
         z_options.addWidget(z_form.widget)
         axis_h.addWidget(Spacer())
@@ -281,55 +217,27 @@ class App(QMainWindow):
         data_options = LayoutWidget(QHBoxLayout)
         data_form = Form()
 
-        # Smooth noisy data button
-        self.smooth_data = CheckBox('Data smoothing off/on', self)
-        self.smooth_data.setToolTip('Apply Savitzky-Golay to noisy data')
-        data_form.addRow(self.smooth_data, pad=True)
-
-        # Align all data with 0 checkbox
-        self.align_data = CheckBox('Alignment at time = 0 on/off', self)
-        self.align_data.setToolTip('Start growth curves at 0 time')
-        data_form.addRow(self.align_data, pad=True)
-
-        # Align all data at Y position
-        self.y_alignment = TextEntry('Align at Y:', self, config.y_alignment)
-        self.y_alignment.setToolTip('Align all growth curves at given Y value')
-        data_form.addRow(self.y_alignment)
-
-        # Align all data with 0 checkbox
-        self.initial_y = TextEntry('Set initial Y:', self, config.initial_y)
-        self.initial_y.setToolTip('Start growth curves at a given Y value')
-        data_form.addRow(self.initial_y)
-
-        # Growth data averaging
-        self.growth_average = TextEntry(
-            'Growth data time average:', self, config.growth_average)
-        self.growth_average.setToolTip('Average over a given time window')
-        data_form.addRow(self.growth_average)
-
-        # Condition data averaging
-        self.condition_average = TextEntry(
-            'Condition data time average:', self, config.condition_average)
-        self.condition_average.setToolTip('Average over a given time window')
-        data_form.addRow(self.condition_average)
-
-        self.show_events = CheckBox('Show events off/on', self)
-        data_form.addRow(self.show_events, pad=True)
+        self.smooth_data, self.align_data, self.y_alignment, self.initial_y, self.growth_average, self.condition_average, self.show_events = data_form.addRows([
+            CheckBox('Data smoothing off/on', parent=self, tooltip='Apply Savitzky-Golay to noisy data'),
+            CheckBox('Alignment at time = 0 on/off', parent=self, tooltip='Start growth curves at 0 time'),
+            TextEntry('Align at Y:', parent=self, default=config.y_alignment, tooltip='Align all growth curves at given Y value'),
+            TextEntry('Set initial Y:', parent=self, default=config.initial_y, tooltip='Start growth curves at a given Y value'),
+            TextEntry('Growth data time average:', parent=self, default=config.growth_average, tooltip='Average over a given time window'),
+            TextEntry('Condition data time average:', parent=self, default=config.condition_average, tooltip='Average over a given time window'),
+            CheckBox('Show events off/on', self)],
+            padding=[True, True, False, False, False, False, True])
 
         data_options.addWidget(data_form.widget)
 
-        outlier_options = LayoutWidget(QVBoxLayout)
         # Remove any obvious outliers from the growth data
+        outlier_options = LayoutWidget(QVBoxLayout)
         outlier_options.addWidget(TopLabel('Data outliers:'))
         outlier_form = Form()
-        self.auto_remove = CheckBox('Auto-remove outliers off/on', self)
-        outlier_form.addRow(self.auto_remove, pad=True)
-        self.remove_above = TextEntry(
-            'Remove above:', self, config.remove_above)
-        outlier_form.addRow(self.remove_above)
-        self.remove_below = TextEntry(
-            'Remove below:', self, config.remove_below)
-        outlier_form.addRow(self.remove_below)
+        self.auto_remove, self.remove_above, self.remove_below = outlier_form.addRows([
+            CheckBox('Auto-remove outliers off/on', parent=self),
+            TextEntry('Remove above:', parent=self, default=config.remove_above),
+            TextEntry('Remove below:', parent=self, default=config.remove_below)],
+            padding=[True, False, False])
         outlier_options.addWidget(outlier_form.widget)
         outlier_options.addWidget(Spacer())
 
@@ -343,68 +251,34 @@ class App(QMainWindow):
 
         # Legend configuration options
         legend_options = LayoutWidget(QHBoxLayout)
-        growth_form = Form()
-        growth_options = LayoutWidget(QVBoxLayout)
-        condition_form = Form()
-        condition_options = LayoutWidget(QVBoxLayout)
 
         # Legend on/off checkbox
+        growth_options = LayoutWidget(QVBoxLayout)
         growth_options.addWidget(TopLabel('Growth Legend:'))
-        self.legend_toggle = CheckBox('Legend on', self)
-        growth_form.addRow(self.legend_toggle, pad=True)
-
-        # Legend options dropdown menu (editable)
-        self.legend_names = DropDown('Labels:', [], self)
-        self.legend_names.entry.setEditable(True)
-        self.legend_names.entry.setInsertPolicy(2)
-        self.legend_names.setToolTip('Edit names by changing text '
-                                     'and pressing return')
-        growth_form.addRow(self.legend_names)
-
-        # Heading for legend
-        self.legend_title = TextEntry('Heading:', self)
-        growth_form.addRow(self.legend_title)
-
-        # Extra information from header dropdown
-        self.extra_info = DropDown('Extra text:', config.info_options, self)
-        self.extra_info.setToolTip('Show extra information from '
-                                   'the file in the legend')
-        growth_form.addRow(self.extra_info)
-
-        # Checkbox to only show extra info
-        self.only_extra = CheckBox('Remove labels', self)
-        growth_form.addRow(self.only_extra, pad=True)
+        growth_form = Form()
+        self.legend_toggle, self.legend_names, self.legend_title, self.extra_info, self.only_extra = growth_form.addRows([
+            CheckBox('Legend on', parent=self),
+            DropDown('Labels:', [], parent=self, tooltip='Edit names by changing text and pressing return', edit=True),
+            TextEntry('Heading:', parent=self, tooltip='Show extra information from the file in the legend'),
+            DropDown('Extra text:', config.info_options, parent=self),
+            CheckBox('Remove labels', parent=self)],
+            padding=[True, False, False, False, True])
 
         growth_options.addWidget(growth_form.widget)
         growth_options.addWidget(Spacer())
         legend_options.addWidget(growth_options.widget)
 
         # Condition legend configuration
+        condition_options = LayoutWidget(QVBoxLayout)
         condition_options.addWidget(TopLabel('Condition legend:'))
-        self.condition_legend_toggle = CheckBox('Legend on', self)
-        condition_form.addRow(self.condition_legend_toggle, pad=True)
-
-        # Condition legend options dropdown menu
-        self.condition_legend_names = DropDown('Labels:', [], self)
-        self.condition_legend_names.entry.setEditable(True)
-        self.condition_legend_names.entry.setInsertPolicy(2)
-        self.condition_legend_names.setToolTip('Edit names by changing text '
-                                               'and pressing return')
-        condition_form.addRow(self.condition_legend_names)
-
-        # Heading for condition legend
-        self.condition_legend_title = TextEntry('Heading:', self)
-        condition_form.addRow(self.condition_legend_title)
-
-        self.condition_extra_info = DropDown(
-            'Extra text:', config.info_options, self)
-        self.condition_extra_info.setToolTip('Show extra information from '
-                                             'the file in the legend')
-        condition_form.addRow(self.condition_extra_info)
-
-        # Checkbox to only show extra info
-        self.condition_only_extra = CheckBox('Remove labels', self)
-        condition_form.addRow(self.condition_only_extra, pad=True)
+        condition_form = Form()
+        self.condition_legend_toggle, self.condition_legend_names, self.condition_legend_title, self.condition_extra_info, self.condition_only_extra = condition_form.addRows([
+            CheckBox('Legend on', parent=self),
+            DropDown('Labels:', [], parent=self, tooltip='Edit names by changing text and pressing return', edit=True),
+            TextEntry('Heading:', parent=self),
+            DropDown('Extra text:', config.info_options, parent=self, tooltip='Show extra information from the file in the legend'),
+            CheckBox('Remove labels', parent=self)],
+        padding=[True, False, False, False, True])
 
         condition_options.addWidget(condition_form.widget)
         condition_options.addWidget(Spacer())
@@ -418,95 +292,48 @@ class App(QMainWindow):
 
         # Style configuration
         style_options = LayoutWidget(QHBoxLayout)
-        style_form = Form()
-        style_numeric_form = Form()
 
         # Plot style dropdown menu
-        self.style_dropdown = DropDown('Style:', config.style_options, self)
-        style_form.addRow(self.style_dropdown)
-
-        # Font style dropdown menu
-        self.font_dropdown = DropDown('Font style:', config.font_options, self)
-        style_form.addRow(self.font_dropdown)
-
-        # Font size textbox
-        self.title_size = SpinBox(
-            'Title font size:', config.title_size, 0, 100, self)
-        style_numeric_form.addRow(self.title_size)
-
-        self.legend_size = SpinBox(
-            'Legend font size:', config.legend_size, 0, 100, self)
-        style_numeric_form.addRow(self.legend_size)
-
-        self.label_size = SpinBox(
-            'Label font size:', config.label_size, 0, 100, self)
-        style_numeric_form.addRow(self.label_size)
-
-        # Line width textbox
-        self.line_width = SpinBox(
-            'Line width:', config.line_width, 0, 20, self)
-        style_numeric_form.addRow(self.line_width)
-
-        self.marker_size = SpinBox(
-            'Marker size:', config.marker_size, 0, 20, self)
-        style_numeric_form.addRow(self.marker_size)
-
-        self.capsize = SpinBox(
-            'Error cap size:', config.capsize, 0, 20, self)
-        style_numeric_form.addRow(self.capsize)
-
-        self.save_dpi = SpinBox(
-            'Saved figure DPI:', config.save_dpi, 10, 2000, self)
-        style_numeric_form.addRow(self.save_dpi)
-
-        # Condition axis colour
-        self.axis_colour = TextEntry('Condition axis color:', self)
-        style_form.addRow(self.axis_colour)
-
-        self.grid_toggle = CheckBox('Grid on/off', self)
-        style_form.addRow(self.grid_toggle, pad=True)
-
-        style_form.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        style_form.layout.setLabelAlignment(Qt.AlignCenter)
-
-        style_numeric_form.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        style_numeric_form.layout.setLabelAlignment(Qt.AlignCenter)
+        style_form = Form(align=True)
+        self.style_dropdown, self.font_dropdown, self.axis_colour, self.grid_toggle = style_form.addRows([
+            DropDown('Style:', config.style_options, parent=self),
+            DropDown('Font style:', config.font_options, parent=self),
+            TextEntry('Condition axis color:', parent=self),
+            CheckBox('Grid on/off', parent=self)],
+            padding=[False, False, False, True])
 
         style_options.addWidget(style_form.widget)
+
+        # Sized
+        style_numeric_form = Form(align=True)
+        self.title_size, self.legend_size, self.label_size, self.line_width, self.marker_size, self.capsize, self.save_dpi = style_numeric_form.addRows([
+            SpinBox('Title font size:', start=config.title_size, min_val=0, max_val=100, parent=self),
+            SpinBox('Legend font size:', start=config.legend_size, min_val=0, max_val=100, parent=self),
+            SpinBox('Label font size:', start=config.label_size, min_val=0, max_val=100, parent=self),
+            SpinBox('Line width:', start=config.line_width, min_val=0, max_val=20, parent=self),
+            SpinBox('Marker size:', start=config.marker_size, min_val=0, max_val=20, parent=self),
+            SpinBox('Error cap size:', start=config.capsize, min_val=0, max_val=20, parent=self),
+            SpinBox('Saved figure DPI:', start=config.save_dpi, min_val=10, max_val=2000, parent=self)])
+
         style_options.addWidget(style_numeric_form.widget)
+
         style_options.widget.setStyleSheet(styles.white_background)
         tabs.addTab(style_options.widget, 'Style')
 
         # --------------- STATS CONFIGURATION
 
         # Stats configuration
-        stats_form = Form()
-
-        self.std_err = RadioButton('Standard deviation', 'Standard error', self)
-        self.std_err.setToolTip('Show standard deviation or the standard error on the mean in plots and measurements')
-        stats_form.addRow(self.std_err, pad=True)
-
-        self.sig_figs = SpinBox(
-            'Significant figures:', config.sig_figs, 0, 20, self)
-        stats_form.addRow(self.sig_figs, pad=True)
-
-        self.show_fit_text = CheckBox('Show fit model text', self)
-        self.show_fit_text.setToolTip('Checked = display equation for fitted model\n'
-                                      "Unchecked = don't display equation")
-        stats_form.addRow(self.show_fit_text, pad=True)
-
-        self.show_fit_result = CheckBox('Show fit parameters', self)
-        self.show_fit_result.setToolTip('Checked = show fitted values of model parameters\n'
-                                        'Unchecked = don''t show fit parameters')
-        stats_form.addRow(self.show_fit_result, pad=True)
-
-        self.show_fit_errors = CheckBox('Show fit errors', self)
-        self.show_fit_errors.setToolTip('Checked = show uncertainties on fit parameters\n'
-                                        'Unchecked = don''t show uncertainties')
-        stats_form.addRow(self.show_fit_errors, pad=True)
-
-        stats_form.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        stats_form.layout.setLabelAlignment(Qt.AlignCenter)
+        stats_form = Form(align=True)
+        self.std_err, self.sig_figs, self.show_fit_text, self.show_fit_result, self.show_fit_errors = stats_form.addRows([
+            RadioButton('Standard deviation', 'Standard error', parent=self, tooltip='Show standard deviation or the standard error on the mean in plots and measurements'),
+            SpinBox('Significant figures:', start=config.sig_figs, min_val=0, max_val=20, parent=self),
+            CheckBox('Show fit model text', parent=self, tooltip='Checked = display equation for fitted model\n'
+                                                                 'Unchecked = don''t display equation'),
+            CheckBox('Show fit parameters', parent=self, tooltip='Checked = show fitted values of model parameters\n'
+                                                                 'Unchecked = don''t show fit parameters'),
+            CheckBox('Show fit errors', parent=self, tooltip='Checked = show uncertainties on fit parameters\n'
+                                                             'Unchecked = don''t show uncertainties')],
+            padding=[True, False, True, True, True])
 
         stats_form.widget.setStyleSheet(styles.white_background)
         tabs.addTab(stats_form.widget, 'Stats')
@@ -515,33 +342,24 @@ class App(QMainWindow):
 
         # Advanced configuration
         advanced_options = LayoutWidget(QHBoxLayout)
-        advanced_left_form = LayoutWidget(QFormLayout)
-        advanced_right_form = LayoutWidget(QFormLayout)
 
-        advanced_left_form.addWidget(TopLabel('Savitsky-Golay smoothing:'))
-        self.sg_window_size = TextEntry(
-            'Window size', self, config.sg_window_size)
-        advanced_left_form.addWidget(self.sg_window_size)
-        self.sg_order = TextEntry('Order of polynomial', self, config.sg_order)
-        advanced_left_form.addWidget(self.sg_order)
-        self.sg_deriv = TextEntry('Order of derivative', self, config.sg_deriv)
-        advanced_left_form.addWidget(self.sg_deriv)
-        self.sg_rate = TextEntry('Sample spacing', self, config.sg_rate)
-        advanced_left_form.addWidget(self.sg_rate)
+        sg_form = Form(align=True)
+        _, self.sg_window_size, self.sg_order, self.sg_deriv, self.sg_rate = sg_form.addRows([
+            TopLabel('Savitsky-Golay smoothing:'),
+            TextEntry('Window size', parent=self, default=config.sg_window_size),
+            TextEntry('Order of polynomial', parent=self, default=config.sg_order),
+            TextEntry('Order of derivative', parent=self, default=config.sg_deriv),
+            TextEntry('Sample spacing', parent=self, default=config.sg_rate)
+        ])
 
-        self.outlier_threshold = TextEntry(
-            'Auto outlier threshold', self, config.outlier_threshold)
-        advanced_right_form.addWidget(self.outlier_threshold)
+        adv_outlier_form = Form(align=True)
+        self.outlier_threshold = adv_outlier_form.addRow(
+            TextEntry('Auto outlier threshold', parent=self, default=config.outlier_threshold))
 
-        advanced_left_form.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        advanced_left_form.layout.setLabelAlignment(Qt.AlignCenter)
-        advanced_right_form.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        advanced_right_form.layout.setLabelAlignment(Qt.AlignCenter)
-
-        advanced_left_form.widget.setStyleSheet(styles.white_background)
-        advanced_options.addWidget(advanced_left_form.widget)
-        advanced_right_form.widget.setStyleSheet(styles.white_background)
-        advanced_options.addWidget(advanced_right_form.widget)
+        sg_form.widget.setStyleSheet(styles.white_background)
+        advanced_options.addWidget(sg_form.widget)
+        adv_outlier_form.widget.setStyleSheet(styles.white_background)
+        advanced_options.addWidget(adv_outlier_form.widget)
         advanced_options.widget.setStyleSheet(styles.white_background)
         tabs.addTab(advanced_options.widget, 'Advanced')
 

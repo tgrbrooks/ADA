@@ -11,7 +11,7 @@ import ada.styles as styles
 
 
 class TextEntry(QWidget):
-    def __init__(self, text, parent=None, default=None, placeholder=None, *args, **kwargs):
+    def __init__(self, text, parent=None, default=None, placeholder=None, tooltip=None, *args, **kwargs):
         super(TextEntry, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -35,6 +35,9 @@ class TextEntry(QWidget):
 
         if placeholder is not None:
             self.entry.setPlaceholderText(placeholder)
+
+        if tooltip is not None:
+            self.setToolTip(tooltip)
 
     def currentText(self, error=False):
         text = self.entry.currentText()
@@ -165,7 +168,7 @@ class SpinBox(QWidget):
 
 
 class DropDown(QWidget):
-    def __init__(self, text, options, parent=None, change_action=None, *args, **kwargs):
+    def __init__(self, text, options, parent=None, change_action=None, tooltip=None, edit=False, index=None, *args, **kwargs):
         super(DropDown, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -188,6 +191,16 @@ class DropDown(QWidget):
 
         if change_action is not None:
             self.entry.currentTextChanged.connect(change_action)
+
+        if tooltip is not None:
+            self.setToolTip(tooltip)
+
+        if edit:
+            self.entry.setEditable(True)
+            self.entry.setInsertPolicy(2)
+        
+        if index is not None:
+            self.setCurrentIndex(index)
 
     def currentText(self, error=False):
         text = self.entry.currentText()
@@ -227,7 +240,7 @@ class DropDown(QWidget):
 
 
 class CheckBox(QWidget):
-    def __init__(self, text, parent=None, *args, **kwargs):
+    def __init__(self, text, parent=None, tooltip=None, change_action=None, *args, **kwargs):
         super(CheckBox, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -243,12 +256,18 @@ class CheckBox(QWidget):
             blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
 
+        if tooltip is not None:
+            self.setToolTip(tooltip)
+
+        if change_action is not None:
+            self.entry.stateChanged.connect(change_action)
+
     def isChecked(self):
         return self.entry.isChecked()
 
 
 class RadioButton(QWidget):
-    def __init__(self, text1, text2, parent=None, *args, **kwargs):
+    def __init__(self, text1, text2, parent=None, tooltip=None, *args, **kwargs):
         super(RadioButton, self).__init__(*args, **kwargs)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -267,6 +286,9 @@ class RadioButton(QWidget):
         shadow = QGraphicsDropShadowEffect(
             blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
         self.setGraphicsEffect(shadow)
+
+        if tooltip is not None:
+            self.setToolTip(tooltip)
 
     def isChecked(self):
         if self.button1.isChecked():

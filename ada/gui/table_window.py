@@ -23,7 +23,8 @@ from ada.logger import logger
 class TableWindow(Window):
 
     def __init__(self, parent=None):
-        super(TableWindow, self).__init__('Create Table', 500, 330, parent=parent, tabbed=True)
+        super(TableWindow, self).__init__(
+            'Create Table', 500, 330, parent=parent, tabbed=True)
         self.rows = []
         self.initUI()
 
@@ -31,36 +32,30 @@ class TableWindow(Window):
         create_table = LayoutWidget(QGridLayout, margin=5, spacing=5)
 
         # List of row options
-        self.row_option = DropDown('Row:', config.table_row_options, self)
-        create_table.addWidget(self.row_option, 0, 0)
+        self.row_option = create_table.addWidget(
+            DropDown('Row:', config.table_row_options, self), 0, 0)
 
         # Button to add a new row
-        add_button = Button("Add Row", self)
-        add_button.clicked.connect(self.add_row)
+        add_button = create_table.addWidget(
+            Button("Add Row", parent=self, clicked=self.add_row), 0, 1)
         add_button.setFixedWidth(100*config.wr)
         add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        create_table.addWidget(add_button, 0, 1)
 
         # List of all the added rows
-        self.row_list = List(self)
-        # self.row_list.setStyleSheet(config.scroll_style)
+        self.row_list = create_table.addWidget(List(self), 1, 0, 2, 2)
         self.row_list.setSpacing(-12*config.wr)
-        create_table.addWidget(self.row_list, 1, 0, 2, 2)
 
         # Button to produce the table
-        make_button = Button("Create Table", self)
-        make_button.clicked.connect(self.make_table)
-        create_table.addWidget(make_button, 3, 0, 1, 2)
+        create_table.addWidget(
+            Button("Create Table", parent=self, clicked=self.make_table), 3, 0, 1, 2)
 
         self.tabs.addTab(create_table.widget, "Create")
 
         table_output = LayoutWidget(QVBoxLayout)
-        self.table = QTableWidget()
-        table_output.addWidget(self.table)
+        self.table = table_output.addWidget(QTableWidget())
 
-        save_button = Button("Save Table", self)
-        save_button.clicked.connect(self.save_table)
-        table_output.addWidget(save_button)
+        table_output.addWidget(
+            Button("Save Table", parent=self, clicked=self.save_table))
 
         self.tabs.addTab(table_output.widget, "Table")
 
@@ -228,12 +223,12 @@ class TableWindow(Window):
         with open(file_name, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             for row in range(self.table.rowCount()):
-                    rowdata = []
-                    for column in range(self.table.columnCount()):
-                        item = self.table.item(row, column)
-                        if item is not None:
-                            rowdata.append(item.text())
-                        else:
-                            rowdata.append('none')
-                    writer.writerow(rowdata)
+                rowdata = []
+                for column in range(self.table.columnCount()):
+                    item = self.table.item(row, column)
+                    if item is not None:
+                        rowdata.append(item.text())
+                    else:
+                        rowdata.append('none')
+                writer.writerow(rowdata)
         self.close()
