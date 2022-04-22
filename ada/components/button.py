@@ -1,4 +1,3 @@
-from pydoc import cli
 from PyQt5.QtWidgets import QPushButton, QGraphicsDropShadowEffect, QSizePolicy
 
 import ada.configuration as config

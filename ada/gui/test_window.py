@@ -1,5 +1,5 @@
 from scipy.stats import ttest_ind, f_oneway
-from PyQt5.QtWidgets import (QVBoxLayout, QLabel)
+from PyQt5.QtWidgets import QVBoxLayout
 
 from ada.gui.error_window import error_wrapper
 from ada.components.window import Window
@@ -11,7 +11,6 @@ from ada.components.label import RoundLabel
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
-from ada.logger import logger
 
 
 # Class for a table constructor window
