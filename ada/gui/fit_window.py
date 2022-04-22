@@ -26,17 +26,17 @@ class FitWindow(Window):
 
         # List of row options
         self.curve_option, self.fit_option, self.fit_from, self.fit_to, self.set_bounds, _ = fit_config.addWidgets([
-            DropDown('Data:', data_manager.get_growth_data_labels(), self),
-            DropDown('Fit:', config.fit_options, self),
-            TextEntry('From:', self, config.fit_from),
-            TextEntry('To:', self, config.fit_to),
-            CheckBox('Set parameter bounds', parent=self, change_action=self.render_bounds),
-            Button("Fit", parent=self, clicked=self.fit)])
+            DropDown('Data:', data_manager.get_growth_data_labels()),
+            DropDown('Fit:', config.fit_options),
+            TextEntry('From:', default=config.fit_from),
+            TextEntry('To:', default=config.fit_to),
+            CheckBox('Set parameter bounds', change_action=self.render_bounds),
+            Button("Fit", clicked=self.fit)])
 
         self.window.addWidget(fit_config.widget)
 
         self.bound_input = LayoutWidget(QVBoxLayout)
-        self.param_bounds = self.bound_input.addWidget(ParameterBounds("p", self))
+        self.param_bounds = self.bound_input.addWidget(ParameterBounds("p"))
 
         self.window.addWidget(self.bound_input.widget)
         self.bound_input.hide()
@@ -49,7 +49,7 @@ class FitWindow(Window):
             self.resize(self.width * 3, self.height)
             model = get_model(self.fit_option.currentText(), '', '')
             for i, param in enumerate(model.params):
-                self.bounds.append(ParameterBounds(param, self))
+                self.bounds.append(ParameterBounds(param))
                 self.bound_input.addWidget(self.bounds[i])
             self.bound_input.addWidget(Spacer())
             self.bound_input.show()

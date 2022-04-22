@@ -7,6 +7,7 @@ from ada.components.layout_widget import LayoutWidget
 from ada.components.button import Button
 from ada.components.spacer import Spacer
 from ada.components.user_input import DropDown, TextEntry
+from ada.components.label import RoundLabel
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
@@ -41,7 +42,7 @@ class TestWindow(Window):
         self.window.addWidget(Button("Test", clicked=self.test))
 
         self.statistic, self.pvalue = self.window.addWidgets([
-            QLabel("Statistic = "), QLabel("P value = ")])
+            RoundLabel("Statistic = "), RoundLabel("P value = ")])
 
         self.window.addWidget(Spacer())
 

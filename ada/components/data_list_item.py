@@ -13,10 +13,8 @@ class DataListItem():
     def __init__(self, text, index, parent=None):
         self.item = QListWidgetItem()
         self.widget = QWidget()
-        del_button = DeleteButton()
-        del_button.clicked.connect(parent.remove_item)
-        add_button = AddButton()
-        add_button.clicked.connect(parent.add_to_item)
+        del_button = DeleteButton(clicked=parent.remove_item)
+        add_button = AddButton(clicked=parent.add_to_item)
         show_box = QCheckBox()
         show_box.setChecked(data_manager.get_growth_file(index).visible)
         show_box.clicked.connect(parent.set_visibility)

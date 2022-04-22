@@ -4,7 +4,7 @@ import ada.configuration as config
 
 class LayoutWidget(QWidget):
 
-    def __init__(self, layout, margin=None, spacing=None, parent=None):
+    def __init__(self, layout, margin=None, spacing=None, parent=None, style=None):
         super(LayoutWidget, self).__init__(parent)
         self.layout = layout()
         self.widget = QWidget()
@@ -14,6 +14,8 @@ class LayoutWidget(QWidget):
                 margin*config.wr, margin*config.hr, margin*config.wr, margin*config.hr)
         if spacing:
             self.layout.setSpacing(spacing*config.wr)
+        if style:
+            self.widget.setStyleSheet(style)
 
     def addWidget(self, widget, *args):
         self.layout.addWidget(widget, *args)

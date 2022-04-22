@@ -24,7 +24,7 @@ class ExportWindow(Window):
         self.rename, self.conditions, _ = self.window.addWidgets([
             CheckBox('Rename with profile'),
             CheckBox('Include conditions'),
-            Button("Export", parent=self, clicked=self.export)])
+            Button("Export", clicked=self.export)])
 
     @error_wrapper
     def export(self):

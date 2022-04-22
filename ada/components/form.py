@@ -4,8 +4,8 @@ from ada.components.layout_widget import LayoutWidget
 
 class Form(LayoutWidget):
 
-    def __init__(self, parent=None, align=False):
-        super(Form, self).__init__(layout=QFormLayout, parent=parent)
+    def __init__(self, parent=None, align=False, style=None):
+        super(Form, self).__init__(layout=QFormLayout, parent=parent, style=style)
         if align:
             self.layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
             self.layout.setLabelAlignment(Qt.AlignCenter)

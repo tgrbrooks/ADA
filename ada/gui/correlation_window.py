@@ -65,14 +65,14 @@ class CorrelationWindow(Window):
         fit_option = LayoutWidget(QHBoxLayout)
         model = get_model(config.fit_options[0])
         self.fit, self.param = fit_option.addWidgets([
-            DropDown('Fit:', config.fit_options, parent=self, change_action=self.update_param_list),
+            DropDown('Fit:', config.fit_options, change_action=self.update_param_list),
             DropDown('Parameter:', model.params)])
         corr_config.addWidget(fit_option.widget)
 
         range_option = LayoutWidget(QHBoxLayout)
         self.start_t, self.end_t = range_option.addWidgets([
-            TextEntry('Between:', self, -1, placeholder=config.xvar),
-            TextEntry('And:', self, -1, placeholder=config.xvar)])
+            TextEntry('Between:', default=-1, placeholder=config.xvar),
+            TextEntry('And:', default=-1, placeholder=config.xvar)])
         corr_config.addWidget(range_option.widget)
 
         self.figure_title = corr_config.addWidget(TextEntry('Figure title:'))
@@ -84,12 +84,12 @@ class CorrelationWindow(Window):
 
         options = LayoutWidget(QHBoxLayout)
         self.label, self.calc_correlation = options.addWidgets([
-            CheckBox('Label', self),
-            CheckBox('Calculate correlation', self)])
+            CheckBox('Label'),
+            CheckBox('Calculate correlation')])
         corr_config.addWidget(options.widget)
 
         # Plot button
-        corr_config.addWidget(Button('Plot', parent=self, clicked=self.update_plot))
+        corr_config.addWidget(Button('Plot', clicked=self.update_plot))
 
         self.tabs.addTab(corr_config.widget, 'Configuration')
 
@@ -105,7 +105,7 @@ class CorrelationWindow(Window):
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Save button
-        plot_view.addWidget(Button('Save', parent=self, clicked=self.save_plot), 4, 0, 1, 4)
+        plot_view.addWidget(Button('Save', clicked=self.save_plot), 4, 0, 1, 4)
 
         self.tabs.addTab(plot_view.widget, 'Plot')
 

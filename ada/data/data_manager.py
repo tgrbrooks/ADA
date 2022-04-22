@@ -118,11 +118,9 @@ class DataManager():
             raise RuntimeError('No data found')
         return xdata, ydata, yerr
 
-    def get_replicate_xy_data(self, i, signal_name, xvar=None, growth_average=None):
+    def get_replicate_xy_data(self, i, signal_name, xvar=None):
         if xvar is None:
             xvar = config.xvar
-        if growth_average is None:
-            growth_average = config.growth_average
 
         xdatas = []
         ydatas = []
@@ -140,8 +138,10 @@ class DataManager():
             std_err = True
         if config.ynormlog:
             ynormlog = True
+        if growth_average is None:
+            growth_average = config.growth_average
 
-        xdatas, ydatas = self.get_replicate_xy_data(i, signal_name, xvar, growth_average)
+        xdatas, ydatas = self.get_replicate_xy_data(i, signal_name, xvar)
         xdata, ydata, yerr = self.get_averaged_data(xdatas, ydatas, growth_average, std_err)
         if ynormlog:
             if yerr is not None:

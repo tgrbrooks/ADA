@@ -41,49 +41,45 @@ class LoadWindow(Window):
         if self.row == -1:
             file_types = config.file_types
         self.file_type = self.window.addWidget(
-            DropDown('File type:', file_types, parent=self, change_action=self.update_options))
+            DropDown('File type:', file_types, change_action=self.update_options))
 
         # Button for selecting files to import
         self.window.addWidget(
-            Button("Select data file(s)", parent=self, clicked=self.select_data))
+            Button("Select data file(s)", clicked=self.select_data))
 
         # List of files to import
-        self.file_list = self.window.addWidget(List(self))
+        self.file_list = self.window.addWidget(List())
         self.file_list.setSpacing(-5*config.wr)
         self.file_list.setStyleSheet(styles.default_font)
 
         # Button and list for Algem conditions files
         self.select_conditions_button = self.window.addWidget(
-            Button("Select conditions file(s)", parent=self, clicked=self.select_conditions))
+            Button("Select conditions file(s)", clicked=self.select_conditions))
         self.select_conditions_button.hide()
 
-        self.conditions_file_list = self.window.addWidget(List(self))
-        self.conditions_file_list.setSpacing(-5*config.wr)
-        self.conditions_file_list.setStyleSheet(styles.default_font)
+        self.conditions_file_list = self.window.addWidget(List(spacing=-5*config.wr, style=styles.default_font))
         self.conditions_file_list.hide()
 
         # Button and list for HT24 details file
         self.select_details_button = self.window.addWidget(
-            Button("Select details file", parent=self, clicked=self.select_details))
+            Button("Select details file", clicked=self.select_details))
         self.select_details_button.hide()
 
-        self.details_file_list = self.window.addWidget(List(self))
-        self.details_file_list.setSpacing(-5*config.wr)
-        self.details_file_list.setStyleSheet(styles.default_font)
+        self.details_file_list = self.window.addWidget(List(spacing=-5*config.wr, style=styles.default_font))
         self.details_file_list.hide()
 
         # Option to downsample conditions data
         self.downsample = self.window.addWidget(
-            TextEntry('Downsample conditions:', parent=self, default=config.downsample, tooltip='Only read in every X data points'))
+            TextEntry('Downsample conditions:', default=config.downsample, tooltip='Only read in every X data points'))
         self.downsample.hide()
 
         # Checkbox for merging replicates in HT24 data
         self.merge_replicates = self.window.addWidget(
-            CheckBox('Merge replicates', self))
+            CheckBox('Merge replicates'))
         self.merge_replicates.hide()
 
         # Button to load the data
-        self.window.addWidget(Button("Load", parent=self, clicked=self.load))
+        self.window.addWidget(Button("Load", clicked=self.load))
 
         self.update_options()
 

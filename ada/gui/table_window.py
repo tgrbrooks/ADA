@@ -33,21 +33,20 @@ class TableWindow(Window):
 
         # List of row options
         self.row_option = create_table.addWidget(
-            DropDown('Row:', config.table_row_options, self), 0, 0)
+            DropDown('Row:', config.table_row_options), 0, 0)
 
         # Button to add a new row
         add_button = create_table.addWidget(
-            Button("Add Row", parent=self, clicked=self.add_row), 0, 1)
+            Button("Add Row", clicked=self.add_row), 0, 1)
         add_button.setFixedWidth(100*config.wr)
         add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # List of all the added rows
-        self.row_list = create_table.addWidget(List(self), 1, 0, 2, 2)
-        self.row_list.setSpacing(-12*config.wr)
+        self.row_list = create_table.addWidget(List(spacing=-12*config.wr), 1, 0, 2, 2)
 
         # Button to produce the table
         create_table.addWidget(
-            Button("Create Table", parent=self, clicked=self.make_table), 3, 0, 1, 2)
+            Button("Create Table", clicked=self.make_table), 3, 0, 1, 2)
 
         self.tabs.addTab(create_table.widget, "Create")
 
@@ -55,7 +54,7 @@ class TableWindow(Window):
         self.table = table_output.addWidget(QTableWidget())
 
         table_output.addWidget(
-            Button("Save Table", parent=self, clicked=self.save_table))
+            Button("Save Table", clicked=self.save_table))
 
         self.tabs.addTab(table_output.widget, "Table")
 
@@ -65,7 +64,7 @@ class TableWindow(Window):
         logger.debug('Adding %s row to table' %
                      self.row_option.currentText())
         table_list_item = TableListItem(
-            self.row_option.currentText(), self)
+            self.row_option.currentText(), parent=self)
         self.row_list.addItem(table_list_item.item)
         self.row_list.setItemWidget(table_list_item.item,
                                     table_list_item.widget)
