@@ -9,10 +9,10 @@ class LayoutWidget(QWidget):
         self.layout = layout()
         self.widget = QWidget()
         self.widget.setLayout(self.layout)
-        if margin:
+        if margin is not None:
             self.layout.setContentsMargins(
                 margin*config.wr, margin*config.hr, margin*config.wr, margin*config.hr)
-        if spacing:
+        if spacing is not None:
             self.layout.setSpacing(spacing*config.wr)
         if style:
             self.widget.setStyleSheet(style)

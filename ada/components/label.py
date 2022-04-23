@@ -7,7 +7,7 @@ import ada.styles as styles
 
 
 class Label(QWidget):
-    def __init__(self, text, shadow=False, *args, **kwargs):
+    def __init__(self, text, shadow=False, style=None, *args, **kwargs):
         super(Label, self).__init__(*args, **kwargs)
         self.text = QLabel(text)
         self.text.setStyleSheet(styles.label_style)
@@ -18,6 +18,8 @@ class Label(QWidget):
             shadow = QGraphicsDropShadowEffect(
                 blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
             self.setGraphicsEffect(shadow)
+        if style:
+            self.text.setStyleSheet(style)
 
     def setText(self, text):
         self.text.setText(text)

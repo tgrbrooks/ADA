@@ -40,7 +40,7 @@ class AddButton(Button):
 
 class DeleteButton(Button):
     def __init__(self, parent=None, clicked=None, *args, **kwargs):
-        super(DeleteButton, self).__init__('x', parent, clicked=None, shadow=True, *args, **kwargs)
+        super(DeleteButton, self).__init__('x', parent, clicked=clicked, shadow=True, *args, **kwargs)
         self.setStyleSheet(styles.delete_button_style)
         self.setFixedHeight(16*config.hr)
         self.setFixedWidth(16*config.wr)
