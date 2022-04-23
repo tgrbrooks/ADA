@@ -1,33 +1,28 @@
-from PyQt5.QtWidgets import (QListWidgetItem, QHBoxLayout, QLayout,
-                             QPushButton, QLabel, QWidget, QLineEdit, QComboBox, QSizePolicy)
+from PyQt5.QtWidgets import QListWidgetItem, QHBoxLayout, QWidget
 
 from ada.components.button import DeleteButton
-from ada.components.label import Label, RoundLabel
+from ada.components.label import RoundLabel
 from ada.components.user_input import DropDown, TextEntry, CheckBox
+from ada.components.layout_widget import LayoutWidget
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
-import ada.styles as styles
 
 
 class TableListItem():
 
     def __init__(self, text, parent=None):
         self.item = QListWidgetItem()
-        self.widget = QWidget()
         self.type = text
 
         # Horizontal box layout
-        layout = QHBoxLayout()
+        layout = LayoutWidget(QHBoxLayout)
 
-        spacer = QWidget()
+        spacer = layout.addWidget(QWidget())
         spacer.setFixedWidth(10*config.wr)
-        layout.addWidget(spacer)
 
         # Add a delete button
-        del_button = DeleteButton()
-        del_button.clicked.connect(parent.remove_item)
-        layout.addWidget(del_button)
+        layout.addWidget(DeleteButton(clicked=parent.remove_item))
 
         # Add a label with row type
         if(text == 'profile'):
@@ -39,77 +34,47 @@ class TableListItem():
         # Add other options based on type
         # Gradient needs a start and end measurement point in Y
         if(text == 'gradient'):
-            self.data = DropDown('Gradient of:', [], self.widget)
-            for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig)
-            layout.addWidget(self.data)
-            self.grad_from = TextEntry('Between:', self.widget, -1)
-            self.grad_from.setPlaceholderText('Y = ')
-            layout.addWidget(self.grad_from)
-            self.grad_to = TextEntry('And:', self.widget, -1)
-            self.grad_to.setPlaceholderText('Y = ')
-            layout.addWidget(self.grad_to)
+            self.data, self.grad_from, self.grad_to = layout.addWidgets([
+                DropDown('Gradient of:', data_manager.get_growth_variables()),
+                TextEntry('Between:', default=-1, placeholder='Y = '),
+                TextEntry('And:', default=-1, placeholder='Y = ')])
 
         # Time to needs a Y point to reach
         if(text == 'time to'):
-            self.data = DropDown('Time for:', [], self.widget)
-            for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig)
-            layout.addWidget(self.data)
-            self.time_to = TextEntry('To reach:', self.widget, -1)
-            self.time_to.setPlaceholderText('Y = ')
-            layout.addWidget(self.time_to)
+            self.data, self.time_to = layout.addWidgets([
+                DropDown('Time for:', data_manager.get_growth_variables()),
+                TextEntry('To reach:', default=-1, placeholder='Y = ')])
 
         # Average of a condition needs condition and start and end time
         if(text == 'average of condition'):
-            self.condition = DropDown('Average of:', [], self.widget)
-            for sig in data_manager.get_condition_variables():
-                self.condition.addItem(sig)
-            layout.addWidget(self.condition)
-            self.start_t = TextEntry('Between:', self.widget, -1)
-            self.start_t.setPlaceholderText(config.xvar)
-            layout.addWidget(self.start_t)
-            self.end_t = TextEntry('And:', self.widget, -1)
-            self.end_t.setPlaceholderText(config.xvar)
-            layout.addWidget(self.end_t)
+            self.condition, self.start_t, self.end_t = layout.addWidgets([
+                DropDown('Average of:', data_manager.get_condition_variables()),
+                TextEntry('Between:', default=-1, placeholder=config.xvar),
+                TextEntry('And:', default=-1, placeholder=config.xvar)])
 
         # Condition at time needs condition and time
         if(text == 'condition at time'):
-            self.condition = DropDown('Value of:', [], self.widget)
-            for sig in data_manager.get_condition_variables():
-                self.condition.addItem(sig)
-            layout.addWidget(self.condition)
-            self.time = TextEntry('At:', self.widget, -1)
-            self.time.setPlaceholderText(config.xvar)
-            layout.addWidget(self.time)
+            self.condition, self.time = layout.addWidgets([
+                DropDown('Value of:', data_manager.get_condition_variables()),
+                TextEntry('At:', default=-1, placeholder=config.xvar)])
 
         # Value of fit parameter needs fit and parameter
         if(text == 'fit parameter'):
-            self.fit = DropDown('Fit:', config.fit_options, self.widget)
-            self.fit.entry.currentTextChanged.connect(self.update_param_list)
-            layout.addWidget(self.fit)
-            self.data = DropDown('Data:', [], self.widget)
-            for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig)
-            layout.addWidget(self.data)
-            model = get_model(self.fit.currentText(), '', '')
-            self.param = DropDown('Parameter:', model.params, self.widget)
-            layout.addWidget(self.param)
-            self.fit_from = TextEntry('From:', self.widget, -1)
-            self.fit_from.setPlaceholderText(config.xvar)
-            layout.addWidget(self.fit_from)
-            self.fit_to = TextEntry('To:', self.widget, -1)
-            self.fit_to.setPlaceholderText(config.xvar)
-            layout.addWidget(self.fit_to)
-            self.show_error = CheckBox("Show error")
-            layout.addWidget(self.show_error)
+            model = get_model(config.fit_options[0], '', '')
+            self.fit, self.data, self.param, self.fit_from, self.fit_to, self.show_error = layout.addWidgets([
+                DropDown('Fit:', config.fit_options, change_action=self.update_param_list),
+                DropDown('Data:', data_manager.get_growth_variables()),
+                DropDown('Parameter:', model.params),
+                TextEntry('From:', default=-1, placeholder=config.xvar),
+                TextEntry('To:', default=-1, placeholder=config.xvar),
+                CheckBox("Show error")])
 
         # Pad out the row
-        layout.addStretch()
-        layout.setSpacing(5)
-        layout.setContentsMargins(10, 10, 50, 5)
+        layout.layout.addStretch()
+        layout.layout.setSpacing(5)
+        layout.layout.setContentsMargins(10, 10, 50, 5)
 
-        self.widget.setLayout(layout)
+        self.widget = layout.widget
         self.item.setSizeHint(self.widget.sizeHint())
 
     def update_param_list(self, fit_name):

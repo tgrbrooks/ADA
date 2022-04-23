@@ -1,7 +1,5 @@
 # Standard imports
-import os
 import csv
-import numpy as np
 
 # Local import
 from ada.data.calibration_data import CalibrationData

@@ -1,5 +1,4 @@
 from matplotlib.widgets import AxesWidget
-import matplotlib.pyplot as plt
 import numpy as np
 
 import ada.configuration as config
