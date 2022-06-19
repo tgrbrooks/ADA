@@ -1,7 +1,7 @@
 import numpy as np
 from math import factorial
 
-import ada.configuration as config
+from ada.configuration import config
 from ada.logger import logger
 
 
@@ -9,27 +9,27 @@ from ada.logger import logger
 def process_data(xdata, ydata):
     logger.debug('Processing data')
 
-    if config.initial_y != -1:
-        ydata = ydata - ydata[0] + config.initial_y
+    if config['data']['initial_y'] != -1:
+        ydata = ydata - ydata[0] + config['data']['initial_y']
 
     # Align at time 0 if option selected
-    if config.align and config.y_alignment == -1:
+    if config['data']['align'] and config['data']['y_alignment'] == -1:
         xdata = xdata - xdata[0]
 
-    if config.y_alignment != -1:
-        xdata = align_to_y(xdata, ydata, config.y_alignment)
+    if config['data']['y_alignment'] != -1:
+        xdata = align_to_y(xdata, ydata, config['data']['y_alignment'])
 
     # remove outliers
-    if (config.remove_above is not None or
-        config.remove_below is not None or
-            config.auto_remove):
-        xdata, ydata = remove_outliers(xdata, ydata, config.remove_below,
-                                       config.remove_above, config.auto_remove, config.outlier_threshold)
+    if (config['data']['remove_above'] is not None or
+        config['data']['remove_below'] is not None or
+            config['data']['auto_remove']):
+        xdata, ydata = remove_outliers(xdata, ydata, config['data']['remove_below'],
+                                       config['data']['remove_above'], config['data']['auto_remove'], config['advanced']['outlier_threshold'])
 
     # Smooth the data
-    if(config.smooth):
-        ydata = savitzky_golay(ydata, config.sg_window_size,
-                               config.sg_order, config.sg_deriv, config.sg_rate)
+    if(config['data']['smooth']):
+        ydata = savitzky_golay(ydata, config['advanced']['savitsky_golay']['window_size'],
+                               config['advanced']['savitsky_golay']['order'], config['advanced']['savitsky_golay']['deriv'], config['advanced']['savitsky_golay']['rate'])
     return xdata, ydata
 
 
@@ -219,10 +219,10 @@ def get_exponent(value):
 def exponent_text(value):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%.*f' % (config.sig_figs, value)
+        text = '%.*f' % (config['stats']['sig_figs'], value)
         return text
     value = value/(1.*10.**exponent)
-    text = r'%.*f$\times10^{%i}$' % (config.sig_figs, value, exponent)
+    text = r'%.*f$\times10^{%i}$' % (config['stats']['sig_figs'], value, exponent)
     return text
 
 
@@ -230,13 +230,13 @@ def exponent_text(value):
 def exponent_text_errors(value, error):
     exponent = get_exponent(value)
     if exponent >= 0 and exponent <= 2:
-        text = '%.*f ($\pm$%.*f)' % (config.sig_figs,
-                                     value, config.sig_figs, error)
+        text = '%.*f ($\pm$%.*f)' % (config['stats']['sig_figs'],
+                                     value, config['stats']['sig_figs'], error)
         return text
     value = value/(1.*10.**exponent)
     error = error/(1.*10.**exponent)
-    text = r'%.*f ($\pm$%.*f)$\times10^{%i}$' % (config.sig_figs,
-                                                 value, config.sig_figs, error, exponent)
+    text = r'%.*f ($\pm$%.*f)$\times10^{%i}$' % (config['stats']['sig_figs'],
+                                                 value, config['stats']['sig_figs'], error, exponent)
     return text
 
 def calculate_gradient(xdata, ydata, grad_from, grad_to):

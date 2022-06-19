@@ -19,7 +19,7 @@ from ada.data.data_manager import data_manager
 from ada.gui.line_style_window import LineStyleWindow
 from ada.gui.file_handler import save_file
 
-import ada.configuration as config
+from ada.configuration import config
 from ada.logger import logger
 
 
@@ -37,7 +37,7 @@ class PlotObject():
 
     def set_style(self):
         if "style" in self.data.style:
-            if config.style != self.data.style["style"]:
+            if config['style']['plot_style'] != self.data.style["style"]:
                 return
         else:
             return
@@ -49,7 +49,7 @@ class PlotObject():
             self.set_linestyle(self.data.style["linestyle"])
 
     def save_style(self):
-        self.data.style["style"] = config.style
+        self.data.style["style"] = config['style']['plot_style']
         self.data.style["color"] = self.plots[0].get_color()
         self.data.style["marker"] = self.plots[0].get_marker()
         self.data.style["linestyle"] = self.plots[0].get_linestyle()
@@ -126,12 +126,12 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.create_events()
 
         # If we're fitting the data
-        if config.do_fit:
+        if config['fit']['do_fit']:
             logger.debug('Fitting the data')
             self.fit_data()
 
         # Switch grid on/off
-        self.axes.grid(config.grid)
+        self.axes.grid(config['style']['grid'])
 
         self.set_axes_scale()
         self.set_titles()
@@ -148,34 +148,34 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def set_style(self):
         # Style configuration
-        if(config.style != ''):
-            if(config.style == 'default'):
+        if(config['style']['plot_style'] != ''):
+            if(config['style']['plot_style'] == 'default'):
                 style.use('default')
-            if(config.style == 'greyscale'):
+            if(config['style']['plot_style'] == 'greyscale'):
                 style.use('grayscale')
-            if(config.style == 'colour blind'):
+            if(config['style']['plot_style'] == 'colour blind'):
                 style.use('seaborn-colorblind')
-            if(config.style == 'pastel'):
+            if(config['style']['plot_style'] == 'pastel'):
                 style.use('seaborn-pastel')
-            if(config.style == 'deep'):
+            if(config['style']['plot_style'] == 'deep'):
                 style.use('seaborn-colorblind')
-        if(config.font_style != ''):
-            mpl.rcParams['font.family'] = config.font_style
-        if(config.title_size >= 0):
-            mpl.rcParams['axes.titlesize'] = config.title_size
-            mpl.rcParams['figure.titlesize'] = config.title_size
-        if(config.legend_size >= 0):
-            mpl.rcParams['legend.fontsize'] = config.legend_size
-            mpl.rcParams['legend.title_fontsize'] = config.legend_size
-        if(config.label_size >= 0):
-            mpl.rcParams['xtick.labelsize'] = config.label_size
-            mpl.rcParams['ytick.labelsize'] = config.label_size
-        if(config.line_width >= 0):
-            mpl.rcParams['lines.linewidth'] = config.line_width
-        if(config.marker_size >= 0):
-            mpl.rcParams['lines.markersize'] = config.marker_size
-        if(config.save_dpi >= 0):
-            mpl.rcParams['savefig.dpi'] = config.save_dpi
+        if(config['style']['font_style'] != ''):
+            mpl.rcParams['font.family'] = config['style']['font_style']
+        if(config['style']['title_size'] >= 0):
+            mpl.rcParams['axes.titlesize'] = config['style']['title_size']
+            mpl.rcParams['figure.titlesize'] = config['style']['title_size']
+        if(config['style']['legend_size'] >= 0):
+            mpl.rcParams['legend.fontsize'] = config['style']['legend_size']
+            mpl.rcParams['legend.title_fontsize'] = config['style']['legend_size']
+        if(config['style']['label_size'] >= 0):
+            mpl.rcParams['xtick.labelsize'] = config['style']['label_size']
+            mpl.rcParams['ytick.labelsize'] = config['style']['label_size']
+        if(config['style']['line_width'] >= 0):
+            mpl.rcParams['lines.linewidth'] = config['style']['line_width']
+        if(config['style']['marker_size'] >= 0):
+            mpl.rcParams['lines.markersize'] = config['style']['marker_size']
+        if(config['style']['save_dpi'] >= 0):
+            mpl.rcParams['savefig.dpi'] = config['style']['save_dpi']
         return
 
     def clear_axes(self):
@@ -192,22 +192,22 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def set_axes_style(self):
         # More style settings
-        if(config.font_style != ''):
-            self.axes.xaxis.label.set_family(config.font_style)
-            self.axes.yaxis.label.set_family(config.font_style)
-            self.condition_axes.yaxis.label.set_family(config.font_style)
-        if(config.title_size >= 0):
-            self.axes.xaxis.label.set_size(config.title_size)
-            self.axes.yaxis.label.set_size(config.title_size)
-            self.condition_axes.yaxis.label.set_size(config.title_size)
+        if(config['style']['font_style'] != ''):
+            self.axes.xaxis.label.set_family(config['style']['font_style'])
+            self.axes.yaxis.label.set_family(config['style']['font_style'])
+            self.condition_axes.yaxis.label.set_family(config['style']['font_style'])
+        if(config['style']['title_size'] >= 0):
+            self.axes.xaxis.label.set_size(config['style']['title_size'])
+            self.axes.yaxis.label.set_size(config['style']['title_size'])
+            self.condition_axes.yaxis.label.set_size(config['style']['title_size'])
         return
 
     def create_condition_axis(self):
         self.condition_axes.set_axis_on()
         # Configure axis colour and visibility
         caxis_colour = 'red'
-        if(is_color_like(config.axis_colour)):
-            caxis_colour = config.axis_colour
+        if(is_color_like(config['style']['axis_colour'])):
+            caxis_colour = config['style']['axis_colour']
         self.condition_axes.spines['right'].set_color(caxis_colour)
         self.axes.spines['right'].set_visible(False)
         self.condition_axes.tick_params(axis='y', colors=caxis_colour)
@@ -227,14 +227,14 @@ class PlotCanvas(FigureCanvasQTAgg):
 
             # Plot the condition data with different colour cycle
             col = 'r'
-            if i < len(config.conf_colors):
-                col = config.conf_colors[i]
+            if i < len(opt.conf_colors):
+                col = opt.conf_colors[i]
 
-            if(config.condition_average is not None):
+            if(config['data']['condition_average'] is not None):
                 condition_plot = self.condition_axes.errorbar(xdata,
                                                               ydata,
                                                               yerr, fmt='--',
-                                                              capsize=config.capsize, color=col,
+                                                              capsize=config['style']['capsize'], color=col,
                                                               label=legend_label)
                 self.plot_list.append(PlotObject(data_manager.get_condition_file(i),
                                                  condition_plot,
@@ -260,15 +260,15 @@ class PlotCanvas(FigureCanvasQTAgg):
         for i in range(data_manager.num_growth_files()):
             if not data_manager.get_growth_file(i).visible:
                 continue
-            xdata, ydata, yerr = data_manager.get_xy_data(i, config.yvar)
+            xdata, ydata, yerr = data_manager.get_xy_data(i, config['plot']['y_axis']['variable'])
             self.x_title, self.y_title = data_manager.get_titles(i)
             legend_label = data_manager.get_growth_legend(i)
 
-            if(config.growth_average is not None):
+            if(config['data']['growth_average'] is not None):
                 growth_plot = self.axes.errorbar(xdata,
                                                  ydata,
                                                  yerr, fmt='-',
-                                                 capsize=config.capsize,
+                                                 capsize=config['style']['capsize'],
                                                  label=legend_label)
                 self.plot_list.append(PlotObject(data_manager.get_growth_file(i),
                                                  growth_plot,
@@ -304,7 +304,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         self.annotation_names = []
         annotation_xpos = []
         annotation_ypos = []
-        if config.show_events:
+        if config['data']['show_events']:
             for i, data in enumerate(data_manager.get_growth_data_files()):
                 for data_event in data.events:
                     event_label = data_event.datetime.strftime(
@@ -312,7 +312,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                     for lab in data_event.labels:
                         event_label += '\n' + lab
                     self.annotation_names.append(event_label)
-                    event_xpos = data_event.get_xpos(config.xvar)
+                    event_xpos = data_event.get_xpos(config['plot']['x_axis']['variable'])
                     annotation_xpos.append(event_xpos)
                     x_idx = np.abs(self.xdata_list[i] - event_xpos).argmin()
                     event_ypos = self.ydata_list[i][x_idx]
@@ -325,11 +325,11 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def fit_data(self):
         logger.debug('Fitting %s with %s' %
-                     (config.fit_curve, config.fit_type))
+                     (config['fit']['curve'], config['fit']['type']))
         # Find the curve to fit
         fit_index = -1
         for i, dat in enumerate(data_manager.get_growth_data_files()):
-            if config.fit_curve == dat.label:
+            if config['fit']['curve'] == dat.label:
                 fit_index = i
         # If the data hasn't been found
         if fit_index == -1:
@@ -338,7 +338,7 @@ class PlotCanvas(FigureCanvasQTAgg):
         fit_x, _, _ = data_manager.get_fit_data(fit_index)
         x_unit, y_unit = data_manager.get_units(fit_index)
 
-        model = get_model(config.fit_type, x_unit, y_unit)
+        model = get_model(config['fit']['type'], x_unit, y_unit)
         func = model.func()
 
         fit_result, covm = data_manager.get_fit(fit_index)
@@ -347,17 +347,17 @@ class PlotCanvas(FigureCanvasQTAgg):
 
         bounding_box = dict(boxstyle="round", ec=(
             1., 0.5, 0.5), fc=(1., 0.8, 0.8))
-        if config.show_fit_text:
+        if config['stats']['show_fit_text']:
             self.axes.text(0.25, 0.95, model.latex,
                            transform=self.axes.transAxes,
                            bbox=bounding_box, picker=True)
 
-        if config.show_fit_result and not config.show_fit_errors:
+        if config['stats']['show_fit_result'] and not config['stats']['show_fit_errors']:
             self.axes.text(0.25, 0.65, model.param_text(fit_result),
                            transform=self.axes.transAxes,
                            bbox=bounding_box, picker=True)
 
-        if config.show_fit_result and config.show_fit_errors:
+        if config['stats']['show_fit_result'] and config['stats']['show_fit_errors']:
             self.axes.text(0.25, 0.65, model.param_text_error(fit_result, covm),
                            transform=self.axes.transAxes,
                            bbox=bounding_box, picker=True)
@@ -365,17 +365,17 @@ class PlotCanvas(FigureCanvasQTAgg):
         return
 
     def set_axes_scale(self):
-        if(config.ylog):
+        if(config['plot']['y_axis']['log']):
             self.axes.set_yscale('log')
         else:
             self.axes.set_yscale('linear')
-        if(config.xlog):
+        if(config['plot']['x_axis']['log']):
             self.axes.set_xscale('log')
             self.condition_axes.set_xscale('log')
         else:
             self.axes.set_xscale('linear')
             self.condition_axes.set_xscale('linear')
-        if(config.condition_ylog):
+        if(config['plot']['condition_axis']['log']):
             self.condition_axes.set_yscale('log')
         else:
             self.condition_axes.set_yscale('linear')
@@ -384,36 +384,36 @@ class PlotCanvas(FigureCanvasQTAgg):
     def set_titles(self):
         # Configure axis labels
         self.axes.set_title('')
-        if(config.title != ''):
-            self.axes.set_title(config.title)
+        if(config['plot']['title'] != ''):
+            self.axes.set_title(config['plot']['title'])
         self.axes.set_xlabel(self.x_title)
         self.axes.set_ylabel(self.y_title)
         return
 
     def set_condition_range(self):
         condition_ymin = self.condition_axes.get_ybound()[0]
-        if(config.condition_ymin != -1):
-            condition_ymin = config.condition_ymin
+        if(config['plot']['condition_axis']['min'] != -1):
+            condition_ymin = config['plot']['condition_axis']['min']
         condition_ymax = self.condition_axes.get_ybound()[1]
-        if(config.condition_ymax != -1):
-            condition_ymax = config.condition_ymax
+        if(config['plot']['condition_axis']['max'] != -1):
+            condition_ymax = config['plot']['condition_axis']['max']
         self.condition_axes.set_ylim([condition_ymin, condition_ymax])
         return
 
     def set_axes_ranges(self):
         # Set the axis range
         xmin = self.axes.get_xbound()[0]
-        if(config.xmin != -1):
-            xmin = config.xmin
+        if(config['plot']['x_axis']['min'] != -1):
+            xmin = config['plot']['x_axis']['min']
         xmax = self.axes.get_xbound()[1]
-        if(config.xmax != -1):
-            xmax = config.xmax
+        if(config['plot']['x_axis']['max'] != -1):
+            xmax = config['plot']['x_axis']['max']
         ymin = self.axes.get_ybound()[0]
-        if(config.ymin != -1):
-            ymin = config.ymin
+        if(config['plot']['y_axis']['min'] != -1):
+            ymin = config['plot']['y_axis']['min']
         ymax = self.axes.get_ybound()[1]
-        if(config.ymax != -1):
-            ymax = config.ymax
+        if(config['plot']['y_axis']['max'] != -1):
+            ymax = config['plot']['y_axis']['max']
         self.axes.set_xlim([xmin, xmax])
         self.axes.set_ylim([ymin, ymax])
         return
@@ -425,7 +425,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                                    useblit=False, color='red', linewidth=1)
 
         # Configure the measurement cursor
-        if(config.cursor):
+        if(config['plot']['cursor']):
             # Clean up previous attributes
             if hasattr(self, 'cid'):
                 self.mpl_disconnect(self.cid)
@@ -499,7 +499,7 @@ class PlotCanvas(FigureCanvasQTAgg):
                         self.event_annotation.set_visible(False)
                         self.draw_idle()
 
-            if config.show_events:
+            if config['data']['show_events']:
                 self.mpl_connect('motion_notify_event', onhover)
         return
 
@@ -514,24 +514,24 @@ class PlotCanvas(FigureCanvasQTAgg):
 
     def set_legends(self):
         # Switch legend on/off
-        if(config.legend):
+        if(config['legend']['show']):
             self.legend_on = True
-            self.legend_title = config.legend_title
-            leg = self.axes.legend(title=config.legend_title,
+            self.legend_title = config['legend']['title']
+            leg = self.axes.legend(title=config['legend']['title'],
                                    loc='upper left')
             leg.set_draggable(True)
 
         # Toggle condition legend on
-        if(config.condition_legend and not data_manager.condition_data.empty):
+        if(config['condition_legend']['show'] and not data_manager.condition_data.empty):
             self.condition_legend_on = True
-            self.condition_legend_title = config.condition_legend_title
+            self.condition_legend_title = config['condition_legend']['title']
             handles, labels = self.condition_axes.get_legend_handles_labels()
             cond_leg = self.axes.legend(
                 handles, labels,
-                title=config.condition_legend_title, loc='lower right'
+                title=config['condition_legend']['title'], loc='lower right'
             )
             cond_leg.set_draggable(True)
-            if(config.legend):
+            if(config['legend']['show']):
                 self.axes.add_artist(leg)
         return
 

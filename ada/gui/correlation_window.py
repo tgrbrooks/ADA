@@ -13,7 +13,7 @@ from ada.components.button import Button
 from ada.components.window import Window
 from ada.components.layout_widget import LayoutWidget
 from ada.gui.error_window import error_wrapper
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 import ada.styles as styles
 from ada.logger import logger
@@ -40,8 +40,8 @@ class CorrelationWindow(Window):
     def __init__(self, parent):
         super(CorrelationWindow, self).__init__('Correlations', 600, 350, parent=parent, tabbed=True)
         # Default dimensions
-        self.left = 10 * config.wr
-        self.top = 60 * config.wr
+        self.left = 10 * config['width_ratio']
+        self.top = 60 * config['width_ratio']
         self.plot_config = PlotConfig()
         self.setStyleSheet(styles.main_background)
         self.initUI()
@@ -72,8 +72,8 @@ class CorrelationWindow(Window):
 
         range_option = LayoutWidget(QHBoxLayout)
         self.start_t, self.end_t = range_option.addWidgets([
-            TextEntry('Between:', default=-1, placeholder=config.xvar),
-            TextEntry('And:', default=-1, placeholder=config.xvar)])
+            TextEntry('Between:', default=-1, placeholder=config['plot']['x_axis']['variable']),
+            TextEntry('And:', default=-1, placeholder=config['plot']['x_axis']['variable'])])
         corr_config.addWidget(range_option.widget)
 
         self.figure_title = corr_config.addWidget(TextEntry('Figure title:'))
@@ -99,9 +99,9 @@ class CorrelationWindow(Window):
 
         # Plot
         self.plot = plot_view.addWidget(
-            CorrelationCanvas(self, width=10*config.wr, height=4*config.hr, dpi=100*config.wr), 0, 0, 4, 4)
+            CorrelationCanvas(self, width=10*config['width_ratio'], height=4*config['height_ratio'], dpi=100*config['width_ratio']), 0, 0, 4, 4)
         shadow = QGraphicsDropShadowEffect(
-            blurRadius=10*config.wr, xOffset=3*config.wr, yOffset=3*config.hr)
+            blurRadius=10*config['width_ratio'], xOffset=3*config['width_ratio'], yOffset=3*config['height_ratio'])
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -132,11 +132,11 @@ class CorrelationWindow(Window):
                                   self.end_t.get_float(),
                                   self.param.currentText())
         tunit = 's'
-        if config.xvar == 'minutes':
+        if config['plot']['x_axis']['variable'] == 'minutes':
             tunit = 'min'
-        if config.xvar == 'hours':
+        if config['plot']['x_axis']['variable'] == 'hours':
             tunit = 'hr'
-        if config.xvar == 'days':
+        if config['plot']['x_axis']['variable'] == 'days':
             tunit = 'day'
 
         # Create the X axis title

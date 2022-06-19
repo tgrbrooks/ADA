@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QPushButton, QGraphicsDropShadowEffect, QSizePolicy
 
-import ada.configuration as config
+from ada.configuration import config
 import ada.styles as styles
 
 
@@ -10,7 +10,7 @@ class Button(QPushButton):
         self.setStyleSheet(styles.main_button_style)
         if shadow:
             button_shadow = QGraphicsDropShadowEffect(
-                blurRadius=5*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+                blurRadius=5*config['width_ratio'], xOffset=1*config['width_ratio'], yOffset=1*config['height_ratio'])
             self.setGraphicsEffect(button_shadow)
         if tooltip is not None:
             self.setToolTip(tooltip)
@@ -25,7 +25,7 @@ class BigButton(Button):
     def __init__(self, text, parent=None, tooltip=None, clicked=None, *args, **kwargs):
         super(BigButton, self).__init__(text, parent, tooltip, clicked, shadow=True, *args, **kwargs)
         self.setStyleSheet(styles.big_button_style)
-        self.setFixedHeight(60*config.hr)
+        self.setFixedHeight(60*config['height_ratio'])
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
 
@@ -33,8 +33,8 @@ class AddButton(Button):
     def __init__(self, parent=None, clicked=None, *args, **kwargs):
         super(AddButton, self).__init__('+', parent, clicked=clicked, shadow=True, *args, **kwargs)
         self.setStyleSheet(styles.add_button_style)
-        self.setFixedHeight(16*config.hr)
-        self.setFixedWidth(16*config.wr)
+        self.setFixedHeight(16*config['height_ratio'])
+        self.setFixedWidth(16*config['width_ratio'])
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
 
@@ -42,6 +42,6 @@ class DeleteButton(Button):
     def __init__(self, parent=None, clicked=None, *args, **kwargs):
         super(DeleteButton, self).__init__('x', parent, clicked=clicked, shadow=True, *args, **kwargs)
         self.setStyleSheet(styles.delete_button_style)
-        self.setFixedHeight(16*config.hr)
-        self.setFixedWidth(16*config.wr)
+        self.setFixedHeight(16*config['height_ratio'])
+        self.setFixedWidth(16*config['width_ratio'])
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)

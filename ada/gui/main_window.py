@@ -25,7 +25,7 @@ from ada.gui.load_window import LoadWindow
 from ada.gui.correlation_window import CorrelationWindow
 from ada.gui.test_window import TestWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 import ada.styles as styles
 import ada.gui.qrc_resources
@@ -38,10 +38,10 @@ class App(QMainWindow):
         super().__init__()
         self.title = 'Algal Data Analyser'
         # Default dimensions
-        self.left = 10 * config.wr
-        self.top = 60 * config.wr
-        self.width = 960 * config.wr
-        self.height = 600 * config.wr
+        self.left = 10 * config['width_ratio']
+        self.top = 60 * config['width_ratio']
+        self.width = 960 * config['width_ratio']
+        self.height = 600 * config['width_ratio']
         logger.debug('Creating main window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
             self.left, self.top, self.width, self.height))
         self.setStyleSheet(styles.main_background)
@@ -76,8 +76,8 @@ class App(QMainWindow):
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        wr = config.wr
-        hr = config.wr
+        wr = config['width_ratio']
+        hr = config['width_ratio']
 
         tabs = QTabWidget()
         tabs.setStyleSheet(styles.tab_style)
@@ -158,8 +158,8 @@ class App(QMainWindow):
             DropDown('Variable:', opt.xaxis_units, index=2),
             TextEntry('Label:'),
             TextEntry('Unit name:', tooltip='Enter "none" for no units'),
-            TextEntry('Range min:', default=config.xmin),
-            TextEntry('Range max:', default=config.xmax),
+            TextEntry('Range min:', default=config['plot']['x_axis']['min']),
+            TextEntry('Range max:', default=config['plot']['x_axis']['max']),
             CheckBox('Log scale')],
             padding=[False, False, False, False, False, True])
 
@@ -174,8 +174,8 @@ class App(QMainWindow):
             DropDown('Variable:', []),
             TextEntry('Label:'),
             TextEntry('Unit name:', tooltip='Enter "none" for no units'),
-            TextEntry('Range min:', default=config.ymin),
-            TextEntry('Range max:', default=config.ymax)])
+            TextEntry('Range min:', default=config['plot']['y_axis']['min']),
+            TextEntry('Range max:', default=config['plot']['y_axis']['max'])])
 
         # Y axis log scale
         ylog_hbox = LayoutWidget(QHBoxLayout)
@@ -198,8 +198,8 @@ class App(QMainWindow):
             DropDown('Variable:', []),
             TextEntry('Label:'),
             TextEntry('Unit name:', tooltip='Enter "none" for no units'),
-            TextEntry('Range min:', default=config.condition_ymin),
-            TextEntry('Range max:', default=config.condition_ymax),
+            TextEntry('Range min:', default=config['plot']['condition_axis']['min']),
+            TextEntry('Range max:', default=config['plot']['condition_axis']['max']),
             CheckBox('Log scale')],
             padding=[False, False, False, False, False, True])
 
@@ -220,10 +220,10 @@ class App(QMainWindow):
         self.smooth_data, self.align_data, self.y_alignment, self.initial_y, self.growth_average, self.condition_average, self.show_events = data_form.addRows([
             CheckBox('Data smoothing off/on', tooltip='Apply Savitzky-Golay to noisy data'),
             CheckBox('Alignment at time = 0 on/off', tooltip='Start growth curves at 0 time'),
-            TextEntry('Align at Y:', default=config.y_alignment, tooltip='Align all growth curves at given Y value'),
-            TextEntry('Set initial Y:', default=config.initial_y, tooltip='Start growth curves at a given Y value'),
-            TextEntry('Growth data time average:', default=config.growth_average, tooltip='Average over a given time window'),
-            TextEntry('Condition data time average:', default=config.condition_average, tooltip='Average over a given time window'),
+            TextEntry('Align at Y:', default=config['data']['y_alignment'], tooltip='Align all growth curves at given Y value'),
+            TextEntry('Set initial Y:', default=config['data']['initial_y'], tooltip='Start growth curves at a given Y value'),
+            TextEntry('Growth data time average:', default=config['data']['growth_average'], tooltip='Average over a given time window'),
+            TextEntry('Condition data time average:', default=config['data']['condition_average'], tooltip='Average over a given time window'),
             CheckBox('Show events off/on')],
             padding=[True, True, False, False, False, False, True])
 
@@ -235,8 +235,8 @@ class App(QMainWindow):
         outlier_form = Form()
         self.auto_remove, self.remove_above, self.remove_below = outlier_form.addRows([
             CheckBox('Auto-remove outliers off/on'),
-            TextEntry('Remove above:', default=config.remove_above),
-            TextEntry('Remove below:', default=config.remove_below)],
+            TextEntry('Remove above:', default=config['data']['remove_above']),
+            TextEntry('Remove below:', default=config['data']['remove_below'])],
             padding=[True, False, False])
         outlier_options.addWidget(outlier_form.widget)
         outlier_options.addWidget(Spacer())
@@ -305,13 +305,13 @@ class App(QMainWindow):
         # Sized
         style_numeric_form = Form(align=True)
         self.title_size, self.legend_size, self.label_size, self.line_width, self.marker_size, self.capsize, self.save_dpi = style_numeric_form.addRows([
-            SpinBox('Title font size:', start=config.title_size, min_val=0, max_val=100),
-            SpinBox('Legend font size:', start=config.legend_size, min_val=0, max_val=100),
-            SpinBox('Label font size:', start=config.label_size, min_val=0, max_val=100),
-            SpinBox('Line width:', start=config.line_width, min_val=0, max_val=20),
-            SpinBox('Marker size:', start=config.marker_size, min_val=0, max_val=20),
-            SpinBox('Error cap size:', start=config.capsize, min_val=0, max_val=20),
-            SpinBox('Saved figure DPI:', start=config.save_dpi, min_val=10, max_val=2000)])
+            SpinBox('Title font size:', start=config['style']['title_size'], min_val=0, max_val=100),
+            SpinBox('Legend font size:', start=config['style']['legend_size'], min_val=0, max_val=100),
+            SpinBox('Label font size:', start=config['style']['label_size'], min_val=0, max_val=100),
+            SpinBox('Line width:', start=config['style']['line_width'], min_val=0, max_val=20),
+            SpinBox('Marker size:', start=config['style']['marker_size'], min_val=0, max_val=20),
+            SpinBox('Error cap size:', start=config['style']['capsize'], min_val=0, max_val=20),
+            SpinBox('Saved figure DPI:', start=config['style']['save_dpi'], min_val=10, max_val=2000)])
 
         style_options.addWidget(style_numeric_form.widget)
 
@@ -323,7 +323,7 @@ class App(QMainWindow):
         stats_form = Form(align=True, style=styles.white_background)
         self.std_err, self.sig_figs, self.show_fit_text, self.show_fit_result, self.show_fit_errors = stats_form.addRows([
             RadioButton('Standard deviation', 'Standard error', tooltip='Show standard deviation or the standard error on the mean in plots and measurements'),
-            SpinBox('Significant figures:', start=config.sig_figs, min_val=0, max_val=20),
+            SpinBox('Significant figures:', start=config['stats']['sig_figs'], min_val=0, max_val=20),
             CheckBox('Show fit model text', tooltip='Checked = display equation for fitted model\n'
                                                                  'Unchecked = don''t display equation'),
             CheckBox('Show fit parameters', tooltip='Checked = show fitted values of model parameters\n'
@@ -342,15 +342,15 @@ class App(QMainWindow):
         sg_form = Form(align=True, style=styles.white_background)
         _, self.sg_window_size, self.sg_order, self.sg_deriv, self.sg_rate = sg_form.addRows([
             TopLabel('Savitsky-Golay smoothing:'),
-            TextEntry('Window size', default=config.sg_window_size),
-            TextEntry('Order of polynomial', default=config.sg_order),
-            TextEntry('Order of derivative', default=config.sg_deriv),
-            TextEntry('Sample spacing', default=config.sg_rate)
+            TextEntry('Window size', default=config['advanced']['savitsky_golay']['window_size']),
+            TextEntry('Order of polynomial', default=config['advanced']['savitsky_golay']['sg_order']),
+            TextEntry('Order of derivative', default=config['advanced']['savitsky_golay']['sg_deriv']),
+            TextEntry('Sample spacing', default=config['advanced']['savitsky_golay']['sg_rate'])
         ])
 
         adv_outlier_form = Form(align=True, style=styles.white_background)
         self.outlier_threshold = adv_outlier_form.addRow(
-            TextEntry('Auto outlier threshold', default=config.outlier_threshold))
+            TextEntry('Auto outlier threshold', default=config['advanced']['outlier_threshold']))
 
         advanced_options.addWidget(sg_form.widget)
         advanced_options.addWidget(adv_outlier_form.widget)
@@ -569,19 +569,19 @@ class App(QMainWindow):
     # Function: Toggle cursor on and off
     @error_wrapper
     def toggle_cursor(self):
-        config.do_fit = False
-        config.cursor = not config.cursor
+        config['fit']['do_fit'] = False
+        config['plot']['cursor'] = not config['plot']['cursor']
         self.update_plot()
 
     # Open window for fitting data
     @error_wrapper
     def fit_curve(self):
-        if not config.do_fit:
+        if not config['fit']['do_fit']:
             logger.debug('Opening fit window')
             self.fit = FitWindow(self)
             self.fit.show()
         else:
-            config.do_fit = False
+            config['fit']['do_fit'] = False
             self.update_plot()
 
     # Open window for creating a data table
@@ -618,92 +618,103 @@ class App(QMainWindow):
     # Function: Update the global configuration
     def update_config(self):
         logger.debug('Updating configuration')
-        config.title = self.figure_title.text()
+        config['plot']['title'] = self.figure_title.text()
 
         # x axis config
-        config.xvar = self.xaxis_dropdown.currentText()
-        config.xname = self.xaxis_name.text()
-        config.xunit = self.xaxis_unit.text()
-        config.xmin = self.xaxis_min.get_float()
-        config.xmax = self.xaxis_max.get_float()
-        config.xlog = self.xaxis_log.isChecked()
+        config['plot']['x_axis'] = {
+            'variable': self.xaxis_dropdown.currentText(),
+            'name': self.xaxis_name.text(),
+            'unit': self.xaxis_unit.text(),
+            'min': self.xaxis_min.get_float(),
+            'max': self.xaxis_max.get_float(),
+            'log': self.xaxis_log.isChecked()
+        }
 
         # y axis config
-        config.yvar = self.yaxis_dropdown.currentText()
-        config.yname = self.yaxis_name.text()
-        config.yunit = self.yaxis_unit.text()
-        config.ymin = self.yaxis_min.get_float()
-        config.ymax = self.yaxis_max.get_float()
-        config.ylog = self.yaxis_log.isChecked()
-        config.ynormlog = self.yaxis_normlog.isChecked()
+        config['plot']['y_axis'] = {
+            'variable': self.yaxis_dropdown.currentText(),
+            'name': self.yaxis_name.text(),
+            'unit': self.yaxis_unit.text(),
+            'min': self.yaxis_min.get_float(),
+            'max': self.yaxis_max.get_float(),
+            'log': self.yaxis_log.isChecked(),
+            'normlog': self.yaxis_normlog.isChecked()
+        }
 
         # Condition y axis config
-        config.condition_yvar = \
-            self.condition_yaxis_dropdown.currentText()
-        config.condition_yname = self.condition_yaxis_name.text()
-        config.condition_yunit = self.condition_yaxis_unit.text()
-        config.condition_ymin = self.condition_yaxis_min.get_float()
-        config.condition_ymax = self.condition_yaxis_max.get_float()
-        config.condition_ylog = self.condition_yaxis_log.isChecked()
+        config['plot']['condition_axis'] = {
+            'var': self.condition_yaxis_dropdown.currentText(),
+            'name': self.condition_yaxis_name.text(),
+            'unit': self.condition_yaxis_unit.text(),
+            'min': self.condition_yaxis_min.get_float(),
+            'max': self.condition_yaxis_max.get_float(),
+            'log': self.condition_yaxis_log.isChecked()
+        }
 
         # Data config
-        config.smooth = self.smooth_data.isChecked()
-        config.align = self.align_data.isChecked()
-        config.y_alignment = self.y_alignment.get_float()
-        config.initial_y = self.initial_y.get_float()
-        config.auto_remove = self.auto_remove.isChecked()
-        config.remove_above = self.remove_above.get_float()
-        config.remove_below = self.remove_below.get_float()
-        config.growth_average = self.growth_average.get_float()
-        config.condition_average = self.condition_average.get_float()
-        config.show_events = self.show_events.isChecked()
+        config['data'] = {
+            'smooth': self.smooth_data.isChecked(),
+            'align': self.align_data.isChecked(),
+            'y_alignment': self.y_alignment.get_float(),
+            'initial_y': self.initial_y.get_float(),
+            'auto_remove': self.auto_remove.isChecked(),
+            'remove_above': self.remove_above.get_float(),
+            'remove_below': self.remove_below.get_float(),
+            'growth_average': self.growth_average.get_float(),
+            'condition_average': self.condition_average.get_float(),
+            'show_events': self.show_events.isChecked()
+        }
 
         # Legend config
-        config.legend = self.legend_toggle.isChecked()
-        config.condition_legend = \
-            self.condition_legend_toggle.isChecked()
-        config.legend_title = self.legend_title.text()
-        if(config.legend_title.lower() == 'none'):
-            config.legend_title = ''
-        config.condition_legend_title = self.condition_legend_title.text()
-        if(config.condition_legend_title.lower() == 'none'):
-            config.condition_legend_title = ''
-        config.label_names = self.legend_names.get_list()
-        for i, label in enumerate(config.label_names):
+        config['legend'] = {
+            'show': self.legend_toggle.isChecked(),
+            'title': self.legend_title.text(),
+            'label_names': self.legend_names.get_list(),
+            'extra_info': self.extra_info.currentText(),
+            'only_extra': self.only_extra.isChecked()
+        }
+        for i, label in enumerate(config['legend']['label_names']):
             data_manager.get_growth_file(i).legend = label
-        config.condition_label_names = self.condition_legend_names.get_list()
-        for i, label in enumerate(config.condition_label_names):
+
+        config['condition_legend'] = {
+            'show': self.condition_legend_toggle.isChecked(),
+            'title': self.condition_legend_title.text(),
+            'label_names': self.condition_legend_names.get_list(),
+            'extra_info': self.condition_extra_info.currentText(),
+            'only_extra': self.condition_only_extra.isChecked()
+        }
+        for i, label in enumerate(config['condition_legend']['label_names']):
             data_manager.get_condition_file(i).legend = label
-        config.extra_info = self.extra_info.currentText()
-        config.condition_extra_info = \
-            self.condition_extra_info.currentText()
-        config.only_extra = self.only_extra.isChecked()
-        config.condition_only_extra = \
-            self.condition_only_extra.isChecked()
 
         # Style config
-        config.style = self.style_dropdown.currentText()
-        config.font_style = self.font_dropdown.currentText()
-        config.title_size = self.title_size.get_float()
-        config.legend_size = self.legend_size.get_float()
-        config.label_size = self.label_size.get_float()
-        config.line_width = self.line_width.get_float()
-        config.axis_colour = self.axis_colour.text()
-        config.marker_size = self.marker_size.get_float()
-        config.capsize = self.capsize.get_float()
-        config.save_dpi = self.save_dpi.get_float()
-        config.grid = self.grid_toggle.isChecked()
+        config['style'] = {
+            'style': self.style_dropdown.currentText(),
+            'font_style': self.font_dropdown.currentText(),
+            'title_size': self.title_size.get_float(),
+            'legend_size': self.legend_size.get_float(),
+            'label_size': self.label_size.get_float(),
+            'line_width': self.line_width.get_float(),
+            'axis_colour': self.axis_colour.text(),
+            'marker_size': self.marker_size.get_float(),
+            'capsize': self.capsize.get_float(),
+            'save_dpi': self.save_dpi.get_float(),
+            'grid': self.grid_toggle.isChecked()
+        }
 
         # Stats config
-        config.std_err = self.std_err.isChecked()
-        config.show_fit_text = self.show_fit_text.isChecked()
-        config.show_fit_result = self.show_fit_result.isChecked()
-        config.show_fit_errors = self.show_fit_errors.isChecked()
-        config.sig_figs = self.sig_figs.get_int()
+        config['stats'] = {
+            'std_err': self.std_err.isChecked(),
+            'show_fit_text': self.show_fit_text.isChecked(),
+            'show_fit_result': self.show_fit_result.isChecked(),
+            'show_fit_errors': self.show_fit_errors.isChecked(),
+            'sig_figs': self.sig_figs.get_int()
+        }
 
         # Advanced config
-        config.sg_window_size = self.sg_window_size.get_float()
-        config.sg_order = self.sg_order.get_float()
-        config.sg_deriv = self.sg_deriv.get_float()
-        config.sg_rate = self.sg_rate.get_float()
-        config.outlier_threshold = self.outlier_threshold.get_float()
+        config['advanced']['savitsky_golay'] = {
+            'window_size': self.sg_window_size.get_float(),
+            'order': self.sg_order.get_float(),
+            'deriv': self.sg_deriv.get_float(),
+            'rate': self.sg_rate.get_float()
+        }
+        config['advanced']['outlier_threshold'] = self.outlier_threshold.get_float()

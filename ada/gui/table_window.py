@@ -15,7 +15,7 @@ from ada.components.user_input import DropDown
 from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 from ada.logger import logger
 
@@ -39,11 +39,11 @@ class TableWindow(Window):
         # Button to add a new row
         add_button = create_table.addWidget(
             Button("Add Row", clicked=self.add_row), 0, 1)
-        add_button.setFixedWidth(100*config.wr)
+        add_button.setFixedWidth(100*config['width_ratio'])
         add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # List of all the added rows
-        self.row_list = create_table.addWidget(List(spacing=-12*config.wr), 1, 0, 2, 2)
+        self.row_list = create_table.addWidget(List(spacing=-12*config['width_ratio']), 1, 0, 2, 2)
 
         # Button to produce the table
         create_table.addWidget(
@@ -83,12 +83,13 @@ class TableWindow(Window):
         self.rows.pop(row)
 
     def get_row_title(self, row):
+        x_variable = config['plot']['x_axis']['variable']
         tunit = 's'
-        if config.xvar == 'minutes':
+        if x_variable == 'minutes':
             tunit = 'min'
-        if config.xvar == 'hours':
+        if x_variable == 'hours':
             tunit = 'hr'
-        if config.xvar == 'days':
+        if x_variable == 'days':
             tunit = 'day'
         row_title = ''
         # Determine the type of data
@@ -204,10 +205,10 @@ class TableWindow(Window):
                     logger.debug(dat)
                     if len(self.data[row]) == 2:
                         self.table.setItem(
-                            row+1, col+1, QTableWidgetItem('%.*f (%.*f)' % (config.sig_figs, dat, config.sig_figs, self.data[row][1][col])))
+                            row+1, col+1, QTableWidgetItem('%.*f (%.*f)' % (config['stats']['sig_figs'], dat, config['stats']['sig_figs'], self.data[row][1][col])))
                     elif isfloat(dat) and title != 'Reactor':
                         self.table.setItem(
-                            row+1, col+1, QTableWidgetItem('%.*f' % (config.sig_figs, dat)))
+                            row+1, col+1, QTableWidgetItem('%.*f' % (config['stats']['sig_figs'], dat)))
                     else:
                         self.table.setItem(
                             row+1, col+1, QTableWidgetItem(dat))

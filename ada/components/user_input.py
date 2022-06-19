@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QSizePolicy,
 
 from ada.components.label import LeftLabel
 from ada.type_functions import isfloat, isint
-import ada.configuration as config
+from ada.configuration import config
 import ada.styles as styles
 
 
@@ -20,7 +20,7 @@ class UserInput(QWidget):
 
         if shadow:
             shadow_effect = QGraphicsDropShadowEffect(
-                blurRadius=2*config.wr, xOffset=1*config.wr, yOffset=1*config.wr)
+                blurRadius=2*config['width_ratio'], xOffset=1*config['width_ratio'], yOffset=1*config['width_ratio'])
             self.setGraphicsEffect(shadow_effect)
 
         if tooltip is not None:

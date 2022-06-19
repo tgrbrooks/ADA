@@ -6,7 +6,7 @@ from ada.components.user_input import DropDown, TextEntry, CheckBox
 from ada.components.layout_widget import LayoutWidget
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 
 
@@ -20,7 +20,7 @@ class TableListItem():
         layout = LayoutWidget(QHBoxLayout)
 
         spacer = layout.addWidget(QWidget())
-        spacer.setFixedWidth(10*config.wr)
+        spacer.setFixedWidth(10*config['width_ratio'])
 
         # Add a delete button
         layout.addWidget(DeleteButton(clicked=parent.remove_item))
@@ -50,14 +50,14 @@ class TableListItem():
         if(text == 'average of condition'):
             self.condition, self.start_t, self.end_t = layout.addWidgets([
                 DropDown('Average of:', data_manager.get_condition_variables()),
-                TextEntry('Between:', default=-1, placeholder=config.xvar),
-                TextEntry('And:', default=-1, placeholder=config.xvar)])
+                TextEntry('Between:', default=-1, placeholder=config['plot']['x_axis']['variable']),
+                TextEntry('And:', default=-1, placeholder=config['plot']['x_axis']['variable'])])
 
         # Condition at time needs condition and time
         if(text == 'condition at time'):
             self.condition, self.time = layout.addWidgets([
                 DropDown('Value of:', data_manager.get_condition_variables()),
-                TextEntry('At:', default=-1, placeholder=config.xvar)])
+                TextEntry('At:', default=-1, placeholder=config['plot']['x_axis']['variable'])])
 
         # Value of fit parameter needs fit and parameter
         if(text == 'fit parameter'):
@@ -66,8 +66,8 @@ class TableListItem():
                 DropDown('Fit:', opt.fit_options, change_action=self.update_param_list),
                 DropDown('Data:', data_manager.get_growth_variables()),
                 DropDown('Parameter:', model.params),
-                TextEntry('From:', default=-1, placeholder=config.xvar),
-                TextEntry('To:', default=-1, placeholder=config.xvar),
+                TextEntry('From:', default=-1, placeholder=config['plot']['x_axis']['variable']),
+                TextEntry('To:', default=-1, placeholder=config['plot']['x_axis']['variable']),
                 CheckBox("Show error")])
 
         # Pad out the row

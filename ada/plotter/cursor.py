@@ -1,7 +1,7 @@
 from matplotlib.widgets import AxesWidget
 import numpy as np
 
-import ada.configuration as config
+from ada.configuration import config
 
 
 class Cursor(AxesWidget):
@@ -221,7 +221,7 @@ class SnapToCursor(AxesWidget):
                 y_unit = (y_label.split('[')[1]).split(']')[0]
             grad_unit = y_unit + "/" + x_unit
             self.gradtxt.set_text(r'grad = %.*f$\times10^{%i}$ %s'
-                                  % (config.sig_figs, gradient, exponent, grad_unit))
+                                  % (config['stats']['sig_figs'], gradient, exponent, grad_unit))
 
         self.positions.append(position)
 

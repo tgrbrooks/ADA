@@ -1,7 +1,7 @@
 # pyqt imports
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
-import ada.configuration as config
+from ada.configuration import config
 from ada.logger import logger
 
 
@@ -22,8 +22,8 @@ class FileHandlerGui(QWidget):
             self.save_fig = True
         else:
             self.save_fig = False
-        self.width = 960*config.wr
-        self.height = 600*config.hr
+        self.width = 960*config['width_ratio']
+        self.height = 600*config['height_ratio']
         logger.debug('Creating file handler window [width:%.2f, height:%.2f]' % (
             self.width, self.height))
         self.initUI()

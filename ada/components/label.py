@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout,
                              QGraphicsDropShadowEffect, QHBoxLayout)
 
 from ada.components.button import DeleteButton
-import ada.configuration as config
+from ada.configuration import config
 import ada.styles as styles
 
 
@@ -16,7 +16,7 @@ class Label(QWidget):
         self.setLayout(layout)
         if shadow:
             shadow = QGraphicsDropShadowEffect(
-                blurRadius=3*config.wr, xOffset=1*config.wr, yOffset=1*config.hr)
+                blurRadius=3*config['width_ratio'], xOffset=1*config['width_ratio'], yOffset=1*config['height_ratio'])
             self.setGraphicsEffect(shadow)
         if style:
             self.text.setStyleSheet(style)
@@ -50,7 +50,7 @@ class DelLabel(QWidget):
         self.text = QLabel(text)
         self.file_name = ''
         self.text.setStyleSheet(styles.label_style)
-        self.text.setFixedHeight(25*config.hr)
+        self.text.setFixedHeight(25*config['height_ratio'])
         layout = QHBoxLayout()
         layout.addWidget(self.button)
         layout.addWidget(self.text)

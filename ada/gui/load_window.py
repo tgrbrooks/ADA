@@ -19,7 +19,7 @@ from ada.reader.read_ip import read_ip
 from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
 
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 import ada.styles as styles
 from ada.logger import logger
@@ -50,7 +50,7 @@ class LoadWindow(Window):
 
         # List of files to import
         self.file_list = self.window.addWidget(List())
-        self.file_list.setSpacing(-5*config.wr)
+        self.file_list.setSpacing(-5*config['width_ratio'])
         self.file_list.setStyleSheet(styles.default_font)
 
         # Button and list for Algem conditions files
@@ -58,7 +58,7 @@ class LoadWindow(Window):
             Button("Select conditions file(s)", clicked=self.select_conditions))
         self.select_conditions_button.hide()
 
-        self.conditions_file_list = self.window.addWidget(List(spacing=-5*config.wr, style=styles.default_font))
+        self.conditions_file_list = self.window.addWidget(List(spacing=-5*config['width_ratio'], style=styles.default_font))
         self.conditions_file_list.hide()
 
         # Button and list for HT24 details file
@@ -66,12 +66,12 @@ class LoadWindow(Window):
             Button("Select details file", clicked=self.select_details))
         self.select_details_button.hide()
 
-        self.details_file_list = self.window.addWidget(List(spacing=-5*config.wr, style=styles.default_font))
+        self.details_file_list = self.window.addWidget(List(spacing=-5*config['width_ratio'], style=styles.default_font))
         self.details_file_list.hide()
 
         # Option to downsample conditions data
         self.downsample = self.window.addWidget(
-            TextEntry('Downsample conditions:', default=config.downsample, tooltip='Only read in every X data points'))
+            TextEntry('Downsample conditions:', default=config['data']['downsample'], tooltip='Only read in every X data points'))
         self.downsample.hide()
 
         # Checkbox for merging replicates in HT24 data

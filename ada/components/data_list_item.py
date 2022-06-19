@@ -6,7 +6,7 @@ from ada.components.button import AddButton, DeleteButton
 from ada.components.spacer import Spacer
 from ada.components.layout_widget import LayoutWidget
 from ada.components.label import Label
-import ada.configuration as config
+from ada.configuration import config
 import ada.styles as styles
 
 
@@ -94,7 +94,7 @@ class DelListItem():
         item = LayoutWidget(QHBoxLayout)
         label = Label(text, style=styles.default_font_bold)
         _, self.button, _ = item.addWidgets([
-            Spacer(width=5*config.wr),
+            Spacer(width=5*config['width_ratio']),
             DeleteButton(),
             label.text])
 

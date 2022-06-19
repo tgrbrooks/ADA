@@ -10,7 +10,7 @@ from ada.components.user_input import DropDown, TextEntry
 from ada.components.label import RoundLabel
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 
 
@@ -74,8 +74,8 @@ class TestWindow(Window):
                          change_action=self.update_param_list),
                 DropDown('Of:', data_manager.get_growth_variables()),
                 DropDown('Parameter:', model.params),
-                TextEntry('From:', placeholder=config.xvar),
-                TextEntry('To:', placeholder=config.xvar)])
+                TextEntry('From:', placeholder=config['plot']['x_axis']['variable']),
+                TextEntry('To:', placeholder=config['plot']['x_axis']['variable'])])
         else:
             self.measurement.hide()
             return
@@ -90,7 +90,7 @@ class TestWindow(Window):
     # Add the fit info to the configuration
     @error_wrapper
     def test(self):
-        config.do_fit = True
+        config['fit']['do_fit'] = True
         test_option = self.test_option.currentText()
         measurement_option = self.test_measurement.currentText()
         # Calculate value of all replicates individually

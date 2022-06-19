@@ -8,7 +8,7 @@ from ada.components.window import Window
 from ada.components.layout_widget import LayoutWidget
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 from ada.logger import logger
 
@@ -29,8 +29,8 @@ class FitWindow(Window):
         self.curve_option, self.fit_option, self.fit_from, self.fit_to, self.set_bounds, _ = fit_config.addWidgets([
             DropDown('Data:', data_manager.get_growth_data_labels()),
             DropDown('Fit:', opt.fit_options),
-            TextEntry('From:', default=config.fit_from),
-            TextEntry('To:', default=config.fit_to),
+            TextEntry('From:', default=config['fit']['from']),
+            TextEntry('To:', default=config['fit']['to']),
             CheckBox('Set parameter bounds', change_action=self.render_bounds),
             Button("Fit", clicked=self.fit)])
 
@@ -62,23 +62,21 @@ class FitWindow(Window):
     # Add the fit info to the configuration
     @error_wrapper
     def fit(self):
-        config.do_fit = True
-        config.fit_curve = self.curve_option.currentText()
-        config.fit_type = self.fit_option.currentText()
         logger.debug('Fitting %s with %s' %
-                     (config.fit_curve, config.fit_type))
-        config.fit_from = self.fit_from.get_float()
-        config.fit_to = self.fit_to.get_float()
-        config.fit_start = []
-        config.fit_min = []
-        config.fit_max = []
-        for bound in self.bounds:
-            config.fit_start.append(bound.get_start())
-            config.fit_min.append(bound.get_min())
-            config.fit_max.append(bound.get_max())
-        if len(config.fit_start) == 0:
-            config.fit_start = None
-            config.fit_min = None
-            config.fit_max = None
+                     (self.curve_option.currentText(), self.fit_option.currentText()))
+        config['fit'] = {
+            'do_fit': True,
+            'curve': self.curve_option.currentText(),
+            'type': self.fit_option.currentText(),
+            'from': self.fit_from.get_float(),
+            'to': self.fit_to.get_float(),
+            'start': [bound.get_start() for bound in self.bounds],
+            'min': [bound.get_min() for bound in self.bounds],
+            'max': [bound.get_max() for bound in self.bounds]
+        }
+        if len(config['fit']['start']) == 0:
+            config['fit']['start'] = None
+            config['fit']['min'] = None
+            config['fit']['max'] = None
         self.parent.update_plot()
         self.close()

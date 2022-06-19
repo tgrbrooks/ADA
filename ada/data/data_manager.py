@@ -6,7 +6,7 @@ from ada.data.data_holder import DataHolder
 from ada.data.processor import (process_data, time_average, time_average_arrays,
                                 average_data, calculate_gradient, calculate_time_to, get_fit_data_range)
 from ada.data.models import get_model
-import ada.configuration as config
+from ada.configuration import config
 import ada.options as opt
 from ada.logger import logger
 
@@ -121,7 +121,7 @@ class DataManager():
 
     def get_replicate_xy_data(self, i, signal_name, xvar=None):
         if xvar is None:
-            xvar = config.xvar
+            xvar = config['plot']['x_axis']['variable']
 
         xdatas = []
         ydatas = []
@@ -135,12 +135,12 @@ class DataManager():
         return xdatas, ydatas
 
     def get_xy_data(self, i, signal_name, xvar=None, growth_average=None, std_err=False, ynormlog=False):
-        if config.std_err:
+        if config['stats']['std_err']:
             std_err = True
-        if config.ynormlog:
+        if config['plot']['y_axis']['normlog']:
             ynormlog = True
         if growth_average is None:
-            growth_average = config.growth_average
+            growth_average = config['data']['growth_average']
 
         xdatas, ydatas = self.get_replicate_xy_data(i, signal_name, xvar)
         xdata, ydata, yerr = self.get_averaged_data(xdatas, ydatas, growth_average, std_err)
@@ -152,23 +152,25 @@ class DataManager():
         return xdata, ydata, yerr
 
     def get_xtitle(self, i, xvar=None, xname=None, xunit=None):
+        x_config = config['plot']['x_axis']
         if xvar is None:
-            xvar = config.xvar
+            xvar = x_config['variable']
         if xname is None:
-            xname = config.xname
+            xname = x_config['name']
         if xunit is None:
-            xunit = config.xunit
+            xunit = x_config['unit']
 
         return self.growth_data.data_files[i].get_xtitle(xvar, xname, xunit)
 
     def get_ytitle(self, i, yvar=None, yname=None, yunit=None, ynormlog=False):
+        y_config = config['plot']['y_axis']
         if yvar is None:
-            yvar = config.yvar
+            yvar = y_config['variable']
         if yname is None:
-            yname = config.yname
+            yname = y_config['name']
         if yunit is None:
-            yunit = config.yunit
-        if config.ynormlog:
+            yunit = y_config['unit']
+        if y_config['normlog']:
             ynormlog = True
 
         return self.growth_data.data_files[i].get_ytitle(
@@ -189,10 +191,10 @@ class DataManager():
 
     def get_growth_legend(self, i, label_names=None, extra_info=None, only_extra=False):
         if label_names is None:
-            label_names = config.label_names
+            label_names = config['legend']['label_names']
         if extra_info is None:
-            extra_info = config.extra_info
-        if config.only_extra:
+            extra_info = config['legend']['extra_info']
+        if config['legend']['only_extra']:
             only_extra = True
 
         legend_label = label_names[i]
@@ -205,10 +207,10 @@ class DataManager():
 
     def get_condition_xy_data(self, i, cond_name, xvar=None, condition_average=None, std_err=False):
         if xvar is None:
-            xvar = config.xvar
+            xvar = config['plot']['x_axis']['variable']
         if condition_average is None:
-            condition_average = config.condition_average
-        if config.std_err:
+            condition_average = config['data']['condition_average']
+        if config['stats']['std_err']:
             std_err = True
 
         for j, cond in enumerate(self.condition_data.data_files):
@@ -226,13 +228,13 @@ class DataManager():
 
     def get_condition_data(self, i, xvar=None, yvar=None, condition_average=None, std_err=False):
         if xvar is None:
-            xvar = config.xvar
+            xvar = config['plot']['x_axis']['variable']
         if yvar is None:
-            yvar = config.condition_yvar
+            yvar = config['plot']['condition_axis']['variable']
         if condition_average is None:
-            condition_average = config.condition_average
-        if config.std_err:
-            std_err = config.std_err
+            condition_average = config['data']['condition_average']
+        if config['stats']['std_err']:
+            std_err = config['stats']['std_err']
 
         xdatas = []
         ydatas = []
@@ -245,21 +247,22 @@ class DataManager():
         return self.get_averaged_data(xdatas, ydatas, condition_average, std_err)
 
     def get_condition_ytitle(self, i, yvar=None, yname=None, yunit=None):
+        cond_config = config['plot']['condition_axis']
         if yvar is None:
-            yvar = config.condition_yvar
+            yvar = cond_config['variable']
         if yname is None:
-            yname = config.condition_yname
+            yname = cond_config['name']
         if yunit is None:
-            yunit = config.condition_yunit
+            yunit = cond_config['unit']
 
         return self.condition_data.data_files[i].get_ytitle(yvar, yname, yunit)
 
     def get_condition_legend(self, i, label_names=None, extra_info=None, only_extra=False):
         if label_names is None:
-            label_names = config.condition_label_names
+            label_names = config['condition_legend']['label_names']
         if extra_info is None:
-            extra_info = config.condition_extra_info
-        if config.condition_only_extra:
+            extra_info = config['condition_legend']['extra_info']
+        if config['condition_legend']['only_extra']:
             only_extra = True
 
         # Get the legend label with any extra info specified in
@@ -329,7 +332,7 @@ class DataManager():
                 continue
             mean = np.mean(dat)
             averages.append(mean)
-            if config.std_err:
+            if config['stats']['std_err']:
                 errors.append(np.std(dat, ddof=1)/np.sqrt(dat.size))
             else:
                 errors.append(np.std(dat, ddof=1))
@@ -363,11 +366,11 @@ class DataManager():
 
     def get_fit_data(self, index, signal_name=None, fit_from=None, fit_to=None):
         if signal_name is None:
-            signal_name = config.yvar
+            signal_name = config['plot']['y_axis']['variable']
         if fit_from is None:
-            fit_from = config.fit_from
+            fit_from = config['fit']['from']
         if fit_to is None:
-            fit_to = config.fit_to
+            fit_to = config['fit']['to']
 
         fit_x, fit_y, fit_sigma = self.get_xy_data(index, signal_name)
         return get_fit_data_range(fit_x, fit_y, fit_sigma, fit_from, fit_to)
@@ -375,7 +378,7 @@ class DataManager():
     def get_replicate_fits(self, index, signal_name, fit_name, fit_from, fit_to, fit_param):
         fit_start = None
         if fit_name == 'exponential':
-            fit_start = [1, 1./opt.unit_map[config.xvar]]
+            fit_start = [1, 1./opt.unit_map[config['plot']['x_axis']['variable']]]
         model = get_model(fit_name)
         func = model.func()
         xdatas, ydatas = self.get_replicate_xy_data(index, signal_name)
@@ -390,19 +393,19 @@ class DataManager():
 
     def get_fit(self, index, signal_name=None, fit_name=None, fit_from=None, fit_to=None, fit_start=None, fit_min=None, fit_max=None):
         if signal_name is None:
-            signal_name = config.yvar
+            signal_name = config['plot']['y_axis']['variable']
         if fit_name is None:
-            fit_name = config.fit_type
+            fit_name = config['fit']['type']
         if fit_from is None:
-            fit_from = config.fit_from
+            fit_from = config['fit']['from']
         if fit_to is None:
-            fit_to = config.fit_to
+            fit_to = config['fit']['to']
         if fit_start is None:
-            fit_start = config.fit_start
+            fit_start = config['fit']['start']
         if fit_min is None:
-            fit_min = config.fit_min
+            fit_min = config['fit']['min']
         if fit_max is None:
-            fit_max = config.fit_max
+            fit_max = config['fit']['max']
             
         bounds = (-np.inf, np.inf)
         if fit_min is not None and fit_min != [] and fit_max is not None and fit_max != []:
@@ -410,7 +413,7 @@ class DataManager():
         if fit_start == []:
             fit_start = None
         if fit_start is None and fit_name == 'exponential':
-            fit_start = [1, 1./opt.unit_map[config.xvar]]
+            fit_start = [1, 1./opt.unit_map[config['plot']['x_axis']['variable']]]
 
         fit_x, fit_y, fit_sigma = self.get_fit_data(
             index, signal_name, fit_from, fit_to)

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget
-import ada.configuration as config
+from ada.configuration import config
 
 
 class LayoutWidget(QWidget):
@@ -11,9 +11,9 @@ class LayoutWidget(QWidget):
         self.widget.setLayout(self.layout)
         if margin is not None:
             self.layout.setContentsMargins(
-                margin*config.wr, margin*config.hr, margin*config.wr, margin*config.hr)
+                margin*config['width_ratio'], margin*config['height_ratio'], margin*config['width_ratio'], margin*config['height_ratio'])
         if spacing is not None:
-            self.layout.setSpacing(spacing*config.wr)
+            self.layout.setSpacing(spacing*config['width_ratio'])
         if style:
             self.widget.setStyleSheet(style)
 

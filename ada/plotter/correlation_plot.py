@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 # Local imports
 from ada.gui.file_handler import save_file
 
-import ada.configuration as config
+from ada.configuration import config
 from ada.logger import logger
 
 
@@ -49,7 +49,7 @@ class CorrelationCanvas(FigureCanvasQTAgg):
                 1., 0.5, 0.5), fc=(1., 0.8, 0.8))
             if plot_config.correlation_coeff is not None:
                 text = ('$\\rho$ = %.*f' %
-                        (config.sig_figs, plot_config.correlation_coeff))
+                        (config['stats']['sig_figs'], plot_config.correlation_coeff))
                 self.axes.text(0.25, 0.95, text,
                                transform=self.axes.transAxes,
                                bbox=bounding_box, picker=True)
