@@ -7,6 +7,7 @@ from ada.components.layout_widget import LayoutWidget
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
+import ada.options as opt
 
 
 class TableListItem():
@@ -60,9 +61,9 @@ class TableListItem():
 
         # Value of fit parameter needs fit and parameter
         if(text == 'fit parameter'):
-            model = get_model(config.fit_options[0], '', '')
+            model = get_model(opt.fit_options[0], '', '')
             self.fit, self.data, self.param, self.fit_from, self.fit_to, self.show_error = layout.addWidgets([
-                DropDown('Fit:', config.fit_options, change_action=self.update_param_list),
+                DropDown('Fit:', opt.fit_options, change_action=self.update_param_list),
                 DropDown('Data:', data_manager.get_growth_variables()),
                 DropDown('Parameter:', model.params),
                 TextEntry('From:', default=-1, placeholder=config.xvar),

@@ -20,6 +20,7 @@ from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
 
 import ada.configuration as config
+import ada.options as opt
 import ada.styles as styles
 from ada.logger import logger
 
@@ -37,9 +38,9 @@ class LoadWindow(Window):
 
     def initUI(self):
         # Dropdown list of available file types
-        file_types = config.replicate_types
+        file_types = opt.replicate_types
         if self.row == -1:
-            file_types = config.file_types
+            file_types = opt.file_types
         self.file_type = self.window.addWidget(
             DropDown('File type:', file_types, change_action=self.update_options))
 

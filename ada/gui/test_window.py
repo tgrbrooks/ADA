@@ -11,6 +11,7 @@ from ada.components.label import RoundLabel
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
+import ada.options as opt
 
 
 # Class for a table constructor window
@@ -23,7 +24,7 @@ class TestWindow(Window):
 
     def initUI(self):
         self.test_option = self.window.addWidget(
-            DropDown('Test:', config.test_options, change_action=self.render_test))
+            DropDown('Test:', opt.test_options, change_action=self.render_test))
 
         self.data_input = LayoutWidget(QVBoxLayout)
         self.data_option1, self.data_option2 = self.data_input.addWidgets([
@@ -32,7 +33,7 @@ class TestWindow(Window):
         self.window.addWidget(self.data_input.widget)
 
         self.test_measurement = self.window.addWidget(
-            DropDown('Measurement:', config.measurement_options, change_action=self.render_measurement))
+            DropDown('Measurement:', opt.measurement_options, change_action=self.render_measurement))
 
         self.measurement = LayoutWidget(QVBoxLayout)
         self.window.addWidget(self.measurement.widget)
@@ -67,9 +68,9 @@ class TestWindow(Window):
                 DropDown('Time for:', data_manager.get_growth_variables()),
                 TextEntry('To reach:', placeholder='Y = ')])
         elif option == 'fit parameter':
-            model = get_model(config.fit_options[0])
+            model = get_model(opt.fit_options[0])
             self.fit, self.signal, self.param, self.fit_from, self.fit_to = self.measurement.addWidgets([
-                DropDown('Fit:', config.fit_options,
+                DropDown('Fit:', opt.fit_options,
                          change_action=self.update_param_list),
                 DropDown('Of:', data_manager.get_growth_variables()),
                 DropDown('Parameter:', model.params),

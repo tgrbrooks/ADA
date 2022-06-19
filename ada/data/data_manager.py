@@ -7,6 +7,7 @@ from ada.data.processor import (process_data, time_average, time_average_arrays,
                                 average_data, calculate_gradient, calculate_time_to, get_fit_data_range)
 from ada.data.models import get_model
 import ada.configuration as config
+import ada.options as opt
 from ada.logger import logger
 
 
@@ -374,7 +375,7 @@ class DataManager():
     def get_replicate_fits(self, index, signal_name, fit_name, fit_from, fit_to, fit_param):
         fit_start = None
         if fit_name == 'exponential':
-            fit_start = [1, 1./config.unit_map[config.xvar]]
+            fit_start = [1, 1./opt.unit_map[config.xvar]]
         model = get_model(fit_name)
         func = model.func()
         xdatas, ydatas = self.get_replicate_xy_data(index, signal_name)
@@ -409,7 +410,7 @@ class DataManager():
         if fit_start == []:
             fit_start = None
         if fit_start is None and fit_name == 'exponential':
-            fit_start = [1, 1./config.unit_map[config.xvar]]
+            fit_start = [1, 1./opt.unit_map[config.xvar]]
 
         fit_x, fit_y, fit_sigma = self.get_fit_data(
             index, signal_name, fit_from, fit_to)

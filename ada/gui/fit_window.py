@@ -9,6 +9,7 @@ from ada.components.layout_widget import LayoutWidget
 from ada.data.models import get_model
 from ada.data.data_manager import data_manager
 import ada.configuration as config
+import ada.options as opt
 from ada.logger import logger
 
 
@@ -27,7 +28,7 @@ class FitWindow(Window):
         # List of row options
         self.curve_option, self.fit_option, self.fit_from, self.fit_to, self.set_bounds, _ = fit_config.addWidgets([
             DropDown('Data:', data_manager.get_growth_data_labels()),
-            DropDown('Fit:', config.fit_options),
+            DropDown('Fit:', opt.fit_options),
             TextEntry('From:', default=config.fit_from),
             TextEntry('To:', default=config.fit_to),
             CheckBox('Set parameter bounds', change_action=self.render_bounds),

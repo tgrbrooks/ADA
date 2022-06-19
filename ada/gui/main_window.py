@@ -26,6 +26,7 @@ from ada.gui.correlation_window import CorrelationWindow
 from ada.gui.test_window import TestWindow
 from ada.gui.file_handler import get_file_names, get_save_file_name
 import ada.configuration as config
+import ada.options as opt
 import ada.styles as styles
 import ada.gui.qrc_resources
 from ada.logger import logger
@@ -154,7 +155,7 @@ class App(QMainWindow):
         # X axis config
         x_form = Form()
         self.xaxis_dropdown, self.xaxis_name, self.xaxis_unit, self.xaxis_min, self.xaxis_max, self.xaxis_log = x_form.addRows([
-            DropDown('Variable:', config.xaxis_units, index=2),
+            DropDown('Variable:', opt.xaxis_units, index=2),
             TextEntry('Label:'),
             TextEntry('Unit name:', tooltip='Enter "none" for no units'),
             TextEntry('Range min:', default=config.xmin),
@@ -258,7 +259,7 @@ class App(QMainWindow):
             CheckBox('Legend on'),
             DropDown('Labels:', [], tooltip='Edit names by changing text and pressing return', edit=True),
             TextEntry('Heading:', tooltip='Show extra information from the file in the legend'),
-            DropDown('Extra text:', config.info_options),
+            DropDown('Extra text:', opt.info_options),
             CheckBox('Remove labels')],
             padding=[True, False, False, False, True])
 
@@ -274,7 +275,7 @@ class App(QMainWindow):
             CheckBox('Legend on'),
             DropDown('Labels:', [], tooltip='Edit names by changing text and pressing return', edit=True),
             TextEntry('Heading:'),
-            DropDown('Extra text:', config.info_options, tooltip='Show extra information from the file in the legend'),
+            DropDown('Extra text:', opt.info_options, tooltip='Show extra information from the file in the legend'),
             CheckBox('Remove labels')],
         padding=[True, False, False, False, True])
 
@@ -293,8 +294,8 @@ class App(QMainWindow):
         # Plot style dropdown menu
         style_form = Form(align=True)
         self.style_dropdown, self.font_dropdown, self.axis_colour, self.grid_toggle = style_form.addRows([
-            DropDown('Style:', config.style_options),
-            DropDown('Font style:', config.font_options),
+            DropDown('Style:', opt.style_options),
+            DropDown('Font style:', opt.font_options),
             TextEntry('Condition axis color:'),
             CheckBox('Grid on/off')],
             padding=[False, False, False, True])

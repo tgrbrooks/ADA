@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QVBoxLayout
 from ada.components.button import Button
 from ada.components.user_input import DropDown, TextEntry
 from ada.components.window import Window
-import ada.configuration as config
+import ada.options as opt
 from ada.logger import logger
 
 
@@ -18,9 +18,9 @@ class LineStyleWindow(Window):
 
     def initUI(self):
         self.line_style, self.line_colour, self.marker_style, _ = self.window.addWidgets([
-            DropDown('Line style:', config.line_style_options),
+            DropDown('Line style:', opt.line_style_options),
             TextEntry('Line colour:'),
-            DropDown('Marker style:', list(config.marker_style_options.keys())),
+            DropDown('Marker style:', list(opt.marker_style_options.keys())),
             Button("Apply", clicked=self.apply_changes)])
 
     def apply_changes(self):
@@ -30,7 +30,7 @@ class LineStyleWindow(Window):
             if(is_color_like(self.line_colour.text())):
                 self.data.style["color"] = self.line_colour.text()
             self.data.style["linestyle"] = self.line_style.currentText()
-            self.data.style["marker"] = config.marker_style_options[self.marker_style.currentText()]
+            self.data.style["marker"] = opt.marker_style_options[self.marker_style.currentText()]
             self.parent.set_plot_styles()
             self.parent.draw()
             self.close()

@@ -16,6 +16,7 @@ from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 
 import ada.configuration as config
+import ada.options as opt
 from ada.logger import logger
 
 
@@ -33,7 +34,7 @@ class TableWindow(Window):
 
         # List of row options
         self.row_option = create_table.addWidget(
-            DropDown('Row:', config.table_row_options), 0, 0)
+            DropDown('Row:', opt.table_row_options), 0, 0)
 
         # Button to add a new row
         add_button = create_table.addWidget(

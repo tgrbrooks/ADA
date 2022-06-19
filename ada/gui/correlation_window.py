@@ -14,6 +14,7 @@ from ada.components.window import Window
 from ada.components.layout_widget import LayoutWidget
 from ada.gui.error_window import error_wrapper
 import ada.configuration as config
+import ada.options as opt
 import ada.styles as styles
 from ada.logger import logger
 
@@ -63,9 +64,9 @@ class CorrelationWindow(Window):
 
         # Choice of fit and fit parameter
         fit_option = LayoutWidget(QHBoxLayout)
-        model = get_model(config.fit_options[0])
+        model = get_model(opt.fit_options[0])
         self.fit, self.param = fit_option.addWidgets([
-            DropDown('Fit:', config.fit_options, change_action=self.update_param_list),
+            DropDown('Fit:', opt.fit_options, change_action=self.update_param_list),
             DropDown('Parameter:', model.params)])
         corr_config.addWidget(fit_option.widget)
 
