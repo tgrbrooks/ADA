@@ -1,0 +1,99 @@
+{
+  "width_ratio": 1,
+  "height_ratio": 1,
+  "plot": {
+    "title": "",
+    "cursor": false,
+    "x_axis": {
+      "variable": "",
+      "name": "",
+      "unit": "",
+      "min": -1,
+      "max": -1,
+      "log": false
+    },
+    "y_axis": {
+      "variable": "",
+      "name": "",
+      "unit": "",
+      "min": -1,
+      "max": -1,
+      "log": false,
+      "norm_log": false
+    },
+    "condition_axis": {
+      "variable": "",
+      "name": "",
+      "unit": "",
+      "min": -1,
+      "max": -1,
+      "log": false
+    }
+  },
+  "data": {
+    "smooth": false,
+    "align": false,
+    "y_alignment": -1,
+    "initial_y": -1,
+    "auto_remove": false,
+    "remove_above": null,
+    "remove_below": null,
+    "downsample": -1,
+    "growth_average": null,
+    "condition_average": null,
+    "show_events": false
+  },
+  "legend": {
+    "show": false,
+    "title": "",
+    "label_names": [],
+    "extra_info": "none",
+    "only_extra": false
+  },
+  "condition_legend": {
+    "show": false,
+    "title": "",
+    "label_names": [],
+    "extra_info": "none",
+    "only_extra": false
+  },
+  "style": {
+    "plot_style": "",
+    "font_style": "",
+    "title_size": 14,
+    "legend_size": 12,
+    "label_size": 12,
+    "marker_size": 0,
+    "line_width": 2,
+    "axis_colour": -1,
+    "capsize": 2,
+    "grid": false,
+    "save_dpi": 600
+  },
+  "stats": {
+    "std_err": false,
+    "sig_figs": 2,
+    "show_fit_text": false,
+    "show_fit_result": false,
+    "show_fit_errors": false
+  },
+  "advanced": {
+    "savitsky_golay": {
+      "window_size": 61,
+      "order": 0,
+      "deriv": 0,
+      "rate": 1
+    },
+    "outlier_threshold": 20
+  },
+  "fit": {
+    "do_fit": false,
+    "curve": "",
+    "type": "",
+    "from": 0,
+    "to": 0,
+    "start": [],
+    "min": [],
+    "max": []
+  }
+}
