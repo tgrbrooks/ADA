@@ -17,7 +17,7 @@ lxml==4.6.5
 macholib==1.14
 MarkupSafe==1.1.1
 matplotlib==3.2.1
-numpy==1.18.3
+numpy==1.22.0
 packaging==20.4
 pandas==0.25.3
 pefile==2019.4.18
