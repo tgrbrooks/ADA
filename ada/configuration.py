@@ -1,6 +1,6 @@
 # Global configuration for the app
-file_types = ["Algem Pro", "Algem HT24", "IP", "PSI", "ADA"]
-replicate_types = ["Algem Pro", "IP", "PSI", "ADA"]
+file_types = ["Algem Pro", "Algem HT24", "IP", "PSI", "ADA", "MicrobeMeter"]
+replicate_types = ["Algem Pro", "IP", "PSI", "ADA", "MicrobeMeter"]
 xaxis_units = ["seconds", "minutes", "hours", "days"]
 unit_map = {
     "seconds": 24 * 60 * 60,

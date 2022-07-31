@@ -18,6 +18,7 @@ from ada.reader.read_algem_ht24_txt import read_algem_ht24_txt
 from ada.reader.read_ip import read_ip
 from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
+from ada.reader.read_microbemeter import read_microbemeter
 
 import ada.configuration as config
 import ada.styles as styles
@@ -102,6 +103,8 @@ class LoadWindow(Window):
             self.select_conditions_button.show()
             self.conditions_file_list.show()
             self.downsample.show()
+        if file_type == 'MicrobeMeter' and self.row == -1:
+            self.merge_replicates.show()
 
     # Function: Remove file from list of data
     def remove_item(self, file_list, display_list):
@@ -277,6 +280,23 @@ class LoadWindow(Window):
                 data_manager.condition_data.add_replicate(
                     condition_data, self.row)
 
+    def load_microbemeter(self, file_name):
+        logger.info('Loading MicrobeMeter file %s' % file_name)
+        data_list, condition_data = read_microbemeter(file_name)
+        if self.row == -1:
+            data_manager.growth_data.add_data(data_list[0])
+            n_files = len(data_manager.growth_data.data_files)
+            for data in data_list[1:]:
+                if self.merge_replicates.isChecked():
+                    data_manager.growth_data.add_replicate(data, n_files - 1)
+                else:
+                    data_manager.growth_data.add_data(data)
+            if condition_data is not None:
+                data_manager.condition_data.add_data(condition_data)
+        else:
+            for data in data_list:
+                data_manager.growth_data.add_replicate(data, self.row)
+
     @error_wrapper
     def load(self):
         logger.debug('Loading files into ADA')
@@ -294,6 +314,8 @@ class LoadWindow(Window):
                 self.load_psi(file_name)
             elif file_type == 'ADA' and file_name.endswith('.csv'):
                 self.load_ada(file_name)
+            elif file_type == 'MicrobeMeter' and file_name.endswith('.tsv'):
+                self.load_microbemeter(file_name)
             else:
                 raise RuntimeError(
                     "File %s has the wrong extension" % (file_name))
