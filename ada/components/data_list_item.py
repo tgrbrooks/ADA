@@ -35,7 +35,7 @@ class DataListItem():
             replicate_label = Label(data_manager.get_replicates(index)[j].label, shadow=False, style=styles.small_font)
             replicate.addWidgets([
                 QLabel('-'),
-                DeleteButton(clicked=(lambda: parent.remove_replicate(j))),
+                DeleteButton(clicked=(lambda bound_j=j: lambda: parent.remove_replicate(bound_j))()),
                 replicate_label.text])
             replicate.layout.addStretch()
             replicate.layout.setSizeConstraint(QLayout.SetFixedSize)
@@ -73,7 +73,7 @@ class ConditionListItem():
             replicate_label = Label(data_manager.condition_data.replicate_files[index][j].label, shadow=False, style=styles.small_font)
             replicate.addWidgets([
                 QLabel('-'),
-                DeleteButton(clicked=(lambda: parent.remove_condition_replicate(j))),
+                DeleteButton(clicked=(lambda bound_j=j: lambda: parent.remove_condition_replicate(bound_j))()),
                 replicate_label.text])
             replicate.layout.addStretch()
             replicate.layout.setSizeConstraint(QLayout.SetFixedSize)
