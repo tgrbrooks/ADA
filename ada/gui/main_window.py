@@ -240,7 +240,7 @@ class App(QMainWindow):
         outlier_options.addWidget(outlier_form.widget)
         outlier_options.addWidget(Spacer())
 
-        data_options.addWidget(outlier_options)
+        data_options.addWidget(outlier_options.widget)
         data_options.addWidget(Spacer())
 
         tabs.addTab(data_options.widget, 'Data')

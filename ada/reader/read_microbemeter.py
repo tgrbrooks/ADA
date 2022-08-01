@@ -1,10 +1,18 @@
 # Standard imports
 import csv
 from dateutil.parser import parse
+import numpy as np
 
 # Local import
 from ada.data.algae_data import AlgaeData
 
+
+def to_turbidity(data, initial, port4):
+    initial_corrected = initial * (initial/port4[0])
+    for i in range(data.size):
+        corrected = data[i] * (initial/port4[i])
+        data[i] = -np.log(corrected/initial_corrected)*(1/1.6)
+    return data
 
 # Loop over text files and read them in
 def read_microbemeter(file_name, downsample=-1):
@@ -31,11 +39,11 @@ def read_microbemeter(file_name, downsample=-1):
             condition_data.time = date.time()
             condition_data.xaxis.name = headings[0]
             condition_data.xaxis.unit = 's'
-            condition_data.xaxis.append(0)
             condition_data.signals.append(condition_data.Signal())
             condition_data.signals[0].name = headings[1]
             condition_data.signals[0].unit = 'C'
-            condition_data.signals[0].append(float(first_data[1]))
+
+            initial_readings = []
 
             for i, name in enumerate(headings):
                 if i >= 2 and first_data[i] != 'Blank':
@@ -49,11 +57,10 @@ def read_microbemeter(file_name, downsample=-1):
                     data.xaxis.unit = 's'
                     data.signals.append(data.Signal())
                     data.signals[0].name = 'OD'
-                    data.xaxis.append(0)
-                    data.signals[0].append(float(first_data[i]))
+                    initial_readings.append(float(first_data[i]))
                     data_list.append(data)
 
-            if(len(data_list) == 0):
+            if(len(data_list) != 4):
                 raise RuntimeError('Issue processing header:\n'
                                    'Could not find any reactors')
             if(data_list[0].xaxis.name == ''):
@@ -98,6 +105,9 @@ def read_microbemeter(file_name, downsample=-1):
                                        'Different number of %s entries'
                                        % (sig.name))
             # If everything is successful return the algem data product
+            port4 = data_list.pop().signals[0].data
+            for i in range(3):
+                data_list[i].signals[0].data = to_turbidity(data_list[i].signals[0].data, initial_readings[i], port4)
             return data_list, condition_data
 
         except Exception as e:
