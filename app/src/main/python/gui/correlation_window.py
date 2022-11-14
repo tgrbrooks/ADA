@@ -1,8 +1,7 @@
 import numpy as np
-import math
 
 # Related third party imports
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QTabWidget, QSizePolicy,
+from PyQt5.QtWidgets import (QSizePolicy,
                              QVBoxLayout, QHBoxLayout, QGridLayout, QGraphicsDropShadowEffect)
 
 # Local application imports
@@ -10,9 +9,10 @@ from plotter.correlation_plot import CorrelationCanvas
 from data.models import get_model
 from data.data_manager import data_manager
 from components.user_input import TextEntry, DropDown, CheckBox
-from components.button import Button, BigButton
+from components.button import Button
+from components.window import Window
+from components.layout_widget import LayoutWidget
 from gui.error_window import error_wrapper
-from gui.file_handler import get_file_names, get_save_file_name
 import configuration as config
 import styles as styles
 from logger import logger
@@ -34,132 +34,80 @@ class PlotConfig():
         self.correlation_coeff = None
 
 
-class CorrelationWindow(QMainWindow):
+class CorrelationWindow(Window):
 
     def __init__(self, parent):
-        super().__init__()
-        self.title = 'Correlations'
-        self.parent = parent
+        super(CorrelationWindow, self).__init__('Correlations', 600, 350, parent=parent, tabbed=True)
         # Default dimensions
         self.left = 10 * config.wr
         self.top = 60 * config.wr
-        self.width = 600 * config.wr
-        self.height = 350 * config.wr
-        logger.debug('Creating correlation window [left:%.2f, top:%.2f, width:%.2f, height:%.2f]' % (
-            self.left, self.top, self.width, self.height))
         self.plot_config = PlotConfig()
         self.setStyleSheet(styles.main_background)
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        # Tabs: configuration and plot
-        tabs = QTabWidget()
-        tabs.setStyleSheet(styles.tab_style)
-
         # Configuration tab
-        config_layout = QVBoxLayout()
-        config_layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        config_layout.setSpacing(0*config.wr)
+        corr_config = LayoutWidget(QVBoxLayout, margin=5, spacing=0)
 
         # X axis selection = condition variable
         # Dropdown of condition variables OR take from main plot
-        self.condition = DropDown('X-axis: Average of', [], self)
-        if len(data_manager.get_condition_data_files()) > 0:
-            for sig in data_manager.get_condition_variables():
-                self.condition.addItem(sig)
-        config_layout.addWidget(self.condition)
+        self.condition = corr_config.addWidget(
+            DropDown('X-axis: Average of', data_manager.get_condition_variables()))
 
         # Y axis selection = growth related measurement
         # Dropdown of y variables (OD/CD) OR take from main plot
-        self.data = DropDown('Y-axis:', [], self)
-        if len(data_manager.get_growth_data_files()) > 0:
-            for sig in data_manager.get_growth_variables():
-                self.data.addItem(sig)
-        config_layout.addWidget(self.data)
+        self.data = corr_config.addWidget(
+            DropDown('Y-axis:', data_manager.get_growth_variables()))
 
         # Choice of fit and fit parameter
-        fit_layout = QHBoxLayout()
-        self.fit = DropDown('Fit:', config.fit_options, self)
-        self.fit.entry.currentTextChanged.connect(self.update_param_list)
-        fit_layout.addWidget(self.fit)
-        model = get_model(self.fit.currentText(), '', '')
-        self.param = DropDown('Parameter:', model.params, self)
-        fit_layout.addWidget(self.param)
-        fit_widget = QWidget()
-        fit_widget.setLayout(fit_layout)
-        config_layout.addWidget(fit_widget)
+        fit_option = LayoutWidget(QHBoxLayout)
+        model = get_model(config.fit_options[0])
+        self.fit, self.param = fit_option.addWidgets([
+            DropDown('Fit:', config.fit_options, change_action=self.update_param_list),
+            DropDown('Parameter:', model.params)])
+        corr_config.addWidget(fit_option.widget)
 
-        range_layout = QHBoxLayout()
-        self.start_t = TextEntry('Between:', self, -1)
-        self.start_t.setPlaceholderText(config.xvar)
-        range_layout.addWidget(self.start_t)
-        self.end_t = TextEntry('And:', self, -1)
-        self.end_t.setPlaceholderText(config.xvar)
-        range_layout.addWidget(self.end_t)
-        range_widget = QWidget()
-        range_widget.setLayout(range_layout)
-        config_layout.addWidget(range_widget)
+        range_option = LayoutWidget(QHBoxLayout)
+        self.start_t, self.end_t = range_option.addWidgets([
+            TextEntry('Between:', default=-1, placeholder=config.xvar),
+            TextEntry('And:', default=-1, placeholder=config.xvar)])
+        corr_config.addWidget(range_option.widget)
 
-        self.figure_title = TextEntry('Figure title:', self)
-        config_layout.addWidget(self.figure_title)
-        title_layout = QHBoxLayout()
-        self.x_title = TextEntry('X-axis title:', self)
-        title_layout.addWidget(self.x_title)
-        self.y_title = TextEntry('Y-axis title:', self)
-        title_layout.addWidget(self.y_title)
-        title_widget = QWidget()
-        title_widget.setLayout(title_layout)
-        config_layout.addWidget(title_widget)
+        self.figure_title = corr_config.addWidget(TextEntry('Figure title:'))
+        title_option = LayoutWidget(QHBoxLayout)
+        self.x_title, self.y_title = title_option.addWidgets([
+            TextEntry('X-axis title:'),
+            TextEntry('Y-axis title:')])
+        corr_config.addWidget(title_option.widget)
 
-        options_layout = QHBoxLayout()
-        self.label = CheckBox('Label', self)
-        options_layout.addWidget(self.label)
-        self.calc_correlation = CheckBox('Calculate correlation', self)
-        options_layout.addWidget(self.calc_correlation)
-        options_widget = QWidget()
-        options_widget.setLayout(options_layout)
-        config_layout.addWidget(options_widget)
+        options = LayoutWidget(QHBoxLayout)
+        self.label, self.calc_correlation = options.addWidgets([
+            CheckBox('Label'),
+            CheckBox('Calculate correlation')])
+        corr_config.addWidget(options.widget)
 
         # Plot button
-        plot_button = Button('Plot', self)
-        plot_button.clicked.connect(self.update_plot)
-        config_layout.addWidget(plot_button)
+        corr_config.addWidget(Button('Plot', clicked=self.update_plot))
 
-        config_widget = QWidget()
-        config_widget.setLayout(config_layout)
-        tabs.addTab(config_widget, 'Configuration')
+        self.tabs.addTab(corr_config.widget, 'Configuration')
 
         # Plot tab
-        plot_layout = QGridLayout()
-        plot_layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        plot_layout.setSpacing(10*config.wr)
+        plot_view = LayoutWidget(QGridLayout, margin=5, spacing=10)
 
         # Plot
-        self.plot = CorrelationCanvas(
-            self, width=10*config.wr, height=4*config.hr, dpi=100*config.wr)
+        self.plot = plot_view.addWidget(
+            CorrelationCanvas(self, width=10*config.wr, height=4*config.hr, dpi=100*config.wr), 0, 0, 4, 4)
         shadow = QGraphicsDropShadowEffect(
             blurRadius=10*config.wr, xOffset=3*config.wr, yOffset=3*config.hr)
         self.plot.setGraphicsEffect(shadow)
         self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        plot_layout.addWidget(self.plot, 0, 0, 4, 4)
 
         # Save button
-        save_button = Button('Save', self)
-        save_button.clicked.connect(self.save_plot)
-        plot_layout.addWidget(save_button, 4, 0, 1, 4)
+        plot_view.addWidget(Button('Save', clicked=self.save_plot), 4, 0, 1, 4)
 
-        plot_widget = QWidget()
-        plot_widget.setLayout(plot_layout)
-        tabs.addTab(plot_widget, 'Plot')
-
-        self.setCentralWidget(tabs)
-        self.show()
+        self.tabs.addTab(plot_view.widget, 'Plot')
 
     def update_param_list(self, fit_name):
         self.param.clear()

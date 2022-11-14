@@ -1,56 +1,30 @@
 import csv
 import numpy as np
 
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLabel, QWidget
-from PyQt5.QtWidgets import QCheckBox, QPushButton, QComboBox
+from PyQt5.QtWidgets import QVBoxLayout
 
 from data.data_manager import data_manager
 from gui.error_window import error_wrapper
 from gui.file_handler import get_save_directory_name
 from components.button import Button
 from components.user_input import CheckBox
+from components.window import Window
 
-import configuration as config
-import styles as styles
 from logger import logger
 
 
-class ExportWindow(QMainWindow):
+class ExportWindow(Window):
 
     def __init__(self, parent=None):
-        super(ExportWindow, self).__init__(parent)
-        self.title = 'Export Files'
-        self.width = 150*config.wr
-        self.height = 100*config.hr
-        logger.debug('Creating export window [width:%.2f, height:%.2f]' % (
-            self.width, self.height))
-        self.parent = parent
+        super(ExportWindow, self).__init__('Export Files', 150, 100, QVBoxLayout, parent)
         self.test_path = 'none'
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowTitle(self.title)
-        self.resize(self.width, self.height)
-
-        layout = QVBoxLayout()
-        layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        layout.setSpacing(5*config.wr)
-
-        self.rename = CheckBox('Rename with profile', self)
-        layout.addWidget(self.rename)
-
-        self.conditions = CheckBox('Include conditions', self)
-        layout.addWidget(self.conditions)
-
-        export_button = Button("Export", self)
-        export_button.clicked.connect(self.export)
-        layout.addWidget(export_button)
-
-        widget = QWidget()
-        widget.setLayout(layout)
-        self.setCentralWidget(widget)
+        self.rename, self.conditions, _ = self.window.addWidgets([
+            CheckBox('Rename with profile'),
+            CheckBox('Include conditions'),
+            Button("Export", clicked=self.export)])
 
     @error_wrapper
     def export(self):
