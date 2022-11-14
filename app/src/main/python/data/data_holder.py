@@ -1,6 +1,3 @@
-# Local includes
-from data.algae_data import AlgaeData
-
 
 # Class to store data files in
 class DataHolder():

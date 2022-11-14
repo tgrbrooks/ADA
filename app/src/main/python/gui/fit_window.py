@@ -1,107 +1,60 @@
-import csv
-import numpy as np
-
-from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QLabel, QWidget,
-                             QPushButton, QComboBox, QLineEdit, QHBoxLayout)
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 
 from gui.error_window import error_wrapper
-from components.label import Label
 from components.button import Button
 from components.user_input import DropDown, TextEntry, ParameterBounds, CheckBox
 from components.spacer import Spacer
+from components.window import Window
+from components.layout_widget import LayoutWidget
 from data.models import get_model
 from data.data_manager import data_manager
-from type_functions import isfloat
 import configuration as config
-import styles as styles
 from logger import logger
 
 
 # Class for a table constructor window
-class FitWindow(QMainWindow):
+class FitWindow(Window):
 
     def __init__(self, parent=None):
-        super(FitWindow, self).__init__(parent)
-        self.title = 'Fit Curve'
-        self.width = 200*config.wr
-        self.height = 150*config.hr
-        logger.debug('Creating fit window [width:%.2f, height:%.2f]' % (
-            self.width, self.height))
-        self.parent = parent
+        super(FitWindow, self).__init__('Fit Curve', 200, 150, QHBoxLayout, parent)
         self.rows = []
         self.bounds = []
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowTitle(self.title)
-
-        window_layout = QHBoxLayout()
-        window_layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        window_layout.setSpacing(5*config.wr)
-
-        fit_layout = QVBoxLayout()
+        fit_config = LayoutWidget(QVBoxLayout)
 
         # List of row options
-        self.curve_option = DropDown('Data:', [], self)
-        for data in data_manager.get_growth_data_files():
-            self.curve_option.addItem(data.label)
-        fit_layout.addWidget(self.curve_option)
+        self.curve_option, self.fit_option, self.fit_from, self.fit_to, self.set_bounds, _ = fit_config.addWidgets([
+            DropDown('Data:', data_manager.get_growth_data_labels()),
+            DropDown('Fit:', config.fit_options),
+            TextEntry('From:', default=config.fit_from),
+            TextEntry('To:', default=config.fit_to),
+            CheckBox('Set parameter bounds', change_action=self.render_bounds),
+            Button("Fit", clicked=self.fit)])
 
-        self.fit_option = DropDown('Fit:', config.fit_options, self)
-        fit_layout.addWidget(self.fit_option)
+        self.window.addWidget(fit_config.widget)
 
-        self.fit_from = TextEntry('From:', self, config.fit_from)
-        fit_layout.addWidget(self.fit_from)
+        self.bound_input = LayoutWidget(QVBoxLayout)
+        self.param_bounds = self.bound_input.addWidget(ParameterBounds("p"))
 
-        self.fit_to = TextEntry('To:', self, config.fit_to)
-        fit_layout.addWidget(self.fit_to)
-
-        self.set_bounds = CheckBox('Set parameter bounds', self)
-        self.set_bounds.entry.stateChanged.connect(self.render_bounds)
-        fit_layout.addWidget(self.set_bounds)
-
-        # Button to add a new row
-        fit_button = Button("Fit", self)
-        fit_button.clicked.connect(self.fit)
-        fit_layout.addWidget(fit_button)
-
-        fit_widget = QWidget()
-        fit_widget.setLayout(fit_layout)
-        window_layout.addWidget(fit_widget)
-
-        self.bound_layout = QVBoxLayout()
-        self.param_bounds = ParameterBounds("p", self)
-        self.bound_layout.addWidget(self.param_bounds)
-
-        self.bound_widget = QWidget()
-        self.bound_widget.setLayout(self.bound_layout)
-        window_layout.addWidget(self.bound_widget)
-        self.bound_widget.hide()
-
-        widget = QWidget()
-        widget.setLayout(window_layout)
-
-        self.setCentralWidget(widget)
-        self.resize(self.width, self.height)
+        self.window.addWidget(self.bound_input.widget)
+        self.bound_input.hide()
 
     @error_wrapper
     def render_bounds(self):
         self.bounds = []
-        for i in reversed(range(self.bound_layout.count())): 
-            self.bound_layout.itemAt(i).widget().setParent(None)
+        self.bound_input.clear()
         if self.set_bounds.isChecked():
             self.resize(self.width * 3, self.height)
             model = get_model(self.fit_option.currentText(), '', '')
             for i, param in enumerate(model.params):
-                self.bounds.append(ParameterBounds(param, self))
-                self.bound_layout.addWidget(self.bounds[i])
-            self.bound_layout.addWidget(Spacer())
-            self.bound_widget.setLayout(self.bound_layout)
-            self.bound_widget.show()
+                self.bounds.append(ParameterBounds(param))
+                self.bound_input.addWidget(self.bounds[i])
+            self.bound_input.addWidget(Spacer())
+            self.bound_input.show()
         else:
-            self.bound_widget.hide()
+            self.bound_input.hide()
             self.resize(self.width, self.height)
 
 

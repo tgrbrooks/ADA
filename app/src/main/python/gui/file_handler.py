@@ -2,7 +2,6 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
 import configuration as config
-import styles as styles
 from logger import logger
 
 

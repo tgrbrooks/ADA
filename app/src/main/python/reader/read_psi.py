@@ -1,8 +1,5 @@
 # Standard imports
-import os
-import csv
-from datetime import datetime, date, time, timedelta
-import numpy as np
+from datetime import timedelta
 from dateutil.parser import parse
 
 import ezodf as ods

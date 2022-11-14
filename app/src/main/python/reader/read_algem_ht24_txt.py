@@ -1,7 +1,5 @@
 # Standard imports
-import os
-from datetime import datetime, date, time
-import numpy as np
+from datetime import datetime
 from dateutil.parser import parse
 
 # Local import
