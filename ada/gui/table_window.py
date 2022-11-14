@@ -1,16 +1,14 @@
 import csv
-import numpy as np
-from scipy.optimize import curve_fit
 
-from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QLabel, QWidget,
-                             QPushButton, QComboBox, QScrollArea, QListWidget,
-                             QVBoxLayout, QTabWidget, QTableWidget,
+from PyQt5.QtWidgets import (QGridLayout, QVBoxLayout, QTableWidget,
                              QTableWidgetItem, QSizePolicy)
 from PyQt5.QtCore import QPoint
 
 from ada.gui.error_window import error_wrapper
 from ada.gui.file_handler import get_save_file_name
 from ada.components.table_list_item import TableListItem
+from ada.components.window import Window
+from ada.components.layout_widget import LayoutWidget
 from ada.components.button import Button
 from ada.components.list import List
 from ada.components.user_input import DropDown
@@ -18,77 +16,47 @@ from ada.data.data_manager import data_manager
 from ada.type_functions import isfloat
 
 import ada.configuration as config
-import ada.styles as styles
 from ada.logger import logger
 
 
 # Class for a table constructor window
-class TableWindow(QMainWindow):
+class TableWindow(Window):
 
     def __init__(self, parent=None):
-        super(TableWindow, self).__init__(parent)
-        self.title = 'Create Table'
-        self.width = 500*config.wr
-        self.height = 330*config.hr
-        logger.debug('Creating table window [width:%.2f, height:%.2f]' % (
-            self.width, self.height))
+        super(TableWindow, self).__init__(
+            'Create Table', 500, 330, parent=parent, tabbed=True)
         self.rows = []
         self.initUI()
 
     def initUI(self):
-
-        self.setWindowTitle(self.title)
-        self.resize(self.width, self.height)
-
-        tabs = QTabWidget()
-
-        create_layout = QGridLayout()
-        create_layout.setContentsMargins(
-            5*config.wr, 5*config.hr, 5*config.wr, 5*config.hr)
-        create_layout.setSpacing(5*config.wr)
+        create_table = LayoutWidget(QGridLayout, margin=5, spacing=5)
 
         # List of row options
-        self.row_option = DropDown('Row:', config.table_row_options, self)
-        create_layout.addWidget(self.row_option, 0, 0)
+        self.row_option = create_table.addWidget(
+            DropDown('Row:', config.table_row_options), 0, 0)
 
         # Button to add a new row
-        add_button = Button("Add Row", self)
-        add_button.clicked.connect(self.add_row)
+        add_button = create_table.addWidget(
+            Button("Add Row", clicked=self.add_row), 0, 1)
         add_button.setFixedWidth(100*config.wr)
         add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        create_layout.addWidget(add_button, 0, 1)
 
         # List of all the added rows
-        self.row_list = List(self)
-        # self.row_list.setStyleSheet(config.scroll_style)
-        self.row_list.setSpacing(-12*config.wr)
-        create_layout.addWidget(self.row_list, 1, 0, 2, 2)
+        self.row_list = create_table.addWidget(List(spacing=-12*config.wr), 1, 0, 2, 2)
 
         # Button to produce the table
-        make_button = Button("Create Table", self)
-        make_button.clicked.connect(self.make_table)
-        create_layout.addWidget(make_button, 3, 0, 1, 2)
+        create_table.addWidget(
+            Button("Create Table", clicked=self.make_table), 3, 0, 1, 2)
 
-        create_widget = QWidget()
-        create_widget.setLayout(create_layout)
+        self.tabs.addTab(create_table.widget, "Create")
 
-        tabs.addTab(create_widget, "Create")
+        table_output = LayoutWidget(QVBoxLayout)
+        self.table = table_output.addWidget(QTableWidget())
 
-        table_layout = QVBoxLayout()
-        self.table = QTableWidget()
-        table_layout.addWidget(self.table)
+        table_output.addWidget(
+            Button("Save Table", clicked=self.save_table))
 
-        save_button = Button("Save Table", self)
-        save_button.clicked.connect(self.save_table)
-        table_layout.addWidget(save_button)
-
-        table_widget = QWidget()
-        table_widget.setLayout(table_layout)
-
-        tabs.addTab(table_widget, "Table")
-        tabs.setStyleSheet(styles.tab_style)
-
-        self.setCentralWidget(tabs)
+        self.tabs.addTab(table_output.widget, "Table")
 
     # Add a new row to the table
     @error_wrapper
@@ -96,7 +64,7 @@ class TableWindow(QMainWindow):
         logger.debug('Adding %s row to table' %
                      self.row_option.currentText())
         table_list_item = TableListItem(
-            self.row_option.currentText(), self)
+            self.row_option.currentText(), parent=self)
         self.row_list.addItem(table_list_item.item)
         self.row_list.setItemWidget(table_list_item.item,
                                     table_list_item.widget)
@@ -254,12 +222,12 @@ class TableWindow(QMainWindow):
         with open(file_name, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             for row in range(self.table.rowCount()):
-                    rowdata = []
-                    for column in range(self.table.columnCount()):
-                        item = self.table.item(row, column)
-                        if item is not None:
-                            rowdata.append(item.text())
-                        else:
-                            rowdata.append('none')
-                    writer.writerow(rowdata)
+                rowdata = []
+                for column in range(self.table.columnCount()):
+                    item = self.table.item(row, column)
+                    if item is not None:
+                        rowdata.append(item.text())
+                    else:
+                        rowdata.append('none')
+                writer.writerow(rowdata)
         self.close()

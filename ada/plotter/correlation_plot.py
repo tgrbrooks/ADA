@@ -1,21 +1,11 @@
-# Standard imports
-import random
-import numpy as np
-from scipy.optimize import curve_fit
-
 # pyqt5 imports
 from PyQt5.QtWidgets import QSizePolicy
 
 # maplotlib imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import matplotlib.style
 
 # Local imports
-from ada.data.processor import (process_data, average_data,
-                                time_average, exponent_text)
-from ada.data.models import get_model
 from ada.gui.file_handler import save_file
 
 import ada.configuration as config

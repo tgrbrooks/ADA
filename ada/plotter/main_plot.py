@@ -1,8 +1,5 @@
 # Standard imports
-import random
-from math import factorial
 import numpy as np
-from scipy.optimize import curve_fit
 
 # pyqt5 imports
 from PyQt5.QtWidgets import QSizePolicy
@@ -13,6 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib.colors import is_color_like
 from matplotlib.text import Text
 import matplotlib as mpl
+import matplotlib.style as style
 
 # Local imports
 from ada.plotter.cursor import SnapToCursor
@@ -152,15 +150,15 @@ class PlotCanvas(FigureCanvasQTAgg):
         # Style configuration
         if(config.style != ''):
             if(config.style == 'default'):
-                mpl.style.use('default')
+                style.use('default')
             if(config.style == 'greyscale'):
-                mpl.style.use('grayscale')
+                style.use('grayscale')
             if(config.style == 'colour blind'):
-                mpl.style.use('seaborn-colorblind')
+                style.use('seaborn-colorblind')
             if(config.style == 'pastel'):
-                mpl.style.use('seaborn-pastel')
+                style.use('seaborn-pastel')
             if(config.style == 'deep'):
-                mpl.style.use('seaborn-colorblind')
+                style.use('seaborn-colorblind')
         if(config.font_style != ''):
             mpl.rcParams['font.family'] = config.font_style
         if(config.title_size >= 0):

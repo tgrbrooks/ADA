@@ -1,0 +1,12 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="fit.svg">resources/fit.svg</file>
+    <file alias="measure.svg">resources/measure.svg</file>
+    <file alias="table.svg">resources/table.svg</file>
+    <file alias="correlations.svg">resources/correlations.svg</file>
+    <file alias="test.svg">resources/test.svg</file>
+    <file alias="normal.svg">resources/normal.svg</file>
+    <file alias="template.svg">resources/template.svg</file>
+</qresource>
+</RCC>
+
