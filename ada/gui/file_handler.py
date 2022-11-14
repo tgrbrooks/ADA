@@ -2,7 +2,6 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog
 
 import ada.configuration as config
-import ada.styles as styles
 from ada.logger import logger
 
 

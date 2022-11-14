@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from math import factorial
 
 import ada.configuration as config
@@ -239,3 +238,43 @@ def exponent_text_errors(value, error):
     text = r'%.*f ($\pm$%.*f)$\times10^{%i}$' % (config.sig_figs,
                                                  value, config.sig_figs, error, exponent)
     return text
+
+def calculate_gradient(xdata, ydata, grad_from, grad_to):
+    # Calculate the gradient
+    x1 = None
+    y1 = None
+    x2 = None
+    y2 = None
+    for i, ydat in enumerate(ydata):
+        if ydat >= grad_from and x1 is None:
+            x1 = xdata[i]
+            y1 = ydat
+        if ydat >= grad_to and x2 is None:
+            x2 = xdata[i]
+            y2 = ydat
+        if x1 is not None and x2 is not None:
+            break
+    if x1 is None or x2 is None:
+        return None
+    return (y2-y1)/(x2-x1)
+
+def calculate_time_to(xdata, ydata, time_to):
+    for i, ydat in enumerate(ydata):
+        if ydat >= time_to:
+            return xdata[i]
+    return None
+
+def get_fit_data_range(xdata, ydata, yerr, fit_from, fit_to):
+    fit_x, fit_y, fit_sigma = xdata, ydata, yerr
+
+    # Only fit the data in the given range
+    if fit_from != fit_to:
+        from_index = np.abs(fit_x - fit_from).argmin()
+        to_index = np.abs(fit_x - fit_to).argmin()
+        fit_x = fit_x[from_index:to_index]
+        fit_y = fit_y[from_index:to_index]
+        if fit_sigma is not None:
+            fit_sigma = fit_sigma[from_index:to_index]
+
+    return fit_x, fit_y, fit_sigma
+    
