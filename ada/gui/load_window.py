@@ -19,6 +19,7 @@ from ada.reader.read_ip import read_ip
 from ada.reader.read_psi import read_psi
 from ada.reader.read_ada import read_ada
 from ada.reader.read_microbemeter import read_microbemeter
+from ada.reader.read_spectrostar import read_spectrostar
 
 import ada.configuration as config
 import ada.styles as styles
@@ -104,6 +105,8 @@ class LoadWindow(Window):
             self.conditions_file_list.show()
             self.downsample.show()
         if file_type == 'MicrobeMeter' and self.row == -1:
+            self.merge_replicates.show()
+        if file_type == 'SpectroStar' and self.row == -1:
             self.merge_replicates.show()
 
     # Function: Remove file from list of data
@@ -297,6 +300,18 @@ class LoadWindow(Window):
             for data in data_list:
                 data_manager.growth_data.add_replicate(data, self.row)
 
+    def load_spectrostar(self, file_name):
+        logger.info('Loading SpectroStar file %s' % file_name)
+        data_map = read_spectrostar(file_name)
+        for profile, data_list in data_map.items():
+            data_manager.growth_data.add_data(data_list[0])
+            n_files = len(data_manager.growth_data.data_files)
+            for data in data_list[1:]:
+                if self.merge_replicates.isChecked():
+                    data_manager.growth_data.add_replicate(data, n_files - 1)
+                else:
+                    data_manager.growth_data.add_data(data)
+
     @error_wrapper
     def load(self):
         logger.debug('Loading files into ADA')
@@ -316,6 +331,8 @@ class LoadWindow(Window):
                 self.load_ada(file_name)
             elif file_type == 'MicrobeMeter' and file_name.endswith('.tsv'):
                 self.load_microbemeter(file_name)
+            elif file_type == 'SpectroStar' and file_name.endswith('.ods'):
+                self.load_spectrostar(file_name)
             else:
                 raise RuntimeError(
                     "File %s has the wrong extension" % (file_name))
